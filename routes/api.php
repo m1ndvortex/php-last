@@ -152,12 +152,39 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     
     // Accounting routes
     Route::prefix('accounting')->group(function () {
-        Route::get('/ledger', function () {
-            return response()->json(['message' => 'Ledger endpoint - to be implemented']);
+        // Account routes
+        Route::apiResource('accounts', \App\Http\Controllers\AccountController::class);
+        Route::get('accounts/{account}/balance', [\App\Http\Controllers\AccountController::class, 'balance']);
+        Route::get('accounts/{account}/ledger', [\App\Http\Controllers\AccountController::class, 'ledger']);
+        Route::get('chart-of-accounts', [\App\Http\Controllers\AccountController::class, 'chartOfAccounts']);
+        
+        // Transaction routes
+        Route::apiResource('transactions', \App\Http\Controllers\TransactionController::class);
+        Route::post('transactions/{transaction}/lock', [\App\Http\Controllers\TransactionController::class, 'lock']);
+        Route::post('transactions/{transaction}/unlock', [\App\Http\Controllers\TransactionController::class, 'unlock']);
+        Route::post('transactions/{transaction}/approve', [\App\Http\Controllers\TransactionController::class, 'approve']);
+        Route::post('transactions/{transaction}/duplicate', [\App\Http\Controllers\TransactionController::class, 'duplicate']);
+        
+        // Financial report routes
+        Route::prefix('reports')->group(function () {
+            Route::get('trial-balance', [\App\Http\Controllers\FinancialReportController::class, 'trialBalance']);
+            Route::get('balance-sheet', [\App\Http\Controllers\FinancialReportController::class, 'balanceSheet']);
+            Route::get('income-statement', [\App\Http\Controllers\FinancialReportController::class, 'incomeStatement']);
+            Route::get('cash-flow-statement', [\App\Http\Controllers\FinancialReportController::class, 'cashFlowStatement']);
+            Route::get('aged-receivables', [\App\Http\Controllers\FinancialReportController::class, 'agedReceivables']);
+            Route::get('aged-payables', [\App\Http\Controllers\FinancialReportController::class, 'agedPayables']);
+            Route::post('custom', [\App\Http\Controllers\FinancialReportController::class, 'customReport']);
         });
         
-        Route::get('/reports/{type}', function ($type) {
-            return response()->json(['message' => 'Reports endpoint - to be implemented']);
-        });
+        // Cost center routes
+        Route::apiResource('cost-centers', \App\Http\Controllers\CostCenterController::class);
+        
+        // Asset routes
+        Route::apiResource('assets', \App\Http\Controllers\AssetController::class);
+        Route::post('assets/{asset}/dispose', [\App\Http\Controllers\AssetController::class, 'dispose']);
+        Route::get('assets/{asset}/depreciation', [\App\Http\Controllers\AssetController::class, 'depreciation']);
+        Route::get('assets/{asset}/depreciation-schedule', [\App\Http\Controllers\AssetController::class, 'depreciationSchedule']);
+        Route::get('asset-register', [\App\Http\Controllers\AssetController::class, 'register']);
+        Route::post('process-depreciation', [\App\Http\Controllers\AssetController::class, 'processDepreciation']);
     });
 });
