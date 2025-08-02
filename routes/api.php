@@ -62,7 +62,16 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         });
     });
     
-    // Customer routes
+    // Customer routes - specific routes first to avoid conflicts
+    Route::prefix('customers')->group(function () {
+        Route::get('/aging-report', [\App\Http\Controllers\CustomerController::class, 'agingReport']);
+        Route::get('/crm-pipeline', [\App\Http\Controllers\CustomerController::class, 'crmPipeline']);
+        Route::get('/upcoming-birthdays', [\App\Http\Controllers\CustomerController::class, 'upcomingBirthdays']);
+        Route::get('/upcoming-anniversaries', [\App\Http\Controllers\CustomerController::class, 'upcomingAnniversaries']);
+        Route::put('/{customer}/crm-stage', [\App\Http\Controllers\CustomerController::class, 'updateCrmStage']);
+        Route::post('/{customer}/communicate', [\App\Http\Controllers\CustomerController::class, 'sendCommunication']);
+        Route::get('/{customer}/vcard', [\App\Http\Controllers\CustomerController::class, 'exportVCard']);
+    });
     Route::apiResource('customers', \App\Http\Controllers\CustomerController::class);
     
     // Invoice routes
