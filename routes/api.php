@@ -74,8 +74,39 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     });
     Route::apiResource('customers', \App\Http\Controllers\CustomerController::class);
     
-    // Invoice routes
+    // Invoice routes - specific routes first to avoid conflicts
+    Route::prefix('invoices')->group(function () {
+        Route::post('/batch-pdf', [\App\Http\Controllers\InvoiceController::class, 'generateBatchPDFs']);
+        Route::post('/batch-download', [\App\Http\Controllers\InvoiceController::class, 'downloadBatchPDFs']);
+        Route::post('/{invoice}/duplicate', [\App\Http\Controllers\InvoiceController::class, 'duplicate']);
+        Route::post('/{invoice}/pdf', [\App\Http\Controllers\InvoiceController::class, 'generatePDF']);
+        Route::get('/{invoice}/pdf/download', [\App\Http\Controllers\InvoiceController::class, 'downloadPDF']);
+        Route::post('/{invoice}/mark-sent', [\App\Http\Controllers\InvoiceController::class, 'markAsSent']);
+        Route::post('/{invoice}/mark-paid', [\App\Http\Controllers\InvoiceController::class, 'markAsPaid']);
+        Route::post('/{invoice}/attachments', [\App\Http\Controllers\InvoiceController::class, 'addAttachment']);
+        Route::delete('/{invoice}/attachments/{attachment}', [\App\Http\Controllers\InvoiceController::class, 'removeAttachment']);
+    });
     Route::apiResource('invoices', \App\Http\Controllers\InvoiceController::class);
+    
+    // Invoice Template routes - specific routes first to avoid conflicts
+    Route::prefix('invoice-templates')->group(function () {
+        Route::get('/default-structure', [\App\Http\Controllers\InvoiceTemplateController::class, 'getDefaultStructure']);
+        Route::post('/validate-structure', [\App\Http\Controllers\InvoiceTemplateController::class, 'validateStructure']);
+        Route::post('/{invoiceTemplate}/duplicate', [\App\Http\Controllers\InvoiceTemplateController::class, 'duplicate']);
+        Route::post('/{invoiceTemplate}/set-default', [\App\Http\Controllers\InvoiceTemplateController::class, 'setAsDefault']);
+    });
+    Route::apiResource('invoice-templates', \App\Http\Controllers\InvoiceTemplateController::class);
+    
+    // Recurring Invoice routes - specific routes first to avoid conflicts
+    Route::prefix('recurring-invoices')->group(function () {
+        Route::post('/process-due', [\App\Http\Controllers\RecurringInvoiceController::class, 'processDue']);
+        Route::get('/upcoming', [\App\Http\Controllers\RecurringInvoiceController::class, 'upcoming']);
+        Route::get('/stats', [\App\Http\Controllers\RecurringInvoiceController::class, 'stats']);
+        Route::post('/{recurringInvoice}/generate', [\App\Http\Controllers\RecurringInvoiceController::class, 'generateInvoice']);
+        Route::post('/{recurringInvoice}/pause', [\App\Http\Controllers\RecurringInvoiceController::class, 'pause']);
+        Route::post('/{recurringInvoice}/resume', [\App\Http\Controllers\RecurringInvoiceController::class, 'resume']);
+    });
+    Route::apiResource('recurring-invoices', \App\Http\Controllers\RecurringInvoiceController::class);
     
     // Inventory routes - specific routes first to avoid conflicts
     Route::prefix('inventory')->group(function () {

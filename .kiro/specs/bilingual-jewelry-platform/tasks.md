@@ -91,7 +91,12 @@
   - Write comprehensive tests for inventory operations
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
-- [ ] 6. Develop invoicing system backend
+- [x] 6. Develop invoicing system backend
+
+
+
+
+
   - Create Invoice, InvoiceItem, and InvoiceTemplate models
   - Implement invoice CRUD operations with bilingual support
   - Build custom invoice template system with drag-drop field support
