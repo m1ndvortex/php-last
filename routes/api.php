@@ -37,15 +37,14 @@ Route::prefix('auth')->group(function () {
 
 // Localization routes
 Route::prefix('localization')->group(function () {
-    Route::get('/translations/{locale}', function ($locale) {
-        // TODO: Implement translation loading
-        return response()->json(['message' => 'Translations endpoint - to be implemented']);
-    });
-    
-    Route::post('/switch-language', function (Request $request) {
-        // TODO: Implement language switching
-        return response()->json(['message' => 'Language switch endpoint - to be implemented']);
-    });
+    Route::get('/current', [App\Http\Controllers\LocalizationController::class, 'getCurrentLocale']);
+    Route::get('/supported', [App\Http\Controllers\LocalizationController::class, 'getSupportedLocales']);
+    Route::get('/translations', [App\Http\Controllers\LocalizationController::class, 'getTranslations']);
+    Route::post('/switch-language', [App\Http\Controllers\LocalizationController::class, 'switchLanguage']);
+    Route::get('/calendar', [App\Http\Controllers\LocalizationController::class, 'getCalendarInfo']);
+    Route::post('/convert-date', [App\Http\Controllers\LocalizationController::class, 'convertDate']);
+    Route::post('/format-number', [App\Http\Controllers\LocalizationController::class, 'formatNumber']);
+    Route::post('/number-to-words', [App\Http\Controllers\LocalizationController::class, 'numberToWords']);
 });
 
 // Protected routes

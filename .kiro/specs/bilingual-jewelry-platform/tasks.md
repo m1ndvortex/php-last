@@ -46,7 +46,12 @@
   - Write unit tests for authentication services
   - _Requirements: 8.5, 8.6_
 
-- [ ] 3. Build localization infrastructure backend
+- [x] 3. Build localization infrastructure backend
+
+
+
+
+
   - Create localization service for language switching and translation management
   - Implement Jalali/Gregorian calendar conversion utilities
   - Create Persian/English numeral conversion services
