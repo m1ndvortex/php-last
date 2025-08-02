@@ -77,8 +77,47 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     // Invoice routes
     Route::apiResource('invoices', \App\Http\Controllers\InvoiceController::class);
     
-    // Inventory routes
+    // Inventory routes - specific routes first to avoid conflicts
+    Route::prefix('inventory')->group(function () {
+        Route::get('/low-stock', [\App\Http\Controllers\InventoryController::class, 'lowStock']);
+        Route::get('/expiring', [\App\Http\Controllers\InventoryController::class, 'expiring']);
+        Route::get('/expired', [\App\Http\Controllers\InventoryController::class, 'expired']);
+        Route::get('/summary/location', [\App\Http\Controllers\InventoryController::class, 'summaryByLocation']);
+        Route::get('/summary/category', [\App\Http\Controllers\InventoryController::class, 'summaryByCategory']);
+        Route::post('/{inventory}/transfer', [\App\Http\Controllers\InventoryController::class, 'transfer']);
+        Route::get('/{inventory}/movements', [\App\Http\Controllers\InventoryController::class, 'movements']);
+    });
     Route::apiResource('inventory', \App\Http\Controllers\InventoryController::class);
+    
+    // Stock Audit routes
+    Route::prefix('stock-audits')->group(function () {
+        Route::post('/{stockAudit}/start', [\App\Http\Controllers\StockAuditController::class, 'start']);
+        Route::post('/{stockAudit}/complete', [\App\Http\Controllers\StockAuditController::class, 'complete']);
+        Route::post('/{stockAudit}/cancel', [\App\Http\Controllers\StockAuditController::class, 'cancel']);
+        Route::put('/{stockAudit}/items/{auditItem}', [\App\Http\Controllers\StockAuditController::class, 'updateItem']);
+        Route::post('/{stockAudit}/bulk-update', [\App\Http\Controllers\StockAuditController::class, 'bulkUpdate']);
+        Route::get('/{stockAudit}/variance-report', [\App\Http\Controllers\StockAuditController::class, 'varianceReport']);
+        Route::get('/{stockAudit}/uncounted-items', [\App\Http\Controllers\StockAuditController::class, 'uncountedItems']);
+        Route::get('/{stockAudit}/export', [\App\Http\Controllers\StockAuditController::class, 'export']);
+    });
+    Route::apiResource('stock-audits', \App\Http\Controllers\StockAuditController::class);
+    
+    // BOM (Bill of Materials) routes
+    Route::prefix('bom')->group(function () {
+        Route::post('/production-cost', [\App\Http\Controllers\BOMController::class, 'productionCost']);
+        Route::post('/can-produce', [\App\Http\Controllers\BOMController::class, 'canProduce']);
+        Route::post('/produce', [\App\Http\Controllers\BOMController::class, 'produce']);
+        Route::post('/production-requirements', [\App\Http\Controllers\BOMController::class, 'productionRequirements']);
+        Route::get('/tree', [\App\Http\Controllers\BOMController::class, 'bomTree']);
+        Route::get('/usage-report', [\App\Http\Controllers\BOMController::class, 'usageReport']);
+    });
+    Route::apiResource('bom', \App\Http\Controllers\BOMController::class);
+    
+    // Categories routes
+    Route::apiResource('categories', \App\Http\Controllers\CategoryController::class);
+    
+    // Locations routes
+    Route::apiResource('locations', \App\Http\Controllers\LocationController::class);
     
     // Accounting routes
     Route::prefix('accounting')->group(function () {
