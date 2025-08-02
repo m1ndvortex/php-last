@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # Laravel Application Container
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: jewelry_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/app/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+
+  # Vue.js Frontend Container
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: jewelry_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - jewelry_network
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # MySQL Database Container
+  mysql:
+    image: mysql:8.0
+    container_name: jewelry_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: jewelry_platform
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: jewelry_user
+      MYSQL_PASSWORD: jewelry_password
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - jewelry_network
+
+  # Redis Container for Caching and Queues
+  redis:
+    image: redis:7-alpine
+    container_name: jewelry_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jewelry_network
+    command: redis-server --appendonly yes
+
+  # Nginx Reverse Proxy
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: jewelry_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites/:/etc/nginx/sites-available/
+      - ./docker/nginx/ssl/:/etc/nginx/ssl/
+    networks:
+      - jewelry_network
+    depends_on:
+      - app
+      - frontend
+
+  # Laravel Scheduler Container
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: jewelry_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+    command: php artisan schedule:work
+
+  # Laravel Queue Worker Container
+  queue:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: jewelry_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+networks:
+  jewelry_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local

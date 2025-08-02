@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "Jewelry Platform",
+    "description": "Bilingual Jewelry Business Management Platform"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "inventory": "Inventory",
+    "invoices": "Invoices",
+    "accounting": "Accounting",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot password?"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "language": {
+    "switch_to_persian": "Switch to Persian",
+    "switch_to_english": "Switch to English",
+    "current_language": "English"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Jewelry Platform",
+    "kpis": {
+      "gold_sold": "Gold Sold",
+      "total_profit": "Total Profit",
+      "average_price": "Average Price",
+      "returns": "Returns",
+      "gross_margin": "Gross Margin",
+      "net_margin": "Net Margin"
+    }
+  }
+}

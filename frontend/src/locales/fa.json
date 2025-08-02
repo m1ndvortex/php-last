@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "پلتفرم جواهرات",
+    "description": "پلتفرم مدیریت کسب و کار جواهرات دوزبانه"
+  },
+  "navigation": {
+    "dashboard": "داشبورد",
+    "customers": "مشتریان",
+    "inventory": "موجودی",
+    "invoices": "فاکتورها",
+    "accounting": "حسابداری",
+    "settings": "تنظیمات"
+  },
+  "auth": {
+    "login": "ورود",
+    "logout": "خروج",
+    "email": "ایمیل",
+    "password": "رمز عبور",
+    "remember_me": "مرا به خاطر بسپار",
+    "forgot_password": "رمز عبور را فراموش کرده‌اید؟"
+  },
+  "common": {
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "create": "ایجاد",
+    "search": "جستجو",
+    "filter": "فیلتر",
+    "export": "خروجی",
+    "import": "ورودی",
+    "loading": "در حال بارگذاری...",
+    "no_data": "داده‌ای موجود نیست",
+    "confirm": "تأیید",
+    "yes": "بله",
+    "no": "خیر"
+  },
+  "language": {
+    "switch_to_persian": "تغییر به فارسی",
+    "switch_to_english": "تغییر به انگلیسی",
+    "current_language": "فارسی"
+  },
+  "dashboard": {
+    "title": "داشبورد",
+    "welcome": "به پلتفرم جواهرات خوش آمدید",
+    "kpis": {
+      "gold_sold": "طلای فروخته شده",
+      "total_profit": "سود کل",
+      "average_price": "قیمت میانگین",
+      "returns": "برگشتی‌ها",
+      "gross_margin": "حاشیه سود ناخالص",
+      "net_margin": "حاشیه سود خالص"
+    }
+  }
+}

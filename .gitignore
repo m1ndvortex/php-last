@@ -1,0 +1,59 @@
+# Laravel
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.sql
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+*.backup
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+
+# SSL certificates
+docker/nginx/ssl/*.pem
+docker/nginx/ssl/*.key
+docker/nginx/letsencrypt/

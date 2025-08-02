@@ -1,0 +1,211 @@
+Bilingual Persian/English Jewelry Business Platform (پلتفرم طلافروشی دوزبانه – لاراول + ویو)
+1. Project Overview
+
+Vision:
+Develop an advanced, bilingual (Persian & English) jewelry business management web application using Laravel (PHP) and Vue.js. The platform will be tailored for a single jeweler (طلافروش) with enterprise-grade capabilities across invoicing, inventory, CRM, and accounting. It will feature a seamless RTL/LTR interface, remain simple to self-host, and be fully customizable.
+
+Key Goals:
+
+✅ Single-user, single-database structure — no SaaS complexity.
+
+✅ Bilingual Interface: Full support for both Persian (RTL) and English (LTR), with easy toggling between languages.
+
+✅ Full localization for Persian (Jalali calendar, فارسی اعداد) and standard formatting for English.
+
+✅ Self-hostable: Works on shared hosting, VPS, or Docker.
+
+✅ Deep, modular feature set in each tab (accounting, CRM, invoicing, etc.).
+
+✅ Full custom invoice template designer (طراحی فاکتور دلخواه).
+
+✅ Optional user roles for internal staff (e.g., حسابدار / Accountant).
+
+2. Technology Stack & Infrastructure
+
+Backend: Laravel (PHP 8.2+) with Sanctum or Fortify for authentication.
+
+Frontend: Vue.js + Vite + Tailwind CSS.
+
+Database: MySQL.
+
+Queue/Cache: Redis.
+
+Internationalization (i18n): Laravel Localization & vue-i18n for seamless language switching.
+
+File Storage: Local with optional S3.
+
+Offline Mode: PWA for core modules.
+
+Containerization: Fully Dockerized architecture.
+
+Deployment: Local Docker, VPS (e.g., CapRover), or shared hosting.
+
+3. Dockerized Setup
+
+All core services are packaged in a clean Docker environment for consistent development and production deployment:
+
+Service	Description
+app	Laravel PHP container with Composer & Artisan
+frontend	Vue.js development server with HMR support
+mysql	MySQL database container with persistent volume
+redis	Redis for session/queue/cache
+nginx	Reverse proxy (production-ready build only)
+scheduler	Laravel scheduler container (optional)
+queue	Laravel queue worker container (Horizon supported)
+
+Export to Sheets
+Docker Features:
+
+.env file integration for environment-specific config.
+
+Database, Redis, and uploaded files stored in volumes.
+
+Auto-run migrations & seeders on container startup (optional).
+
+SSL-ready with Let's Encrypt in production (via nginx-proxy).
+
+Docker Compose included for dev and prod variants.
+
+4. Dashboard (داشبورد)
+
+Enterprise Features:
+
+Real-time KPIs (gold sold, profits, avg price, returns, gross/net margin).
+
+Alerts (pending cheques, stock warnings, overdue payments).
+
+Multiple widgets with drag-drop and save layout.
+
+Multi-view dashboard presets (Accountant View, Sales View).
+
+Real-time sales chart, category-wise performance.
+
+Language & Calendar Toggle: Switch between Persian/English, Jalali/Gregorian, and Persian/English numerals on the fly.
+
+5. Invoicing (فاکتور)
+
+Enterprise Upgrades:
+
+Bilingual Invoices: Generate invoices in either Persian or English based on customer preference.
+
+Custom Invoice Designer (طراحی فاکتور دلخواه): Drag-drop template builder, logos, QR, gold purity, fields.
+
+Batch invoice generation for wholesale.
+
+Invoice tagging, internal notes, attachment uploads.
+
+Advanced filters (date, type, status, customer).
+
+Invoice cloning + recurring schedule + reminders.
+
+6. Inventory (انبار)
+
+Enterprise Upgrades:
+
+Multi-location stock (e.g., ویترین، گاوصندوق، نمایشگاه / Showcase, Safe, Exhibition).
+
+Batch/lot tracking.
+
+Serial number tracking.
+
+Physical stock audit module.
+
+Wastage log for production.
+
+Inventory movement ledger.
+
+Recipe-based BOM with automated deduction.
+
+Expiration tracking.
+
+7. Customer Management (مشتریان)
+
+Enterprise Upgrades:
+
+Language Preference: Set a default language (Persian/English) for each customer to automate communications.
+
+WhatsApp + SMS automation.
+
+Custom CRM stages & conversion flow.
+
+Account aging report.
+
+Internal notes & communication history.
+
+Birthday/anniversary automation.
+
+vCard contact generation.
+
+8. Accounting (حسابداری)
+
+Enterprise Features:
+
+Bilingual Reports: Generate all financial reports in either Persian or English.
+
+Multi-currency & FX tracking.
+
+Sub-ledger & customer/vendor ledger.
+
+Drill-down reporting.
+
+Transaction Locking.
+
+Cost Centers & Asset lifecycle.
+
+Recurring Journals & Smart tagging.
+
+Tax Report Generator.
+
+Audit logs & approval workflow.
+
+Year-end closing & Payment calendar.
+
+Accounting templates.
+
+Reports:
+
+Trial Balance, Ledger, P&L, Balance Sheet, Cash Flow, VAT, Asset Report.
+
+9. Settings & Tools (تنظیمات)
+
+Business Info, tax config, profit %, logo, etc.
+
+Role/Permission manager (optional).
+
+Language & Theme: Manage translations, toggle RTL/LTR, and select dark/light themes.
+
+Email/SMS templates (with language variables).
+
+Jalali/Persian toggle.
+
+Integration keys.
+
+One-click installer/updater.
+
+Activity logs.
+
+10. Security
+
+Laravel CSRF & validation protection.
+
+2FA (SMS or TOTP).
+
+Session timeout, IP tracking.
+
+Audit logs for actions.
+
+Data export/delete compliance.
+
+Login anomaly detection.
+
+11. Bonus Features
+
+Feature	Description
+PWA Offline Mode	Core modules work offline and sync later.
+WhatsApp Integration	Send invoice/promo with 1 click in the customer's language.
+SMS API Support	Automate birthdays, due reminders.
+Jalali Date Picker	Persian calendar native support.
+Drag & Drop UI	Dashboard, Invoice, Layout editors.
+Notification Center	Centralized alerts & reminders.
+Backup Scheduler	Auto daily/weekly backups.
+User Activity Logs	Track every field change by timestamp.

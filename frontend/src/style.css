@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+  
+  /* RTL specific styles */
+  .rtl {
+    font-family: 'Vazir', 'Tahoma', 'Arial', sans-serif;
+  }
+  
+  .rtl * {
+    font-family: 'Vazir', 'Tahoma', 'Arial', sans-serif;
+  }
+}
+
+/* Component styles */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .form-input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* RTL utilities */
+  .rtl .text-left {
+    text-align: right;
+  }
+  
+  .rtl .text-right {
+    text-align: left;
+  }
+  
+  .rtl .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  
+  .rtl .mr-auto {
+    margin-right: 0;
+    margin-left: auto;
+  }
+}

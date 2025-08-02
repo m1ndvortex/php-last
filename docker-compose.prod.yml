@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # Laravel Application Container
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: production
+    container_name: jewelry_app_prod
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+
+  # Vue.js Frontend Container (Production Build)
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile.prod
+    container_name: jewelry_frontend_prod
+    restart: unless-stopped
+    volumes:
+      - frontend_dist:/app/dist
+    networks:
+      - jewelry_network
+
+  # MySQL Database Container
+  mysql:
+    image: mysql:8.0
+    container_name: jewelry_mysql_prod
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./backups:/backups
+    networks:
+      - jewelry_network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis Container
+  redis:
+    image: redis:7-alpine
+    container_name: jewelry_redis_prod
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - jewelry_network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+
+  # Nginx Reverse Proxy with SSL
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile.prod
+    container_name: jewelry_nginx_prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - frontend_dist:/var/www/public/assets
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites/prod.conf:/etc/nginx/sites-available/default.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+      - ./docker/nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - jewelry_network
+    depends_on:
+      - app
+      - frontend
+    environment:
+      - DOMAIN=${APP_DOMAIN}
+
+  # Laravel Scheduler Container
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: production
+    container_name: jewelry_scheduler_prod
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+    command: php artisan schedule:work
+    environment:
+      - APP_ENV=production
+
+  # Laravel Queue Worker Container
+  queue:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: production
+    container_name: jewelry_queue_prod
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+      - redis
+    command: php artisan queue:work --verbose --tries=3 --timeout=90 --memory=512
+    environment:
+      - APP_ENV=production
+
+  # Backup Service
+  backup:
+    build:
+      context: .
+      dockerfile: docker/backup/Dockerfile
+    container_name: jewelry_backup
+    restart: unless-stopped
+    volumes:
+      - mysql_data:/var/lib/mysql:ro
+      - ./backups:/backups
+      - ./storage:/var/www/storage:ro
+    networks:
+      - jewelry_network
+    depends_on:
+      - mysql
+    environment:
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+
+networks:
+  jewelry_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  frontend_dist:
+    driver: local
