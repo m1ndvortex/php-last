@@ -51,15 +51,21 @@ Route::prefix('localization')->group(function () {
 Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     // Dashboard routes
     Route::prefix('dashboard')->group(function () {
-        Route::get('/kpis', function () {
-            // TODO: Implement KPI calculation
-            return response()->json(['message' => 'KPIs endpoint - to be implemented']);
-        });
-        
-        Route::get('/widgets', function () {
-            // TODO: Implement widget data
-            return response()->json(['message' => 'Widgets endpoint - to be implemented']);
-        });
+        Route::get('/kpis', [\App\Http\Controllers\DashboardController::class, 'getKPIs']);
+        Route::get('/sales-chart', [\App\Http\Controllers\DashboardController::class, 'getSalesChart']);
+        Route::get('/category-performance', [\App\Http\Controllers\DashboardController::class, 'getCategoryPerformance']);
+        Route::get('/alerts', [\App\Http\Controllers\DashboardController::class, 'getAlerts']);
+        Route::post('/alerts/mark-read', [\App\Http\Controllers\DashboardController::class, 'markAlertAsRead']);
+        Route::get('/layout', [\App\Http\Controllers\DashboardController::class, 'getDashboardLayout']);
+        Route::post('/layout', [\App\Http\Controllers\DashboardController::class, 'saveDashboardLayout']);
+        Route::get('/presets', [\App\Http\Controllers\DashboardController::class, 'getDashboardPresets']);
+        Route::post('/presets/apply', [\App\Http\Controllers\DashboardController::class, 'applyDashboardPreset']);
+        Route::get('/widgets/available', [\App\Http\Controllers\DashboardController::class, 'getAvailableWidgets']);
+        Route::post('/widgets/add', [\App\Http\Controllers\DashboardController::class, 'addWidget']);
+        Route::delete('/widgets/remove', [\App\Http\Controllers\DashboardController::class, 'removeWidget']);
+        Route::put('/widgets/config', [\App\Http\Controllers\DashboardController::class, 'updateWidgetConfig']);
+        Route::post('/reset', [\App\Http\Controllers\DashboardController::class, 'resetDashboard']);
+        Route::post('/clear-cache', [\App\Http\Controllers\DashboardController::class, 'clearCache']);
     });
     
     // Customer routes - specific routes first to avoid conflicts

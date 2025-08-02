@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'preferred_language',
+        'dashboard_layout',
         'role',
         'is_active',
         'last_login_at',
@@ -52,6 +53,7 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'two_factor_enabled' => 'boolean',
         'two_factor_recovery_codes' => 'array',
+        'dashboard_layout' => 'array',
         'password' => 'hashed',
     ];
 

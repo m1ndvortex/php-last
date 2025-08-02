@@ -25,6 +25,7 @@ class Invoice extends Model
         'discount_amount',
         'total_amount',
         'status',
+        'payment_method',
         'language',
         'notes',
         'internal_notes',
