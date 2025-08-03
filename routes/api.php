@@ -193,4 +193,97 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('asset-register', [\App\Http\Controllers\AssetController::class, 'register']);
         Route::post('process-depreciation', [\App\Http\Controllers\AssetController::class, 'processDepreciation']);
     });
+    
+    // Business Configuration routes
+    Route::prefix('config')->group(function () {
+        Route::get('/business-info', [\App\Http\Controllers\BusinessConfigurationController::class, 'getBusinessInfo']);
+        Route::put('/business-info', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateBusinessInfo']);
+        Route::post('/logo', [\App\Http\Controllers\BusinessConfigurationController::class, 'uploadLogo']);
+        Route::get('/tax', [\App\Http\Controllers\BusinessConfigurationController::class, 'getTaxConfig']);
+        Route::put('/tax', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateTaxConfig']);
+        Route::get('/profit', [\App\Http\Controllers\BusinessConfigurationController::class, 'getProfitConfig']);
+        Route::put('/profit', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateProfitConfig']);
+        Route::get('/category/{category}', [\App\Http\Controllers\BusinessConfigurationController::class, 'getByCategory']);
+        Route::post('/clear-cache', [\App\Http\Controllers\BusinessConfigurationController::class, 'clearCache']);
+    });
+    
+    // Role and Permission routes
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [\App\Http\Controllers\RolePermissionController::class, 'getRoles']);
+        Route::post('/', [\App\Http\Controllers\RolePermissionController::class, 'createRole']);
+        Route::put('/{role}', [\App\Http\Controllers\RolePermissionController::class, 'updateRole']);
+        Route::delete('/{role}', [\App\Http\Controllers\RolePermissionController::class, 'deleteRole']);
+        Route::post('/assign', [\App\Http\Controllers\RolePermissionController::class, 'assignRole']);
+        Route::post('/remove', [\App\Http\Controllers\RolePermissionController::class, 'removeRole']);
+    });
+    
+    Route::prefix('permissions')->group(function () {
+        Route::get('/', [\App\Http\Controllers\RolePermissionController::class, 'getPermissions']);
+        Route::get('/user', [\App\Http\Controllers\RolePermissionController::class, 'getUserPermissions']);
+        Route::post('/check', [\App\Http\Controllers\RolePermissionController::class, 'checkPermission']);
+    });
+    
+    // Message Template routes
+    Route::prefix('message-templates')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MessageTemplateController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\MessageTemplateController::class, 'store']);
+        Route::get('/by-type-category', [\App\Http\Controllers\MessageTemplateController::class, 'getByTypeAndCategory']);
+        Route::post('/render', [\App\Http\Controllers\MessageTemplateController::class, 'render']);
+        Route::get('/default-variables', [\App\Http\Controllers\MessageTemplateController::class, 'getDefaultVariables']);
+    });
+    
+    // Security routes
+    Route::prefix('security')->group(function () {
+        // Two-Factor Authentication
+        Route::prefix('2fa')->group(function () {
+            Route::post('/enable', [\App\Http\Controllers\SecurityController::class, 'enable2FA']);
+            Route::post('/confirm', [\App\Http\Controllers\SecurityController::class, 'confirm2FA']);
+            Route::post('/disable', [\App\Http\Controllers\SecurityController::class, 'disable2FA']);
+            Route::post('/regenerate-backup-codes', [\App\Http\Controllers\SecurityController::class, 'regenerateBackupCodes']);
+        });
+        
+        // Session Management
+        Route::prefix('sessions')->group(function () {
+            Route::get('/active', [\App\Http\Controllers\SecurityController::class, 'getActiveSessions']);
+            Route::post('/terminate', [\App\Http\Controllers\SecurityController::class, 'terminateSession']);
+            Route::post('/terminate-others', [\App\Http\Controllers\SecurityController::class, 'terminateOtherSessions']);
+            Route::get('/stats', [\App\Http\Controllers\SecurityController::class, 'getSessionStats']);
+        });
+        
+        // Audit Logs
+        Route::prefix('audit')->group(function () {
+            Route::get('/logs', [\App\Http\Controllers\SecurityController::class, 'getAuditLogs']);
+            Route::get('/statistics', [\App\Http\Controllers\SecurityController::class, 'getAuditStatistics']);
+            Route::post('/export', [\App\Http\Controllers\SecurityController::class, 'exportAuditLogs']);
+        });
+        
+        // Login Anomalies
+        Route::prefix('anomalies')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SecurityController::class, 'getLoginAnomalies']);
+            Route::get('/statistics', [\App\Http\Controllers\SecurityController::class, 'getAnomalyStatistics']);
+        });
+    });
+    
+    // Data Compliance routes
+    Route::prefix('compliance')->group(function () {
+        Route::get('/data-types', [\App\Http\Controllers\DataComplianceController::class, 'getDataTypes']);
+        Route::get('/statistics', [\App\Http\Controllers\DataComplianceController::class, 'getStatistics']);
+        
+        // Export requests
+        Route::prefix('export')->group(function () {
+            Route::post('/', [\App\Http\Controllers\DataComplianceController::class, 'createExportRequest']);
+            Route::get('/', [\App\Http\Controllers\DataComplianceController::class, 'getExportRequests']);
+            Route::get('/{exportRequest}/download', [\App\Http\Controllers\DataComplianceController::class, 'downloadExport']);
+            Route::post('/process', [\App\Http\Controllers\DataComplianceController::class, 'processExportRequests']);
+        });
+        
+        // Deletion requests
+        Route::prefix('deletion')->group(function () {
+            Route::post('/', [\App\Http\Controllers\DataComplianceController::class, 'createDeletionRequest']);
+            Route::get('/', [\App\Http\Controllers\DataComplianceController::class, 'getDeletionRequests']);
+            Route::post('/{deletionRequest}/approve', [\App\Http\Controllers\DataComplianceController::class, 'approveDeletionRequest']);
+            Route::post('/{deletionRequest}/reject', [\App\Http\Controllers\DataComplianceController::class, 'rejectDeletionRequest']);
+            Route::post('/process', [\App\Http\Controllers\DataComplianceController::class, 'processDeletionRequests']);
+        });
+    });
 });

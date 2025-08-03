@@ -12,20 +12,26 @@ class AuditLog extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
+        'event',
         'auditable_type',
         'auditable_id',
-        'event',
         'old_values',
         'new_values',
-        'user_id',
         'ip_address',
         'user_agent',
+        'url',
+        'method',
+        'request_data',
+        'description',
+        'severity',
         'metadata',
     ];
 
     protected $casts = [
         'old_values' => 'array',
         'new_values' => 'array',
+        'request_data' => 'array',
         'metadata' => 'array',
     ];
 
@@ -55,6 +61,21 @@ class AuditLog extends Model
         return $query->where('user_id', $userId);
     }
 
+    public function scopeBySeverity($query, string $severity)
+    {
+        return $query->where('severity', $severity);
+    }
+
+    public function scopeByDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
+
+    public function scopeByIpAddress($query, string $ipAddress)
+    {
+        return $query->where('ip_address', $ipAddress);
+    }
+
     public function getChangedFieldsAttribute(): array
     {
         if (!$this->old_values || !$this->new_values) {
@@ -80,18 +101,46 @@ class AuditLog extends Model
         string $event,
         ?array $oldValues = null,
         ?array $newValues = null,
+        ?array $metadata = null,
+        string $severity = 'info',
+        ?string $description = null
+    ): void {
+        static::create([
+            'user_id' => auth()->id(),
+            'event' => $event,
+            'auditable_type' => get_class($model),
+            'auditable_id' => $model->id,
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
+            'request_data' => request()->except(['password', 'password_confirmation', '_token']),
+            'description' => $description,
+            'severity' => $severity,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    public static function logSystemEvent(
+        string $event,
+        string $description,
+        string $severity = 'info',
         ?array $metadata = null
     ): void {
         static::create([
-            'auditable_type' => get_class($model),
-            'auditable_id' => $model->id,
+            'user_id' => null,
             'event' => $event,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'user_id' => auth()->id() ?? 1,
+            'auditable_type' => 'System',
+            'auditable_id' => null,
+            'description' => $description,
+            'severity' => $severity,
+            'metadata' => $metadata,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'metadata' => $metadata,
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
         ]);
     }
 }

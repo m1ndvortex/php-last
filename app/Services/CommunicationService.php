@@ -30,7 +30,7 @@ class CommunicationService
                 case 'email':
                     return $this->sendEmail($communication);
                 case 'sms':
-                    return $this->sendSMS($communication);
+                    return $this->sendSMSCommunication($communication);
                 case 'whatsapp':
                     return $this->sendWhatsApp($communication);
                 case 'note':
@@ -80,12 +80,41 @@ class CommunicationService
     }
 
     /**
+     * Send SMS directly to a phone number
+     *
+     * @param string $phone
+     * @param string $message
+     * @return bool
+     */
+    public function sendSMS(string $phone, string $message): bool
+    {
+        try {
+            // TODO: Implement actual SMS API integration
+            $smsData = [
+                'to' => $phone,
+                'message' => $message,
+            ];
+
+            Log::info('SMS would be sent', $smsData);
+
+            // Simulate API call
+            return $this->simulateSMSAPI($smsData);
+        } catch (Exception $e) {
+            Log::error('SMS sending failed', [
+                'phone' => $phone,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Send SMS communication.
      *
      * @param Communication $communication
      * @return bool
      */
-    protected function sendSMS(Communication $communication): bool
+    protected function sendSMSCommunication(Communication $communication): bool
     {
         $customer = $communication->customer;
         
