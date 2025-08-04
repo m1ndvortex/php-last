@@ -1,35 +1,18 @@
 <template>
-  <div
-    id="app"
-    :class="{ rtl: isRTL, dark: isDarkMode }"
-    :dir="isRTL ? 'rtl' : 'ltr'"
-  >
-    <router-view />
-  </div>
+  <RTLProvider>
+    <div id="app" :class="{ dark: isDarkMode }">
+      <router-view />
+    </div>
+  </RTLProvider>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 import { useAppStore } from "./stores/app";
+import RTLProvider from "./components/localization/RTLProvider.vue";
 
-const { locale } = useI18n();
 const appStore = useAppStore();
-
-const isRTL = computed(() => locale.value === "fa");
 const isDarkMode = computed(() => appStore.isDarkMode);
-
-// Watch for language changes and update document direction
-watch(
-  locale,
-  (newLocale) => {
-    const isRTL = newLocale === "fa";
-    document.documentElement.dir = isRTL ? "rtl" : "ltr";
-    document.documentElement.lang = newLocale;
-    localStorage.setItem("preferred-language", newLocale);
-  },
-  { immediate: true },
-);
 </script>
 
 <style>

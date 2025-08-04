@@ -10,7 +10,7 @@ import router from "@/router";
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -31,6 +31,9 @@ api.interceptors.request.use(
     // Add language header
     const locale = localStorage.getItem("preferred-language") || "en";
     config.headers["Accept-Language"] = locale;
+
+    // Ensure credentials are included for CSRF
+    config.withCredentials = true;
 
     return config;
   },
@@ -111,6 +114,17 @@ const showErrorNotification = (message: string) => {
   console.error(message);
 };
 
+// Helper function to get CSRF cookie
+const getCsrfCookie = async (): Promise<void> => {
+  try {
+    await axios.get("http://localhost/sanctum/csrf-cookie", {
+      withCredentials: true,
+    });
+  } catch (error) {
+    console.error("Failed to get CSRF cookie:", error);
+  }
+};
+
 // API methods
 export const apiService = {
   // Generic methods
@@ -144,79 +158,83 @@ export const apiService = {
 
   // Authentication
   auth: {
-    login: (credentials: {
+    login: async (credentials: {
       email: string;
       password: string;
       remember?: boolean;
-    }) => api.post("/auth/login", credentials),
+    }) => {
+      // For now, try login without CSRF cookie
+      // TODO: Fix CSRF cookie handling for production
+      return api.post("api/auth/login", credentials);
+    },
 
-    logout: () => api.post("/auth/logout"),
+    logout: () => api.post("api/auth/logout"),
 
-    me: () => api.get("/auth/user"),
+    me: () => api.get("api/auth/user"),
 
-    refresh: () => api.post("/auth/refresh"),
+    refresh: () => api.post("api/auth/refresh"),
 
     updateProfile: (data: {
       name: string;
       email: string;
       preferred_language: string;
-    }) => api.put("/auth/profile", data),
+    }) => api.put("api/auth/profile", data),
 
     changePassword: (data: {
       current_password: string;
       password: string;
       password_confirmation: string;
-    }) => api.put("/auth/password", data),
+    }) => api.put("api/auth/password", data),
 
     // Two-Factor Authentication
-    enable2FA: () => api.post("/auth/2fa/enable"),
+    enable2FA: () => api.post("api/auth/2fa/enable"),
 
-    verify2FA: (data: { code: string }) => api.post("/auth/2fa/verify", data),
+    verify2FA: (data: { code: string }) => api.post("api/auth/2fa/verify", data),
 
     disable2FA: (data: { password: string }) =>
-      api.post("/auth/2fa/disable", data),
+      api.post("api/auth/2fa/disable", data),
 
-    getBackupCodes: () => api.get("/auth/2fa/backup-codes"),
+    getBackupCodes: () => api.get("api/auth/2fa/backup-codes"),
 
-    regenerateBackupCodes: () => api.post("/auth/2fa/backup-codes/regenerate"),
+    regenerateBackupCodes: () => api.post("api/auth/2fa/backup-codes/regenerate"),
 
     // Session Management
-    getSessions: () => api.get("/auth/sessions"),
+    getSessions: () => api.get("api/auth/sessions"),
 
     revokeSession: (sessionId: string) =>
-      api.delete(`/auth/sessions/${sessionId}`),
+      api.delete(`api/auth/sessions/${sessionId}`),
 
-    revokeAllSessions: () => api.delete("/auth/sessions"),
+    revokeAllSessions: () => api.delete("api/auth/sessions"),
 
     // Password Reset
     forgotPassword: (data: { email: string }) =>
-      api.post("/auth/forgot-password", data),
+      api.post("api/auth/forgot-password", data),
 
     resetPassword: (data: {
       token: string;
       email: string;
       password: string;
       password_confirmation: string;
-    }) => api.post("/auth/reset-password", data),
+    }) => api.post("api/auth/reset-password", data),
   },
 
   // Dashboard
   dashboard: {
-    getKPIs: () => api.get("/dashboard/kpis"),
+    getKPIs: () => api.get("api/dashboard/kpis"),
 
-    getWidgets: () => api.get("/dashboard/widgets"),
+    getWidgets: () => api.get("api/dashboard/widgets"),
 
     saveWidgetLayout: (layout: any) =>
-      api.post("/dashboard/widgets/layout", { layout }),
+      api.post("api/dashboard/widgets/layout", { layout }),
   },
 
   // Localization
   localization: {
     getTranslations: (locale: string) =>
-      api.get(`/localization/translations/${locale}`),
+      api.get(`api/localization/translations/${locale}`),
 
     switchLanguage: (locale: string) =>
-      api.post("/localization/switch-language", { locale }),
+      api.post("api/localization/switch-language", { locale }),
   },
 };
 

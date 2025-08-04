@@ -146,6 +146,165 @@
   "settings": {
     "description": "پیکربندی تنظیمات کسب و کار و ترجیحات."
   },
+  "calendar": {
+    "gregorian": "میلادی",
+    "jalali": "شمسی",
+    "today": "امروز",
+    "months": {
+      "gregorian": {
+        "january": "ژانویه",
+        "february": "فوریه",
+        "march": "مارس",
+        "april": "آوریل",
+        "may": "مه",
+        "june": "ژوئن",
+        "july": "ژوئیه",
+        "august": "اوت",
+        "september": "سپتامبر",
+        "october": "اکتبر",
+        "november": "نوامبر",
+        "december": "دسامبر"
+      },
+      "jalali": {
+        "farvardin": "فروردین",
+        "ordibehesht": "اردیبهشت",
+        "khordad": "خرداد",
+        "tir": "تیر",
+        "mordad": "مرداد",
+        "shahrivar": "شهریور",
+        "mehr": "مهر",
+        "aban": "آبان",
+        "azar": "آذر",
+        "dey": "دی",
+        "bahman": "بهمن",
+        "esfand": "اسفند"
+      }
+    },
+    "weekdays": {
+      "gregorian": {
+        "sunday": "یکشنبه",
+        "monday": "دوشنبه",
+        "tuesday": "سه‌شنبه",
+        "wednesday": "چهارشنبه",
+        "thursday": "پنج‌شنبه",
+        "friday": "جمعه",
+        "saturday": "شنبه"
+      },
+      "jalali": {
+        "saturday": "ش",
+        "sunday": "ی",
+        "monday": "د",
+        "tuesday": "س",
+        "wednesday": "چ",
+        "thursday": "پ",
+        "friday": "ج"
+      }
+    }
+  },
+  "validation": {
+    "required": "این فیلد الزامی است",
+    "invalid_type": "نوع نامعتبر",
+    "string": {
+      "min": "حداقل باید {min} کاراکتر باشد",
+      "max": "حداکثر باید {max} کاراکتر باشد",
+      "email": "باید یک آدرس ایمیل معتبر باشد",
+      "url": "باید یک URL معتبر باشد",
+      "matches": "با فرمت مورد نیاز مطابقت ندارد"
+    },
+    "number": {
+      "min": "حداقل باید {min} باشد",
+      "max": "حداکثر باید {max} باشد",
+      "positive": "باید یک عدد مثبت باشد",
+      "negative": "باید یک عدد منفی باشد",
+      "integer": "باید یک عدد صحیح باشد"
+    },
+    "date": {
+      "min": "باید بعد از {min} باشد",
+      "max": "باید قبل از {max} باشد"
+    },
+    "array": {
+      "min": "حداقل باید {min} آیتم داشته باشد",
+      "max": "حداکثر باید {max} آیتم داشته باشد"
+    },
+    "object": {
+      "no_unknown": "فیلدهای ناشناخته مجاز نیستند"
+    },
+    "phone": "باید یک شماره تلفن معتبر باشد",
+    "national_id": "باید یک کد ملی معتبر باشد",
+    "postal_code": "باید یک کد پستی معتبر باشد",
+    "currency": {
+      "min": "حداقل باید {min} باشد",
+      "max": "حداکثر باید {max} باشد",
+      "positive": "باید یک مبلغ مثبت باشد"
+    },
+    "percentage": {
+      "min": "حداقل باید {min}٪ باشد",
+      "max": "حداکثر باید {max}٪ باشد"
+    },
+    "weight": {
+      "positive": "وزن باید مثبت باشد",
+      "min": "وزن حداقل باید {min} باشد",
+      "max": "وزن حداکثر باید {max} باشد"
+    },
+    "gold_purity": {
+      "min": "عیار طلا حداقل باید ۰ عیار باشد",
+      "max": "عیار طلا حداکثر باید ۲۴ عیار باشد",
+      "invalid": "باید یک عیار طلای معتبر باشد (۸، ۹، ۱۰، ۱۴، ۱۸، ۲۱، ۲۲، یا ۲۴ عیار)"
+    },
+    "sku": {
+      "format": "SKU فقط می‌تواند شامل حروف، اعداد، خط تیره و زیرخط باشد",
+      "min": "SKU حداقل باید ۳ کاراکتر باشد",
+      "max": "SKU حداکثر باید ۵۰ کاراکتر باشد"
+    },
+    "password": {
+      "min": "رمز عبور حداقل باید {min} کاراکتر باشد",
+      "lowercase": "رمز عبور باید حداقل یک حرف کوچک داشته باشد",
+      "uppercase": "رمز عبور باید حداقل یک حرف بزرگ داشته باشد",
+      "number": "رمز عبور باید حداقل یک عدد داشته باشد",
+      "special": "رمز عبور باید حداقل یک کاراکتر خاص داشته باشد"
+    },
+    "confirm_password": {
+      "required": "لطفاً رمز عبور خود را تأیید کنید",
+      "match": "رمزهای عبور مطابقت ندارند"
+    },
+    "file": {
+      "required": "لطفاً یک فایل انتخاب کنید",
+      "max_size": "حجم فایل باید کمتر از {size} مگابایت باشد",
+      "allowed_types": "انواع فایل مجاز: {types}"
+    },
+    "invoice": {
+      "min_items": "فاکتور باید حداقل یک آیتم داشته باشد"
+    }
+  },
+  "localization": {
+    "demo": {
+      "title": "نمایش قابلیت‌های چندزبانه",
+      "language_switcher": "تغییر زبان",
+      "current_locale": "زبان فعلی",
+      "number_formatting": "فرمت‌بندی اعداد",
+      "decimal_number": "عدد اعشاری",
+      "currency_amount": "مبلغ ارز",
+      "percentage": "درصد",
+      "weight": "وزن (گرم)",
+      "formatted_values": "مقادیر فرمت شده",
+      "decimal": "اعشاری",
+      "currency": "ارز",
+      "file_size": "حجم فایل",
+      "date_picker": "انتخاب تاریخ",
+      "auto_calendar": "تقویم خودکار",
+      "jalali_calendar": "تقویم شمسی",
+      "gregorian_calendar": "تقویم میلادی",
+      "formatted_dates": "تاریخ‌های فرمت شده",
+      "selected_date": "تاریخ انتخاب شده",
+      "jalali_format": "فرمت شمسی",
+      "gregorian_format": "فرمت میلادی",
+      "layout_direction": "جهت صفحه",
+      "current_direction": "جهت فعلی",
+      "sample_form": "فرم نمونه",
+      "validation": "نمایش اعتبارسنجی",
+      "validate": "اعتبارسنجی"
+    }
+  },
   "errors": {
     "page_not_found": "صفحه یافت نشد",
     "page_not_found_description": "صفحه‌ای که به دنبال آن هستید وجود ندارد."

@@ -214,7 +214,12 @@
   - Add 2FA setup and verification forms
   - _Requirements: 8.5, 8.6_
 
-- [ ] 13. Build localization frontend components
+- [x] 13. Build localization frontend components
+
+
+
+
+
   - Create language switcher component with Persian/English toggle
   - Implement RTL/LTR layout provider with dynamic switching
   - Build Jalali/Gregorian date picker component

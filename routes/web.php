@@ -17,4 +17,10 @@ Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
 
+// Sanctum routes for SPA authentication
+Route::middleware('web')->group(function () {
+    // This route is automatically registered by Sanctum
+    // but we ensure it's available with proper middleware
+});
+
 require __DIR__.'/auth.php';

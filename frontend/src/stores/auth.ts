@@ -47,7 +47,7 @@ export const useAuthStore = defineStore("auth", () => {
       error.value = null;
 
       const response = await apiService.auth.login(credentials);
-      const { user: userData, token: authToken } = response.data;
+      const { user: userData, token: authToken } = response.data.data;
 
       // Store auth data
       user.value = userData;

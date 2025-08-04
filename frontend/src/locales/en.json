@@ -146,6 +146,165 @@
   "settings": {
     "description": "Configure your business settings and preferences."
   },
+  "calendar": {
+    "gregorian": "Gregorian",
+    "jalali": "Jalali",
+    "today": "Today",
+    "months": {
+      "gregorian": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      },
+      "jalali": {
+        "farvardin": "Farvardin",
+        "ordibehesht": "Ordibehesht",
+        "khordad": "Khordad",
+        "tir": "Tir",
+        "mordad": "Mordad",
+        "shahrivar": "Shahrivar",
+        "mehr": "Mehr",
+        "aban": "Aban",
+        "azar": "Azar",
+        "dey": "Dey",
+        "bahman": "Bahman",
+        "esfand": "Esfand"
+      }
+    },
+    "weekdays": {
+      "gregorian": {
+        "sunday": "Sun",
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat"
+      },
+      "jalali": {
+        "saturday": "Sat",
+        "sunday": "Sun",
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri"
+      }
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalid_type": "Invalid type",
+    "string": {
+      "min": "Must be at least {min} characters",
+      "max": "Must be at most {max} characters",
+      "email": "Must be a valid email address",
+      "url": "Must be a valid URL",
+      "matches": "Does not match required format"
+    },
+    "number": {
+      "min": "Must be at least {min}",
+      "max": "Must be at most {max}",
+      "positive": "Must be a positive number",
+      "negative": "Must be a negative number",
+      "integer": "Must be an integer"
+    },
+    "date": {
+      "min": "Must be after {min}",
+      "max": "Must be before {max}"
+    },
+    "array": {
+      "min": "Must have at least {min} items",
+      "max": "Must have at most {max} items"
+    },
+    "object": {
+      "no_unknown": "Unknown fields are not allowed"
+    },
+    "phone": "Must be a valid phone number",
+    "national_id": "Must be a valid national ID",
+    "postal_code": "Must be a valid postal code",
+    "currency": {
+      "min": "Must be at least {min}",
+      "max": "Must be at most {max}",
+      "positive": "Must be a positive amount"
+    },
+    "percentage": {
+      "min": "Must be at least {min}%",
+      "max": "Must be at most {max}%"
+    },
+    "weight": {
+      "positive": "Weight must be positive",
+      "min": "Weight must be at least {min}",
+      "max": "Weight must be at most {max}"
+    },
+    "gold_purity": {
+      "min": "Gold purity must be at least 0 karat",
+      "max": "Gold purity must be at most 24 karat",
+      "invalid": "Must be a valid gold purity (8, 9, 10, 14, 18, 21, 22, or 24 karat)"
+    },
+    "sku": {
+      "format": "SKU can only contain letters, numbers, hyphens, and underscores",
+      "min": "SKU must be at least 3 characters",
+      "max": "SKU must be at most 50 characters"
+    },
+    "password": {
+      "min": "Password must be at least {min} characters",
+      "lowercase": "Password must contain at least one lowercase letter",
+      "uppercase": "Password must contain at least one uppercase letter",
+      "number": "Password must contain at least one number",
+      "special": "Password must contain at least one special character"
+    },
+    "confirm_password": {
+      "required": "Please confirm your password",
+      "match": "Passwords do not match"
+    },
+    "file": {
+      "required": "Please select a file",
+      "max_size": "File size must be less than {size}MB",
+      "allowed_types": "Allowed file types: {types}"
+    },
+    "invoice": {
+      "min_items": "Invoice must have at least one item"
+    }
+  },
+  "localization": {
+    "demo": {
+      "title": "Localization Demo",
+      "language_switcher": "Language Switcher",
+      "current_locale": "Current Locale",
+      "number_formatting": "Number Formatting",
+      "decimal_number": "Decimal Number",
+      "currency_amount": "Currency Amount",
+      "percentage": "Percentage",
+      "weight": "Weight (grams)",
+      "formatted_values": "Formatted Values",
+      "decimal": "Decimal",
+      "currency": "Currency",
+      "file_size": "File Size",
+      "date_picker": "Date Picker",
+      "auto_calendar": "Auto Calendar",
+      "jalali_calendar": "Jalali Calendar",
+      "gregorian_calendar": "Gregorian Calendar",
+      "formatted_dates": "Formatted Dates",
+      "selected_date": "Selected Date",
+      "jalali_format": "Jalali Format",
+      "gregorian_format": "Gregorian Format",
+      "layout_direction": "Layout Direction",
+      "current_direction": "Current Direction",
+      "sample_form": "Sample Form",
+      "validation": "Validation Demo",
+      "validate": "Validate"
+    }
+  },
   "errors": {
     "page_not_found": "Page Not Found",
     "page_not_found_description": "The page you're looking for doesn't exist."
