@@ -2,7 +2,7 @@
   <!-- Mobile sidebar -->
   <div
     :class="[
-      'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
+      'fixed inset-y-0 z-50 bg-white dark:bg-gray-800 shadow-lg transform transition-all duration-300 ease-in-out w-64',
       open ? 'translate-x-0' : '-translate-x-full',
       isRTL ? 'right-0 left-auto' : 'left-0 right-auto',
     ]"
@@ -34,6 +34,7 @@
         v-for="item in navigation"
         :key="item.name"
         :to="item.href"
+        @click="$emit('close')"
         :class="[
           'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150',
           $route.path === item.href
@@ -55,26 +56,7 @@
       </router-link>
     </nav>
 
-    <!-- Collapse button -->
-    <div
-      class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700"
-    >
-      <button
-        @click="toggleCollapse"
-        class="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
-      >
-        <ChevronLeftIcon
-          :class="[
-            'h-5 w-5 transition-transform duration-200',
-            collapsed ? 'rotate-180' : '',
-            isRTL ? 'rotate-180' : '',
-          ]"
-        />
-        <span :class="['ml-2', isRTL ? 'mr-2 ml-0' : '']">
-          {{ collapsed ? $t("sidebar.expand") : $t("sidebar.collapse") }}
-        </span>
-      </button>
-    </div>
+
   </div>
 </template>
 
@@ -83,7 +65,6 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   XMarkIcon,
-  ChevronLeftIcon,
   HomeIcon,
   DocumentTextIcon,
   CubeIcon,
@@ -103,7 +84,6 @@ defineEmits<{
 }>();
 
 const { locale } = useI18n();
-const collapsed = ref(false);
 
 const isRTL = computed(() => locale.value === "fa");
 
@@ -117,7 +97,5 @@ const navigation = [
   { name: "nav.settings", href: "/settings", icon: CogIcon },
 ];
 
-const toggleCollapse = () => {
-  collapsed.value = !collapsed.value;
-};
+
 </script>

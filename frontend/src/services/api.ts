@@ -17,6 +17,7 @@ const api: AxiosInstance = axios.create({
     Accept: "application/json",
     "X-Requested-With": "XMLHttpRequest",
   },
+  withCredentials: true, // Important for Docker CORS
 });
 
 // Request interceptor

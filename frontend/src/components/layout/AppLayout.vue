@@ -9,12 +9,16 @@
       <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
     </div>
 
-    <!-- Sidebar -->
-    <AppSidebar :open="sidebarOpen" @close="sidebarOpen = false" />
+    <!-- Mobile sidebar (only visible on mobile) -->
+    <AppSidebar 
+      :open="sidebarOpen" 
+      @close="sidebarOpen = false" 
+      class="lg:hidden"
+    />
 
-    <!-- Main content -->
-    <div class="lg:pl-64 flex flex-col flex-1">
-      <!-- Header -->
+    <!-- Main content with full width -->
+    <div class="flex flex-col min-h-screen">
+      <!-- Header with navigation -->
       <AppHeader @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <!-- Page content -->

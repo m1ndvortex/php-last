@@ -17,7 +17,7 @@
     "@heroicons/vue": "^2.0.18",
     "@vee-validate/yup": "^4.11.8",
     "axios": "^1.5.0",
-    "chart.js": "^4.4.0",
+    "chart.js": "^4.5.0",
     "date-fns": "^2.30.0",
     "date-fns-jalali": "^2.30.0-0",
     "pinia": "^2.1.6",

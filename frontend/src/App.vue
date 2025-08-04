@@ -10,6 +10,7 @@
 import { computed } from "vue";
 import { useAppStore } from "./stores/app";
 import RTLProvider from "./components/localization/RTLProvider.vue";
+import "./assets/css/rtl-fixes.css";
 
 const appStore = useAppStore();
 const isDarkMode = computed(() => appStore.isDarkMode);

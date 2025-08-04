@@ -30,6 +30,108 @@
     "expand": "Expand",
     "collapse": "Collapse"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to your Jewelry Business Platform",
+    "kpis": {
+      "gold_sold": "Gold Sold",
+      "total_profit": "Total Profit",
+      "average_price": "Average Price",
+      "returns": "Returns",
+      "gross_margin": "Gross Margin",
+      "net_margin": "Net Margin"
+    },
+    "periods": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "widgets": {
+      "refresh": "Refresh",
+      "remove": "Remove",
+      "add_widget": "Add Widget",
+      "types": {
+        "kpi": "KPI Widget",
+        "kpi_desc": "Display key performance indicators",
+        "chart": "Chart Widget",
+        "chart_desc": "Show data visualizations",
+        "alert": "Alert Widget",
+        "alert_desc": "Display business alerts",
+        "table": "Table Widget",
+        "table_desc": "Show tabular data"
+      }
+    },
+    "alerts": {
+      "no_alerts": "No alerts at this time",
+      "mark_all_read": "Mark all as read",
+      "mark_read": "Mark as read",
+      "dismiss": "Dismiss",
+      "show_more": "Show more",
+      "just_now": "Just now",
+      "minutes_ago": "{count} minutes ago",
+      "hours_ago": "{count} hours ago",
+      "days_ago": "{count} days ago"
+    },
+    "presets": {
+      "label": "Dashboard View",
+      "customize": "Customize",
+      "reset": "Reset",
+      "customize_title": "Customize Dashboard",
+      "select_base": "Select Base Layout",
+      "configure_widgets": "Configure Widgets",
+      "layout_options": "Layout Options",
+      "enabled": "Enabled",
+      "compact_mode": "Compact Mode",
+      "show_headers": "Show Widget Headers",
+      "allow_dragging": "Allow Dragging",
+      "auto_refresh": "Auto Refresh",
+      "reset_confirm": "Are you sure you want to reset the dashboard to default layout?"
+    },
+    "refresh": "Refresh Dashboard",
+    "quick_actions": "Quick Actions",
+    "actions": {
+      "add_customer": "Add Customer",
+      "add_inventory": "Add Item",
+      "create_invoice": "Create Invoice",
+      "view_reports": "View Reports",
+      "accounting": "Accounting",
+      "settings": "Settings"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "last_updated": "Last updated"
+  },
+  "table": {
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "paid": "Paid",
+    "overdue": "Overdue"
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",
@@ -80,35 +182,6 @@
     "invalid_credentials": "Invalid email or password",
     "account_locked": "Account temporarily locked due to multiple failed attempts"
   },
-  "common": {
-    "loading": "Loading...",
-    "saving": "Saving...",
-    "save": "Save",
-    "cancel": "Cancel",
-    "done": "Done",
-    "next": "Next",
-    "back": "Back",
-    "verifying": "Verifying...",
-    "name": "Name",
-    "profile_information": "Profile Information",
-    "preferred_language": "Preferred Language",
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "create": "Create",
-    "search": "Search",
-    "filter": "Filter",
-    "export": "Export",
-    "import": "Import",
-    "loading": "Loading...",
-    "no_data": "No data available",
-    "confirm": "Confirm",
-    "yes": "Yes",
-    "no": "No",
-    "coming_soon": "This feature is coming soon.",
-    "go_to_dashboard": "Go to Dashboard"
-  },
   "language": {
     "english": "English",
     "persian": "Persian",
@@ -119,6 +192,18 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome to Jewelry Platform",
+    "sales_overview": "Sales Overview",
+    "business_alerts": "Business Alerts",
+    "recent_activities": "Recent Activities",
+    "quick_actions": "Quick Actions",
+    "sales_chart": "Sales Chart",
+    "chart_integration": "Chart.js integration",
+    "refresh_dashboard": "Refresh Dashboard",
+    "no_alerts": "No alerts at this time",
+    "just_now": "Just now",
+    "minutes_ago": "minutes ago",
+    "hours_ago": "hours ago",
+    "days_ago": "days ago",
     "kpis": {
       "gold_sold": "Gold Sold",
       "total_profit": "Total Profit",
@@ -126,6 +211,40 @@
       "returns": "Returns",
       "gross_margin": "Gross Margin",
       "net_margin": "Net Margin"
+    },
+    "periods": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "daily": "Daily"
+    },
+    "table": {
+      "activity": "Activity",
+      "user": "User",
+      "time": "Time",
+      "status": "Status"
+    },
+    "actions": {
+      "add_customer": "Add Customer",
+      "add_item": "Add Item",
+      "create_invoice": "Create Invoice",
+      "view_reports": "View Reports",
+      "accounting": "Accounting",
+      "settings": "Settings"
+    },
+    "alerts": {
+      "pending_cheque": "Pending Cheque",
+      "cheque_due": "Cheque #{number} due tomorrow",
+      "low_stock": "Low Stock Alert",
+      "low_stock_message": "{count} items are running low on stock",
+      "items_expiring": "Items Expiring Soon",
+      "items_expiring_message": "{count} items will expire within 7 days"
+    },
+    "activities": {
+      "invoice_created": "Invoice #{number} created",
+      "customer_added": "Customer {name} added",
+      "inventory_updated": "{item} inventory updated",
+      "payment_received": "Payment received for {number}",
+      "stock_alert": "Stock alert for {item}"
     }
   },
   "invoices": {

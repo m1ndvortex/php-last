@@ -30,6 +30,108 @@
     "expand": "باز کردن",
     "collapse": "بستن"
   },
+  "dashboard": {
+    "title": "داشبورد",
+    "welcome": "به پلتفرم کسب و کار جواهرات خود خوش آمدید",
+    "kpis": {
+      "gold_sold": "طلای فروخته شده",
+      "total_profit": "سود کل",
+      "average_price": "قیمت متوسط",
+      "returns": "برگشتی‌ها",
+      "gross_margin": "حاشیه سود ناخالص",
+      "net_margin": "حاشیه سود خالص"
+    },
+    "periods": {
+      "daily": "روزانه",
+      "weekly": "هفتگی",
+      "monthly": "ماهانه",
+      "yearly": "سالانه"
+    },
+    "widgets": {
+      "refresh": "بروزرسانی",
+      "remove": "حذف",
+      "add_widget": "افزودن ویجت",
+      "types": {
+        "kpi": "ویجت شاخص‌های کلیدی",
+        "kpi_desc": "نمایش شاخص‌های کلیدی عملکرد",
+        "chart": "ویجت نمودار",
+        "chart_desc": "نمایش تجسم داده‌ها",
+        "alert": "ویجت هشدار",
+        "alert_desc": "نمایش هشدارهای کسب و کار",
+        "table": "ویجت جدول",
+        "table_desc": "نمایش داده‌های جدولی"
+      }
+    },
+    "alerts": {
+      "no_alerts": "در حال حاضر هیچ هشداری وجود ندارد",
+      "mark_all_read": "همه را به عنوان خوانده شده علامت‌گذاری کن",
+      "mark_read": "به عنوان خوانده شده علامت‌گذاری کن",
+      "dismiss": "رد کردن",
+      "show_more": "نمایش بیشتر",
+      "just_now": "همین الان",
+      "minutes_ago": "{count} دقیقه پیش",
+      "hours_ago": "{count} ساعت پیش",
+      "days_ago": "{count} روز پیش"
+    },
+    "presets": {
+      "label": "نمای داشبورد",
+      "customize": "سفارشی‌سازی",
+      "reset": "بازنشانی",
+      "customize_title": "سفارشی‌سازی داشبورد",
+      "select_base": "انتخاب طرح‌بندی پایه",
+      "configure_widgets": "پیکربندی ویجت‌ها",
+      "layout_options": "گزینه‌های طرح‌بندی",
+      "enabled": "فعال",
+      "compact_mode": "حالت فشرده",
+      "show_headers": "نمایش سرتیتر ویجت‌ها",
+      "allow_dragging": "اجازه کشیدن",
+      "auto_refresh": "بروزرسانی خودکار",
+      "reset_confirm": "آیا مطمئن هستید که می‌خواهید داشبورد را به طرح‌بندی پیش‌فرض بازنشانی کنید؟"
+    },
+    "refresh": "بروزرسانی داشبورد",
+    "quick_actions": "اقدامات سریع",
+    "actions": {
+      "add_customer": "افزودن مشتری",
+      "add_inventory": "افزودن کالا",
+      "create_invoice": "ایجاد فاکتور",
+      "view_reports": "مشاهده گزارشات",
+      "accounting": "حسابداری",
+      "settings": "تنظیمات"
+    }
+  },
+  "common": {
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "edit": "ویرایش",
+    "delete": "حذف",
+    "search": "جستجو",
+    "filter": "فیلتر",
+    "export": "صادرات",
+    "import": "وارد کردن",
+    "loading": "در حال بارگذاری...",
+    "no_data": "داده‌ای موجود نیست",
+    "error": "خطا",
+    "success": "موفقیت",
+    "warning": "هشدار",
+    "info": "اطلاعات",
+    "last_updated": "آخرین بروزرسانی"
+  },
+  "table": {
+    "showing": "نمایش",
+    "to": "تا",
+    "of": "از",
+    "results": "نتیجه",
+    "previous": "قبلی",
+    "next": "بعدی"
+  },
+  "status": {
+    "active": "فعال",
+    "inactive": "غیرفعال",
+    "pending": "در انتظار",
+    "completed": "تکمیل شده",
+    "paid": "پرداخت شده",
+    "overdue": "معوقه"
+  },
   "auth": {
     "login": "ورود",
     "logout": "خروج",
@@ -80,35 +182,6 @@
     "invalid_credentials": "ایمیل یا رمز عبور نامعتبر",
     "account_locked": "حساب به دلیل تلاش‌های ناموفق متعدد موقتاً قفل شده است"
   },
-  "common": {
-    "loading": "در حال بارگذاری...",
-    "saving": "در حال ذخیره...",
-    "save": "ذخیره",
-    "cancel": "لغو",
-    "done": "تمام",
-    "next": "بعدی",
-    "back": "قبلی",
-    "verifying": "در حال تأیید...",
-    "name": "نام",
-    "profile_information": "اطلاعات پروفایل",
-    "preferred_language": "زبان ترجیحی",
-    "save": "ذخیره",
-    "cancel": "لغو",
-    "delete": "حذف",
-    "edit": "ویرایش",
-    "create": "ایجاد",
-    "search": "جستجو",
-    "filter": "فیلتر",
-    "export": "خروجی",
-    "import": "ورودی",
-    "loading": "در حال بارگذاری...",
-    "no_data": "داده‌ای موجود نیست",
-    "confirm": "تأیید",
-    "yes": "بله",
-    "no": "خیر",
-    "coming_soon": "این قابلیت به زودی اضافه خواهد شد.",
-    "go_to_dashboard": "رفتن به داشبورد"
-  },
   "language": {
     "english": "انگلیسی",
     "persian": "فارسی",
@@ -119,6 +192,18 @@
   "dashboard": {
     "title": "داشبورد",
     "welcome": "به پلتفرم جواهرات خوش آمدید",
+    "sales_overview": "نمای کلی فروش",
+    "business_alerts": "هشدارهای کسب و کار",
+    "recent_activities": "فعالیت‌های اخیر",
+    "quick_actions": "اقدامات سریع",
+    "sales_chart": "نمودار فروش",
+    "chart_integration": "یکپارچگی نمودار",
+    "refresh_dashboard": "بروزرسانی داشبورد",
+    "no_alerts": "در حال حاضر هیچ هشداری وجود ندارد",
+    "just_now": "همین الان",
+    "minutes_ago": "دقیقه پیش",
+    "hours_ago": "ساعت پیش",
+    "days_ago": "روز پیش",
     "kpis": {
       "gold_sold": "طلای فروخته شده",
       "total_profit": "سود کل",
@@ -126,6 +211,40 @@
       "returns": "برگشتی‌ها",
       "gross_margin": "حاشیه سود ناخالص",
       "net_margin": "حاشیه سود خالص"
+    },
+    "periods": {
+      "monthly": "ماهانه",
+      "weekly": "هفتگی",
+      "daily": "روزانه"
+    },
+    "table": {
+      "activity": "فعالیت",
+      "user": "کاربر",
+      "time": "زمان",
+      "status": "وضعیت"
+    },
+    "actions": {
+      "add_customer": "افزودن مشتری",
+      "add_item": "افزودن کالا",
+      "create_invoice": "ایجاد فاکتور",
+      "view_reports": "مشاهده گزارشات",
+      "accounting": "حسابداری",
+      "settings": "تنظیمات"
+    },
+    "alerts": {
+      "pending_cheque": "چک در انتظار",
+      "cheque_due": "چک شماره {number} فردا سررسید می‌شود",
+      "low_stock": "هشدار موجودی کم",
+      "low_stock_message": "{count} کالا موجودی کم دارند",
+      "items_expiring": "کالاهای در حال انقضا",
+      "items_expiring_message": "{count} کالا ظرف ۷ روز منقضی می‌شوند"
+    },
+    "activities": {
+      "invoice_created": "فاکتور شماره {number} ایجاد شد",
+      "customer_added": "مشتری {name} اضافه شد",
+      "inventory_updated": "موجودی {item} بروزرسانی شد",
+      "payment_received": "پرداخت برای فاکتور {number} دریافت شد",
+      "stock_alert": "هشدار موجودی برای {item}"
     }
   },
   "invoices": {

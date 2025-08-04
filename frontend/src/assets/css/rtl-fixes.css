@@ -1,0 +1,90 @@
+/* RTL Text Direction Fixes for Persian Language */
+/* High specificity CSS to override Tailwind defaults */
+
+/* FORCE RTL text alignment with highest specificity */
+html[dir="rtl"] .space-y-3 > div p,
+html[dir="rtl"] .space-y-3 > div > div > div > p,
+html[dir="rtl"] table th,
+html[dir="rtl"] table td,
+html[dir="rtl"] .text-sm,
+html[dir="rtl"] .text-xs {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* Override Tailwind classes specifically */
+html[dir="rtl"] .text-left {
+  text-align: right !important;
+}
+
+html[dir="rtl"] .text-right {
+  text-align: right !important;
+}
+
+/* Fix spacing issues in RTL */
+html[dir="rtl"] .space-x-3 > * + * {
+  margin-left: 0 !important;
+  margin-right: 0.75rem !important;
+}
+
+html[dir="rtl"] .space-x-2 > * + * {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+html[dir="rtl"] .space-x-1 > * + * {
+  margin-left: 0 !important;
+  margin-right: 0.25rem !important;
+}
+
+html[dir="rtl"] .ml-2 {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Fix border positioning for RTL */
+html[dir="rtl"] .border-l-4 {
+  border-left-width: 0 !important;
+  border-right-width: 4px !important;
+}
+
+/* Ensure all Persian text is right-aligned */
+html[dir="rtl"] p,
+html[dir="rtl"] span,
+html[dir="rtl"] div,
+html[dir="rtl"] td,
+html[dir="rtl"] th {
+  text-align: right !important;
+}
+
+/* Specific fixes for dashboard components */
+html[dir="rtl"] .bg-white p {
+  text-align: right !important;
+}
+
+html[dir="rtl"] .rounded-lg p {
+  text-align: right !important;
+}
+
+/* Force table alignment */
+html[dir="rtl"] table {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] table * {
+  text-align: right !important;
+}
+
+/* Additional RTL fixes for common components */
+html[dir="rtl"] .alert-widget p,
+html[dir="rtl"] .table-widget th,
+html[dir="rtl"] .table-widget td {
+  text-align: right !important;
+}
+
+/* Ensure Persian text in cards and widgets is right-aligned */
+html[dir="rtl"] .card p,
+html[dir="rtl"] .widget p,
+html[dir="rtl"] .dashboard-widget p {
+  text-align: right !important;
+}
