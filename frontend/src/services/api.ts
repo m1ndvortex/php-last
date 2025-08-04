@@ -35,6 +35,12 @@ api.interceptors.request.use(
     // Ensure credentials are included for CSRF
     config.withCredentials = true;
 
+    // Add CSRF token from cookie if available
+    const csrfToken = getCsrfTokenFromCookie();
+    if (csrfToken) {
+      config.headers["X-XSRF-TOKEN"] = csrfToken;
+    }
+
     return config;
   },
   (error: AxiosError) => {
@@ -119,10 +125,27 @@ const getCsrfCookie = async (): Promise<void> => {
   try {
     await axios.get("http://localhost/sanctum/csrf-cookie", {
       withCredentials: true,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
     });
   } catch (error) {
     console.error("Failed to get CSRF cookie:", error);
+    throw error;
   }
+};
+
+// Helper function to get CSRF token from cookie
+const getCsrfTokenFromCookie = (): string | null => {
+  const name = "XSRF-TOKEN";
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const token = parts.pop()?.split(';').shift();
+    return token ? decodeURIComponent(token) : null;
+  }
+  return null;
 };
 
 // API methods
@@ -163,12 +186,26 @@ export const apiService = {
       password: string;
       remember?: boolean;
     }) => {
-      // For now, try login without CSRF cookie
-      // TODO: Fix CSRF cookie handling for production
+      // Try to get CSRF cookie before login for proper security
+      try {
+        await getCsrfCookie();
+      } catch (error) {
+        console.warn("CSRF cookie request failed, proceeding with login:", error);
+        // Continue with login even if CSRF cookie fails
+        // This maintains backward compatibility while we work on CORS issues
+      }
       return api.post("api/auth/login", credentials);
     },
 
-    logout: () => api.post("api/auth/logout"),
+    logout: async () => {
+      // Try to ensure CSRF cookie is available for logout
+      try {
+        await getCsrfCookie();
+      } catch (error) {
+        console.warn("CSRF cookie request failed for logout, proceeding:", error);
+      }
+      return api.post("api/auth/logout");
+    },
 
     me: () => api.get("api/auth/user"),
 

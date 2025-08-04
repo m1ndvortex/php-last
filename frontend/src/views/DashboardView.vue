@@ -84,9 +84,11 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const { locale } = useI18n();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const kpis = ref([
   { key: "gold_sold", value: "12.5 kg" },
@@ -125,9 +127,15 @@ const toggleLanguage = () => {
   locale.value = locale.value === "en" ? "fa" : "en";
 };
 
-const handleLogout = () => {
-  // TODO: Implement actual logout logic
-  router.push("/login");
+const handleLogout = async () => {
+  try {
+    await authStore.logout();
+    router.push("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+    // Even if logout fails, clear local state and redirect
+    router.push("/login");
+  }
 };
 
 const navigateTo = (route: string) => {
