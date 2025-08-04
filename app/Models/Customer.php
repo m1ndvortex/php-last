@@ -28,6 +28,7 @@ class Customer extends Model
         'notes',
         'birthday',
         'anniversary',
+        'preferred_communication_method',
         'is_active',
         'crm_stage',
         'lead_source',

@@ -286,4 +286,19 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
             Route::post('/process', [\App\Http\Controllers\DataComplianceController::class, 'processDeletionRequests']);
         });
     });
+    
+    // Queue Management routes
+    Route::prefix('queue')->group(function () {
+        Route::get('/', [\App\Http\Controllers\QueueController::class, 'index']);
+        Route::get('/history', [\App\Http\Controllers\QueueController::class, 'getJobHistory']);
+        Route::post('/backup', [\App\Http\Controllers\QueueController::class, 'scheduleBackup']);
+        Route::post('/recurring-invoices', [\App\Http\Controllers\QueueController::class, 'processRecurringInvoices']);
+        Route::post('/reminders', [\App\Http\Controllers\QueueController::class, 'sendReminders']);
+        Route::post('/stock-alerts', [\App\Http\Controllers\QueueController::class, 'sendStockAlerts']);
+        Route::post('/communication', [\App\Http\Controllers\QueueController::class, 'sendCommunication']);
+        Route::post('/bulk-communications', [\App\Http\Controllers\QueueController::class, 'sendBulkCommunications']);
+        Route::post('/sync-offline', [\App\Http\Controllers\QueueController::class, 'syncOfflineData']);
+        Route::delete('/failed-jobs', [\App\Http\Controllers\QueueController::class, 'clearFailedJobs']);
+        Route::post('/retry-job', [\App\Http\Controllers\QueueController::class, 'retryFailedJob']);
+    });
 });
