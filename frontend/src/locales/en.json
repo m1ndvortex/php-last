@@ -3,13 +3,32 @@
     "name": "Jewelry Platform",
     "description": "Bilingual Jewelry Business Management Platform"
   },
-  "navigation": {
+  "nav": {
     "dashboard": "Dashboard",
     "customers": "Customers",
     "inventory": "Inventory",
     "invoices": "Invoices",
     "accounting": "Accounting",
+    "reports": "Reports",
     "settings": "Settings"
+  },
+  "pages": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "inventory": "Inventory",
+    "invoices": "Invoices",
+    "accounting": "Accounting",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "header": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "sidebar": {
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "auth": {
     "login": "Login",
@@ -17,9 +36,62 @@
     "email": "Email",
     "password": "Password",
     "remember_me": "Remember me",
-    "forgot_password": "Forgot password?"
+    "forgot_password": "Forgot password?",
+    "login_description": "Sign in to your jewelry business account",
+    "profile": "Profile",
+    "change_password": "Change Password",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "password_changed": "Password changed successfully",
+    "two_factor": "Two-Factor Authentication",
+    "enable_2fa": "Enable 2FA",
+    "disable_2fa": "Disable 2FA",
+    "2fa_code": "2FA Code",
+    "2fa_description": "Add an extra layer of security to your account by enabling two-factor authentication.",
+    "2fa_enabled_status": "Two-factor authentication is enabled",
+    "2fa_backup_codes_info": "Keep your backup codes in a safe place. You can use them to access your account if you lose your authenticator device.",
+    "view_backup_codes": "View backup codes",
+    "setup_2fa": "Set up Two-Factor Authentication",
+    "scan_qr_code": "Scan this QR code with your authenticator app:",
+    "manual_entry": "Or enter this code manually:",
+    "enter_verification_code": "Enter the 6-digit code from your authenticator app:",
+    "verify_2fa": "Verify & Enable",
+    "2fa_setup_complete": "Two-Factor Authentication Enabled!",
+    "backup_codes_important": "Important: Save these backup codes in a secure location:",
+    "active_sessions": "Active Sessions",
+    "no_active_sessions": "No active sessions found",
+    "current_session": "Current Session",
+    "revoke": "Revoke",
+    "revoke_all_other_sessions": "Revoke All Other Sessions",
+    "forgot_password_description": "Enter your email address and we'll send you a link to reset your password.",
+    "send_reset_link": "Send Reset Link",
+    "reset_email_sent": "Password reset email has been sent to your email address.",
+    "check_email_instructions": "Please check your email for password reset instructions.",
+    "resend_email": "Resend Email",
+    "back_to_login": "Back to Login",
+    "profile_description": "Manage your account settings and preferences.",
+    "verify_2fa": "Verify Code",
+    "2fa_enabled": "Two-factor authentication enabled",
+    "2fa_disabled": "Two-factor authentication disabled",
+    "session_timeout": "Session Timeout",
+    "auto_logout": "Auto Logout",
+    "session_expired": "Your session has expired. Please login again.",
+    "invalid_credentials": "Invalid email or password",
+    "account_locked": "Account temporarily locked due to multiple failed attempts"
   },
   "common": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "done": "Done",
+    "next": "Next",
+    "back": "Back",
+    "verifying": "Verifying...",
+    "name": "Name",
+    "profile_information": "Profile Information",
+    "preferred_language": "Preferred Language",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -33,9 +105,13 @@
     "no_data": "No data available",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "coming_soon": "This feature is coming soon.",
+    "go_to_dashboard": "Go to Dashboard"
   },
   "language": {
+    "english": "English",
+    "persian": "Persian",
     "switch_to_persian": "Switch to Persian",
     "switch_to_english": "Switch to English",
     "current_language": "English"
@@ -51,5 +127,27 @@
       "gross_margin": "Gross Margin",
       "net_margin": "Net Margin"
     }
+  },
+  "invoices": {
+    "description": "Manage your invoices and billing."
+  },
+  "inventory": {
+    "description": "Track your jewelry inventory across multiple locations."
+  },
+  "customers": {
+    "description": "Manage customer relationships and communications."
+  },
+  "accounting": {
+    "description": "Comprehensive financial management and reporting."
+  },
+  "reports": {
+    "description": "Generate business reports and analytics."
+  },
+  "settings": {
+    "description": "Configure your business settings and preferences."
+  },
+  "errors": {
+    "page_not_found": "Page Not Found",
+    "page_not_found_description": "The page you're looking for doesn't exist."
   }
 }

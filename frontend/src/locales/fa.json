@@ -3,13 +3,32 @@
     "name": "پلتفرم جواهرات",
     "description": "پلتفرم مدیریت کسب و کار جواهرات دوزبانه"
   },
-  "navigation": {
+  "nav": {
     "dashboard": "داشبورد",
     "customers": "مشتریان",
     "inventory": "موجودی",
     "invoices": "فاکتورها",
     "accounting": "حسابداری",
+    "reports": "گزارشات",
     "settings": "تنظیمات"
+  },
+  "pages": {
+    "dashboard": "داشبورد",
+    "customers": "مشتریان",
+    "inventory": "موجودی",
+    "invoices": "فاکتورها",
+    "accounting": "حسابداری",
+    "reports": "گزارشات",
+    "settings": "تنظیمات"
+  },
+  "header": {
+    "profile": "پروفایل",
+    "settings": "تنظیمات",
+    "logout": "خروج"
+  },
+  "sidebar": {
+    "expand": "باز کردن",
+    "collapse": "بستن"
   },
   "auth": {
     "login": "ورود",
@@ -17,9 +36,62 @@
     "email": "ایمیل",
     "password": "رمز عبور",
     "remember_me": "مرا به خاطر بسپار",
-    "forgot_password": "رمز عبور را فراموش کرده‌اید؟"
+    "forgot_password": "رمز عبور را فراموش کرده‌اید؟",
+    "login_description": "وارد حساب کسب و کار جواهرات خود شوید",
+    "profile": "پروفایل",
+    "change_password": "تغییر رمز عبور",
+    "current_password": "رمز عبور فعلی",
+    "new_password": "رمز عبور جدید",
+    "confirm_password": "تأیید رمز عبور",
+    "password_changed": "رمز عبور با موفقیت تغییر یافت",
+    "two_factor": "احراز هویت دو مرحله‌ای",
+    "enable_2fa": "فعال‌سازی احراز هویت دو مرحله‌ای",
+    "disable_2fa": "غیرفعال‌سازی احراز هویت دو مرحله‌ای",
+    "2fa_code": "کد احراز هویت دو مرحله‌ای",
+    "2fa_description": "با فعال‌سازی احراز هویت دو مرحله‌ای، لایه امنیتی اضافی به حساب خود اضافه کنید.",
+    "2fa_enabled_status": "احراز هویت دو مرحله‌ای فعال است",
+    "2fa_backup_codes_info": "کدهای پشتیبان خود را در مکانی امن نگهداری کنید. در صورت از دست دادن دستگاه احراز هویت، می‌توانید از آنها استفاده کنید.",
+    "view_backup_codes": "مشاهده کدهای پشتیبان",
+    "setup_2fa": "راه‌اندازی احراز هویت دو مرحله‌ای",
+    "scan_qr_code": "این کد QR را با اپلیکیشن احراز هویت خود اسکن کنید:",
+    "manual_entry": "یا این کد را به صورت دستی وارد کنید:",
+    "enter_verification_code": "کد ۶ رقمی از اپلیکیشن احراز هویت خود را وارد کنید:",
+    "verify_2fa": "تأیید و فعال‌سازی",
+    "2fa_setup_complete": "احراز هویت دو مرحله‌ای فعال شد!",
+    "backup_codes_important": "مهم: این کدهای پشتیبان را در مکانی امن ذخیره کنید:",
+    "active_sessions": "جلسات فعال",
+    "no_active_sessions": "هیچ جلسه فعالی یافت نشد",
+    "current_session": "جلسه فعلی",
+    "revoke": "لغو",
+    "revoke_all_other_sessions": "لغو تمام جلسات دیگر",
+    "forgot_password_description": "آدرس ایمیل خود را وارد کنید تا لینک بازیابی رمز عبور برای شما ارسال شود.",
+    "send_reset_link": "ارسال لینک بازیابی",
+    "reset_email_sent": "ایمیل بازیابی رمز عبور به آدرس ایمیل شما ارسال شد.",
+    "check_email_instructions": "لطفاً ایمیل خود را برای دستورالعمل‌های بازیابی رمز عبور بررسی کنید.",
+    "resend_email": "ارسال مجدد ایمیل",
+    "back_to_login": "بازگشت به ورود",
+    "profile_description": "تنظیمات حساب و ترجیحات خود را مدیریت کنید.",
+    "verify_2fa": "تأیید کد",
+    "2fa_enabled": "احراز هویت دو مرحله‌ای فعال شد",
+    "2fa_disabled": "احراز هویت دو مرحله‌ای غیرفعال شد",
+    "session_timeout": "پایان جلسه",
+    "auto_logout": "خروج خودکار",
+    "session_expired": "جلسه شما منقضی شده است. لطفاً دوباره وارد شوید.",
+    "invalid_credentials": "ایمیل یا رمز عبور نامعتبر",
+    "account_locked": "حساب به دلیل تلاش‌های ناموفق متعدد موقتاً قفل شده است"
   },
   "common": {
+    "loading": "در حال بارگذاری...",
+    "saving": "در حال ذخیره...",
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "done": "تمام",
+    "next": "بعدی",
+    "back": "قبلی",
+    "verifying": "در حال تأیید...",
+    "name": "نام",
+    "profile_information": "اطلاعات پروفایل",
+    "preferred_language": "زبان ترجیحی",
     "save": "ذخیره",
     "cancel": "لغو",
     "delete": "حذف",
@@ -33,9 +105,13 @@
     "no_data": "داده‌ای موجود نیست",
     "confirm": "تأیید",
     "yes": "بله",
-    "no": "خیر"
+    "no": "خیر",
+    "coming_soon": "این قابلیت به زودی اضافه خواهد شد.",
+    "go_to_dashboard": "رفتن به داشبورد"
   },
   "language": {
+    "english": "انگلیسی",
+    "persian": "فارسی",
     "switch_to_persian": "تغییر به فارسی",
     "switch_to_english": "تغییر به انگلیسی",
     "current_language": "فارسی"
@@ -51,5 +127,27 @@
       "gross_margin": "حاشیه سود ناخالص",
       "net_margin": "حاشیه سود خالص"
     }
+  },
+  "invoices": {
+    "description": "مدیریت فاکتورها و صورتحساب‌ها."
+  },
+  "inventory": {
+    "description": "ردیابی موجودی جواهرات در مکان‌های مختلف."
+  },
+  "customers": {
+    "description": "مدیریت روابط مشتریان و ارتباطات."
+  },
+  "accounting": {
+    "description": "مدیریت مالی و گزارش‌دهی جامع."
+  },
+  "reports": {
+    "description": "تولید گزارشات کسب و کار و تجزیه و تحلیل."
+  },
+  "settings": {
+    "description": "پیکربندی تنظیمات کسب و کار و ترجیحات."
+  },
+  "errors": {
+    "page_not_found": "صفحه یافت نشد",
+    "page_not_found_description": "صفحه‌ای که به دنبال آن هستید وجود ندارد."
   }
 }
