@@ -1,5 +1,7 @@
 <template>
-  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+  <header
+    class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+  >
     <!-- Top bar with logo and user controls -->
     <div class="border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +15,7 @@
             >
               <Bars3Icon class="h-6 w-6" />
             </button>
-            
+
             <!-- Logo -->
             <div class="flex-shrink-0">
               <h1 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -56,11 +58,11 @@
                     {{ userInitials }}
                   </span>
                 </div>
-                <ChevronDownIcon 
+                <ChevronDownIcon
                   :class="[
                     'h-4 w-4 transition-transform duration-200',
-                    userMenuOpen ? 'rotate-180' : ''
-                  ]" 
+                    userMenuOpen ? 'rotate-180' : '',
+                  ]"
                 />
               </button>
 
@@ -80,7 +82,7 @@
                     'absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 origin-top-right',
                     isRTL ? 'left-0' : 'right-0',
                   ]"
-                  style="z-index: 9999;"
+                  style="z-index: 9999"
                 >
                   <div class="py-1">
                     <router-link
@@ -149,7 +151,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import {
   Bars3Icon,
   BellIcon,
@@ -169,19 +171,14 @@ defineEmits<{
   toggleSidebar: [];
 }>();
 
-const { t, locale } = useI18n();
-const route = useRoute();
+const { locale } = useI18n();
+// const route = useRoute();
 const router = useRouter();
 
 const userMenuOpen = ref(false);
 const notificationCount = ref(3); // Mock notification count
 
 const isRTL = computed(() => locale.value === "fa");
-
-const pageTitle = computed(() => {
-  const routeName = route.name as string;
-  return t(`pages.${routeName}`, routeName);
-});
 
 const navigation = [
   { name: "nav.dashboard", href: "/dashboard", icon: HomeIcon },
@@ -201,23 +198,23 @@ const userInitials = computed(() => {
 const toggleUserMenu = (event: Event) => {
   event.stopPropagation();
   userMenuOpen.value = !userMenuOpen.value;
-  console.log('User menu toggled:', userMenuOpen.value);
+  console.log("User menu toggled:", userMenuOpen.value);
 };
 
 const closeUserMenu = () => {
   userMenuOpen.value = false;
-  console.log('User menu closed');
+  console.log("User menu closed");
 };
 
 const handleLogout = () => {
   userMenuOpen.value = false;
   // TODO: Implement logout logic with auth store
-  console.log('Logout clicked');
+  console.log("Logout clicked");
   router.push("/login");
 };
 
 // Handle clicks outside the dropdown
-const handleClickOutside = (event: Event) => {
+const handleClickOutside = () => {
   if (userMenuOpen.value) {
     closeUserMenu();
   }
@@ -225,11 +222,11 @@ const handleClickOutside = (event: Event) => {
 
 // Add global click listener when component mounts
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 // Remove global click listener when component unmounts
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>

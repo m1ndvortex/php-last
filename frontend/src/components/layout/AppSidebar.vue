@@ -55,13 +55,11 @@
         {{ $t(item.name) }}
       </router-link>
     </nav>
-
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   XMarkIcon,
@@ -96,6 +94,4 @@ const navigation = [
   { name: "nav.reports", href: "/reports", icon: ChartBarIcon },
   { name: "nav.settings", href: "/settings", icon: CogIcon },
 ];
-
-
 </script>

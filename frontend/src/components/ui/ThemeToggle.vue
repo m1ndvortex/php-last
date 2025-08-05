@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { SunIcon, MoonIcon } from '@heroicons/vue/24/outline';
-import { useAppStore } from '../../stores/app';
+import { computed } from "vue";
+import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
+import { useAppStore } from "../../stores/app";
 
 const appStore = useAppStore();
 

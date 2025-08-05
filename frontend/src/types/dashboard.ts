@@ -5,15 +5,15 @@ export interface DashboardKPI {
   label: string;
   value: string | number;
   change?: number;
-  changeType?: 'increase' | 'decrease' | 'neutral';
+  changeType?: "increase" | "decrease" | "neutral";
   icon?: string;
   color?: string;
-  format?: 'currency' | 'percentage' | 'number' | 'weight';
+  format?: "currency" | "percentage" | "number" | "weight";
 }
 
 export interface DashboardWidget {
   id: string;
-  type: 'kpi' | 'chart' | 'alert' | 'table' | 'custom';
+  type: "kpi" | "chart" | "alert" | "table" | "custom";
   title: string;
   position: {
     x: number;
@@ -57,7 +57,7 @@ export interface ChartData {
 }
 
 export interface SalesChartData extends ChartData {
-  period: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  period: "daily" | "weekly" | "monthly" | "yearly";
   currency: string;
 }
 
@@ -71,10 +71,15 @@ export interface CategoryPerformance {
 
 export interface BusinessAlert {
   id: string;
-  type: 'pending_cheque' | 'low_stock' | 'expiring_item' | 'overdue_invoice' | 'system';
+  type:
+    | "pending_cheque"
+    | "low_stock"
+    | "expiring_item"
+    | "overdue_invoice"
+    | "system";
   title: string;
   message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   timestamp: string;
   read: boolean;
   actionUrl?: string;

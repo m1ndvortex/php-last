@@ -10,9 +10,9 @@
     </div>
 
     <!-- Mobile sidebar (only visible on mobile) -->
-    <AppSidebar 
-      :open="sidebarOpen" 
-      @close="sidebarOpen = false" 
+    <AppSidebar
+      :open="sidebarOpen"
+      @close="sidebarOpen = false"
       class="lg:hidden"
     />
 

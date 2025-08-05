@@ -10,19 +10,24 @@
           class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           :disabled="isLoading"
         >
-          <ArrowPathIcon 
-            class="w-4 h-4" 
+          <ArrowPathIcon
+            class="w-4 h-4"
             :class="{ 'animate-spin': isLoading }"
           />
         </button>
       </div>
     </div>
-    
+
     <div class="relative">
-      <div v-if="isLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10"
+      >
+        <div
+          class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"
+        ></div>
       </div>
-      
+
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
@@ -39,8 +44,11 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="data.length === 0">
-              <td :colspan="columns.length" class="px-6 py-4 text-center text-gray-500">
-                {{ $t('common.no_data') }}
+              <td
+                :colspan="columns.length"
+                class="px-6 py-4 text-center text-gray-500"
+              >
+                {{ $t("common.no_data") }}
               </td>
             </tr>
             <tr
@@ -53,8 +61,12 @@
                 :key="column.key"
                 class="px-6 py-4 whitespace-nowrap text-sm text-right rtl:text-right ltr:text-left"
                 :class="[
-                  column.align === 'right' ? 'text-right' : (column.align === 'left' ? 'ltr:text-left rtl:text-right' : 'text-right rtl:text-right ltr:text-left'),
-                  getCellClass(column, row[column.key])
+                  column.align === 'right'
+                    ? 'text-right'
+                    : column.align === 'left'
+                      ? 'ltr:text-left rtl:text-right'
+                      : 'text-right rtl:text-right ltr:text-left',
+                  getCellClass(column, row[column.key]),
                 ]"
               >
                 <component
@@ -71,11 +83,16 @@
           </tbody>
         </table>
       </div>
-      
+
       <!-- Pagination -->
-      <div v-if="showPagination && totalPages > 1" class="mt-4 flex items-center justify-between">
+      <div
+        v-if="showPagination && totalPages > 1"
+        class="mt-4 flex items-center justify-between"
+      >
         <div class="text-sm text-gray-700">
-          {{ $t('table.showing') }} {{ startIndex + 1 }} {{ $t('table.to') }} {{ endIndex }} {{ $t('table.of') }} {{ data.length }} {{ $t('table.results') }}
+          {{ $t("table.showing") }} {{ startIndex + 1 }} {{ $t("table.to") }}
+          {{ endIndex }} {{ $t("table.of") }} {{ data.length }}
+          {{ $t("table.results") }}
         </div>
         <div class="flex items-center space-x-2 rtl:space-x-reverse">
           <button
@@ -83,7 +100,7 @@
             :disabled="currentPage === 1"
             class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ $t('table.previous') }}
+            {{ $t("table.previous") }}
           </button>
           <span class="text-sm text-gray-700">
             {{ currentPage }} / {{ totalPages }}
@@ -93,7 +110,7 @@
             :disabled="currentPage === totalPages"
             class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ $t('table.next') }}
+            {{ $t("table.next") }}
           </button>
         </div>
       </div>
@@ -102,16 +119,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useNumberFormatter } from '@/composables/useNumberFormatter';
-import { ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useNumberFormatter } from "@/composables/useNumberFormatter";
+import { ArrowPathIcon } from "@heroicons/vue/24/outline";
 
 interface TableColumn {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'currency' | 'date' | 'status' | 'custom';
-  align?: 'left' | 'right' | 'center';
+  type?: "text" | "number" | "currency" | "date" | "status" | "custom";
+  align?: "left" | "right" | "center";
   component?: any;
   formatter?: (value: any) => string;
 }
@@ -126,7 +143,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   showPagination: true,
-  pageSize: 5
+  pageSize: 5,
 });
 
 const emit = defineEmits<{
@@ -139,16 +156,14 @@ const { formatNumber, formatCurrency } = useNumberFormatter();
 const isLoading = ref(false);
 const currentPage = ref(1);
 
-const totalPages = computed(() => 
-  Math.ceil(props.data.length / props.pageSize)
+const totalPages = computed(() =>
+  Math.ceil(props.data.length / props.pageSize),
 );
 
-const startIndex = computed(() => 
-  (currentPage.value - 1) * props.pageSize
-);
+const startIndex = computed(() => (currentPage.value - 1) * props.pageSize);
 
-const endIndex = computed(() => 
-  Math.min(startIndex.value + props.pageSize, props.data.length)
+const endIndex = computed(() =>
+  Math.min(startIndex.value + props.pageSize, props.data.length),
 );
 
 const displayData = computed(() => {
@@ -157,20 +172,20 @@ const displayData = computed(() => {
 });
 
 const formatCellValue = (column: TableColumn, value: any) => {
-  if (value === null || value === undefined) return '-';
-  
+  if (value === null || value === undefined) return "-";
+
   if (column.formatter) {
     return column.formatter(value);
   }
-  
+
   switch (column.type) {
-    case 'currency':
+    case "currency":
       return formatCurrency(Number(value));
-    case 'number':
+    case "number":
       return formatNumber(Number(value));
-    case 'date':
+    case "date":
       return new Date(value).toLocaleDateString();
-    case 'status':
+    case "status":
       return t(`status.${value}`);
     default:
       return String(value);
@@ -179,31 +194,31 @@ const formatCellValue = (column: TableColumn, value: any) => {
 
 const getCellClass = (column: TableColumn, value: any) => {
   const classes = [];
-  
+
   switch (column.type) {
-    case 'currency':
-    case 'number':
-      classes.push('font-mono');
+    case "currency":
+    case "number":
+      classes.push("font-mono");
       break;
-    case 'status':
-      classes.push('font-medium');
-      if (value === 'active' || value === 'paid') {
-        classes.push('text-green-600');
-      } else if (value === 'pending') {
-        classes.push('text-yellow-600');
-      } else if (value === 'inactive' || value === 'overdue') {
-        classes.push('text-red-600');
+    case "status":
+      classes.push("font-medium");
+      if (value === "active" || value === "paid") {
+        classes.push("text-green-600");
+      } else if (value === "pending") {
+        classes.push("text-yellow-600");
+      } else if (value === "inactive" || value === "overdue") {
+        classes.push("text-red-600");
       }
       break;
   }
-  
-  return classes.join(' ');
+
+  return classes.join(" ");
 };
 
 const refreshTable = () => {
   isLoading.value = true;
-  emit('refresh');
-  
+  emit("refresh");
+
   // Simulate loading delay
   setTimeout(() => {
     isLoading.value = false;
@@ -219,44 +234,6 @@ const previousPage = () => {
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
-  }
-};
-
-// Generate sample data based on widget type
-const getSampleData = () => {
-  switch (props.title) {
-    case 'Recent Activities':
-      return [
-        { activity: 'Invoice #INV-001 created', user: 'Admin', time: '2 minutes ago', status: 'completed' },
-        { activity: 'Customer John Doe added', user: 'Admin', time: '5 minutes ago', status: 'completed' },
-        { activity: 'Gold Ring inventory updated', user: 'Admin', time: '10 minutes ago', status: 'completed' },
-        { activity: 'Payment received for INV-002', user: 'System', time: '15 minutes ago', status: 'completed' },
-        { activity: 'Stock alert for Silver Necklace', user: 'System', time: '20 minutes ago', status: 'pending' }
-      ];
-    case 'Top Customers':
-      return [
-        { name: 'John Doe', orders: 15, total: 25000, lastOrder: '2024-01-15' },
-        { name: 'Jane Smith', orders: 12, total: 18500, lastOrder: '2024-01-14' },
-        { name: 'Mike Johnson', orders: 8, total: 12000, lastOrder: '2024-01-13' },
-        { name: 'Sarah Wilson', orders: 6, total: 9500, lastOrder: '2024-01-12' },
-        { name: 'David Brown', orders: 5, total: 7800, lastOrder: '2024-01-11' }
-      ];
-    case 'Pending Transactions':
-      return [
-        { reference: 'TXN-001', description: 'Gold purchase', amount: 5000, date: '2024-01-15', status: 'pending' },
-        { reference: 'TXN-002', description: 'Silver sale', amount: -1200, date: '2024-01-14', status: 'pending' },
-        { reference: 'TXN-003', description: 'Rent payment', amount: -2000, date: '2024-01-13', status: 'pending' },
-        { reference: 'TXN-004', description: 'Customer payment', amount: 3500, date: '2024-01-12', status: 'pending' }
-      ];
-    case 'Recent Sales':
-      return [
-        { invoice: 'INV-001', customer: 'John Doe', amount: 2500, date: '2024-01-15', status: 'paid' },
-        { invoice: 'INV-002', customer: 'Jane Smith', amount: 1800, date: '2024-01-14', status: 'paid' },
-        { invoice: 'INV-003', customer: 'Mike Johnson', amount: 3200, date: '2024-01-13', status: 'pending' },
-        { invoice: 'INV-004', customer: 'Sarah Wilson', amount: 950, date: '2024-01-12', status: 'overdue' }
-      ];
-    default:
-      return [];
   }
 };
 

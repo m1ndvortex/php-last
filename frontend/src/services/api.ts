@@ -5,6 +5,7 @@ import type {
   AxiosResponse,
   AxiosError,
 } from "axios";
+import type { Customer } from "@/types";
 import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 
@@ -127,9 +128,9 @@ const getCsrfCookie = async (): Promise<void> => {
     await axios.get("http://localhost/sanctum/csrf-cookie", {
       withCredentials: true,
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      }
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
     });
   } catch (error) {
     console.error("Failed to get CSRF cookie:", error);
@@ -143,7 +144,7 @@ const getCsrfTokenFromCookie = (): string | null => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
-    const token = parts.pop()?.split(';').shift();
+    const token = parts.pop()?.split(";").shift();
     return token ? decodeURIComponent(token) : null;
   }
   return null;
@@ -191,7 +192,10 @@ export const apiService = {
       try {
         await getCsrfCookie();
       } catch (error) {
-        console.warn("CSRF cookie request failed, proceeding with login:", error);
+        console.warn(
+          "CSRF cookie request failed, proceeding with login:",
+          error,
+        );
         // Continue with login even if CSRF cookie fails
         // This maintains backward compatibility while we work on CORS issues
       }
@@ -203,7 +207,10 @@ export const apiService = {
       try {
         await getCsrfCookie();
       } catch (error) {
-        console.warn("CSRF cookie request failed for logout, proceeding:", error);
+        console.warn(
+          "CSRF cookie request failed for logout, proceeding:",
+          error,
+        );
       }
       return api.post("api/auth/logout");
     },
@@ -227,14 +234,16 @@ export const apiService = {
     // Two-Factor Authentication
     enable2FA: () => api.post("api/auth/2fa/enable"),
 
-    verify2FA: (data: { code: string }) => api.post("api/auth/2fa/verify", data),
+    verify2FA: (data: { code: string }) =>
+      api.post("api/auth/2fa/verify", data),
 
     disable2FA: (data: { password: string }) =>
       api.post("api/auth/2fa/disable", data),
 
     getBackupCodes: () => api.get("api/auth/2fa/backup-codes"),
 
-    regenerateBackupCodes: () => api.post("api/auth/2fa/backup-codes/regenerate"),
+    regenerateBackupCodes: () =>
+      api.post("api/auth/2fa/backup-codes/regenerate"),
 
     // Session Management
     getSessions: () => api.get("api/auth/sessions"),
@@ -273,6 +282,137 @@ export const apiService = {
 
     switchLanguage: (locale: string) =>
       api.post("api/localization/switch-language", { locale }),
+  },
+
+  // Customers
+  customers: {
+    getCustomers: (filters?: Record<string, any>) =>
+      api.get("api/customers", { params: filters }),
+
+    getCustomer: (id: number) => api.get(`api/customers/${id}`),
+
+    createCustomer: (data: Partial<Customer>) =>
+      api.post("api/customers", data),
+
+    updateCustomer: (id: number, data: Partial<Customer>) =>
+      api.put(`api/customers/${id}`, data),
+
+    deleteCustomer: (id: number) => api.delete(`api/customers/${id}`),
+
+    getAgingReport: (filters?: Record<string, any>) =>
+      api.get("api/customers/aging-report", { params: filters }),
+
+    getCRMPipeline: () => api.get("api/customers/crm-pipeline"),
+
+    updateCRMStage: (id: number, data: { crm_stage: string; notes?: string }) =>
+      api.put(`api/customers/${id}/crm-stage`, data),
+
+    sendCommunication: (
+      id: number,
+      data: {
+        type: string;
+        subject?: string;
+        message: string;
+        metadata?: Record<string, any>;
+      },
+    ) => api.post(`api/customers/${id}/communicate`, data),
+
+    getUpcomingBirthdays: () => api.get("api/customers/upcoming-birthdays"),
+
+    getUpcomingAnniversaries: () =>
+      api.get("api/customers/upcoming-anniversaries"),
+
+    exportVCard: (id: number) => api.get(`api/customers/${id}/vcard`),
+  },
+
+  // Inventory
+  inventory: {
+    getItems: (filters?: Record<string, any>) =>
+      api.get("api/inventory/items", { params: filters }),
+
+    getItem: (id: number) => api.get(`api/inventory/items/${id}`),
+
+    createItem: (data: FormData) =>
+      api.post("api/inventory/items", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+
+    updateItem: (id: number, data: FormData) =>
+      api.put(`api/inventory/items/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+
+    deleteItem: (id: number) => api.delete(`api/inventory/items/${id}`),
+
+    getMovements: (filters?: Record<string, any>) =>
+      api.get("api/inventory/movements", { params: filters }),
+
+    createMovement: (data: any) => api.post("api/inventory/movements", data),
+
+    getCategories: () => api.get("api/inventory/categories"),
+
+    createCategory: (data: any) => api.post("api/inventory/categories", data),
+
+    updateCategory: (id: number, data: any) =>
+      api.put(`api/inventory/categories/${id}`, data),
+
+    deleteCategory: (id: number) =>
+      api.delete(`api/inventory/categories/${id}`),
+
+    getLocations: () => api.get("api/inventory/locations"),
+
+    createLocation: (data: any) => api.post("api/inventory/locations", data),
+
+    updateLocation: (id: number, data: any) =>
+      api.put(`api/inventory/locations/${id}`, data),
+
+    deleteLocation: (id: number) => api.delete(`api/inventory/locations/${id}`),
+
+    // Stock Audit
+    getAudits: (filters?: Record<string, any>) =>
+      api.get("api/inventory/audits", { params: filters }),
+
+    getAudit: (id: number) => api.get(`api/inventory/audits/${id}`),
+
+    createAudit: (data: any) => api.post("api/inventory/audits", data),
+
+    updateAudit: (id: number, data: any) =>
+      api.put(`api/inventory/audits/${id}`, data),
+
+    deleteAudit: (id: number) => api.delete(`api/inventory/audits/${id}`),
+
+    startAudit: (id: number) => api.post(`api/inventory/audits/${id}/start`),
+
+    completeAudit: (id: number) =>
+      api.post(`api/inventory/audits/${id}/complete`),
+
+    updateAuditItem: (auditId: number, itemId: number, data: any) =>
+      api.put(`api/inventory/audits/${auditId}/items/${itemId}`, data),
+
+    // BOM (Bill of Materials)
+    getBOMs: (filters?: Record<string, any>) =>
+      api.get("api/inventory/bom", { params: filters }),
+
+    getBOM: (id: number) => api.get(`api/inventory/bom/${id}`),
+
+    createBOM: (data: any) => api.post("api/inventory/bom", data),
+
+    updateBOM: (id: number, data: any) =>
+      api.put(`api/inventory/bom/${id}`, data),
+
+    deleteBOM: (id: number) => api.delete(`api/inventory/bom/${id}`),
+
+    getBOMForItem: (itemId: number) =>
+      api.get(`api/inventory/items/${itemId}/bom`),
+
+    // Reports
+    getLowStockItems: () => api.get("api/inventory/reports/low-stock"),
+
+    getExpiringItems: (days?: number) =>
+      api.get("api/inventory/reports/expiring", { params: { days } }),
+
+    getInventoryValuation: (filters?: Record<string, any>) =>
+      api.get("api/inventory/reports/valuation", { params: filters }),
   },
 };
 

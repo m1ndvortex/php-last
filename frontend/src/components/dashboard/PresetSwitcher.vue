@@ -2,9 +2,9 @@
   <div class="preset-switcher">
     <div class="flex items-center space-x-4">
       <label class="text-sm font-medium text-gray-700">
-        {{ $t('dashboard.presets.label') }}:
+        {{ $t("dashboard.presets.label") }}:
       </label>
-      
+
       <div class="flex items-center space-x-2">
         <button
           v-for="preset in availablePresets"
@@ -13,33 +13,33 @@
           class="preset-btn"
           :class="{
             'preset-btn-active': activePreset === preset.id,
-            'preset-btn-inactive': activePreset !== preset.id
+            'preset-btn-inactive': activePreset !== preset.id,
           }"
         >
           <component :is="getPresetIcon(preset.id)" class="w-4 h-4 mr-2" />
           {{ preset.name }}
         </button>
       </div>
-      
+
       <div class="flex items-center space-x-2 ml-auto">
         <button
           @click="showCustomizeModal = true"
           class="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center space-x-1"
         >
           <CogIcon class="w-4 h-4" />
-          <span>{{ $t('dashboard.presets.customize') }}</span>
+          <span>{{ $t("dashboard.presets.customize") }}</span>
         </button>
-        
+
         <button
           @click="resetLayout"
           class="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center space-x-1"
         >
           <ArrowPathIcon class="w-4 h-4" />
-          <span>{{ $t('dashboard.presets.reset') }}</span>
+          <span>{{ $t("dashboard.presets.reset") }}</span>
         </button>
       </div>
     </div>
-    
+
     <!-- Customize Modal -->
     <div
       v-if="showCustomizeModal"
@@ -51,7 +51,9 @@
         @click.stop
       >
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-semibold">{{ $t('dashboard.presets.customize_title') }}</h3>
+          <h3 class="text-lg font-semibold">
+            {{ $t("dashboard.presets.customize_title") }}
+          </h3>
           <button
             @click="showCustomizeModal = false"
             class="text-gray-400 hover:text-gray-600 transition-colors"
@@ -59,12 +61,12 @@
             <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
-        
+
         <div class="space-y-6">
           <!-- Preset Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">
-              {{ $t('dashboard.presets.select_base') }}
+              {{ $t("dashboard.presets.select_base") }}
             </label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div
@@ -73,21 +75,26 @@
                 class="preset-card"
                 :class="{
                   'preset-card-selected': customizePreset === preset.id,
-                  'preset-card-unselected': customizePreset !== preset.id
+                  'preset-card-unselected': customizePreset !== preset.id,
                 }"
                 @click="customizePreset = preset.id"
               >
-                <component :is="getPresetIcon(preset.id)" class="w-6 h-6 mb-2" />
+                <component
+                  :is="getPresetIcon(preset.id)"
+                  class="w-6 h-6 mb-2"
+                />
                 <div class="text-sm font-medium">{{ preset.name }}</div>
-                <div class="text-xs text-gray-500 mt-1">{{ preset.description }}</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  {{ preset.description }}
+                </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Widget Configuration -->
           <div v-if="customizePreset">
             <label class="block text-sm font-medium text-gray-700 mb-3">
-              {{ $t('dashboard.presets.configure_widgets') }}
+              {{ $t("dashboard.presets.configure_widgets") }}
             </label>
             <div class="space-y-3">
               <div
@@ -96,7 +103,10 @@
                 class="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
               >
                 <div class="flex items-center space-x-3">
-                  <component :is="getWidgetIcon(widget.type)" class="w-5 h-5 text-gray-500" />
+                  <component
+                    :is="getWidgetIcon(widget.type)"
+                    class="w-5 h-5 text-gray-500"
+                  />
                   <div>
                     <div class="text-sm font-medium">{{ widget.title }}</div>
                     <div class="text-xs text-gray-500">
@@ -113,18 +123,18 @@
                       class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span class="ml-2 text-sm text-gray-600">
-                      {{ $t('dashboard.presets.enabled') }}
+                      {{ $t("dashboard.presets.enabled") }}
                     </span>
                   </label>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Layout Options -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">
-              {{ $t('dashboard.presets.layout_options') }}
+              {{ $t("dashboard.presets.layout_options") }}
             </label>
             <div class="grid grid-cols-2 gap-4">
               <label class="flex items-center">
@@ -134,7 +144,7 @@
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ $t('dashboard.presets.compact_mode') }}
+                  {{ $t("dashboard.presets.compact_mode") }}
                 </span>
               </label>
               <label class="flex items-center">
@@ -144,7 +154,7 @@
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ $t('dashboard.presets.show_headers') }}
+                  {{ $t("dashboard.presets.show_headers") }}
                 </span>
               </label>
               <label class="flex items-center">
@@ -154,7 +164,7 @@
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ $t('dashboard.presets.allow_dragging') }}
+                  {{ $t("dashboard.presets.allow_dragging") }}
                 </span>
               </label>
               <label class="flex items-center">
@@ -164,25 +174,27 @@
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span class="ml-2 text-sm text-gray-600">
-                  {{ $t('dashboard.presets.auto_refresh') }}
+                  {{ $t("dashboard.presets.auto_refresh") }}
                 </span>
               </label>
             </div>
           </div>
         </div>
-        
-        <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+
+        <div
+          class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200"
+        >
           <button
             @click="showCustomizeModal = false"
             class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
-            {{ $t('common.cancel') }}
+            {{ $t("common.cancel") }}
           </button>
           <button
             @click="saveCustomization"
             class="px-4 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 transition-colors"
           >
-            {{ $t('common.save') }}
+            {{ $t("common.save") }}
           </button>
         </div>
       </div>
@@ -191,10 +203,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useDashboardStore } from '@/stores/dashboard';
-import type { DashboardPreset } from '@/types/dashboard';
+import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useDashboardStore } from "@/stores/dashboard";
 
 import {
   CogIcon,
@@ -205,21 +216,21 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   TableCellsIcon,
-  PresentationChartLineIcon
-} from '@heroicons/vue/24/outline';
+  PresentationChartLineIcon,
+} from "@heroicons/vue/24/outline";
 
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 
 const showCustomizeModal = ref(false);
-const customizePreset = ref<string>('');
+const customizePreset = ref<string>("");
 const enabledWidgets = ref<Set<string>>(new Set());
 
 const layoutOptions = ref({
   compactMode: false,
   showHeaders: true,
   allowDragging: true,
-  autoRefresh: false
+  autoRefresh: false,
 });
 
 const availablePresets = computed(() => dashboardStore.availablePresets);
@@ -227,11 +238,11 @@ const activePreset = computed(() => dashboardStore.activePreset);
 
 const getPresetIcon = (presetId: string) => {
   switch (presetId) {
-    case 'default':
+    case "default":
       return HomeIcon;
-    case 'accountant':
+    case "accountant":
       return CalculatorIcon;
-    case 'sales':
+    case "sales":
       return PresentationChartLineIcon;
     default:
       return HomeIcon;
@@ -240,13 +251,13 @@ const getPresetIcon = (presetId: string) => {
 
 const getWidgetIcon = (widgetType: string) => {
   switch (widgetType) {
-    case 'kpi':
+    case "kpi":
       return ChartBarIcon;
-    case 'chart':
+    case "chart":
       return PresentationChartLineIcon;
-    case 'alert':
+    case "alert":
       return ExclamationTriangleIcon;
-    case 'table':
+    case "table":
       return TableCellsIcon;
     default:
       return HomeIcon;
@@ -254,7 +265,7 @@ const getWidgetIcon = (widgetType: string) => {
 };
 
 const getPresetWidgets = (presetId: string) => {
-  const preset = availablePresets.value.find(p => p.id === presetId);
+  const preset = availablePresets.value.find((p) => p.id === presetId);
   return preset?.layout.widgets || [];
 };
 
@@ -274,16 +285,16 @@ const switchPreset = async (presetId: string) => {
   try {
     await dashboardStore.switchPreset(presetId);
   } catch (error) {
-    console.error('Failed to switch preset:', error);
+    console.error("Failed to switch preset:", error);
   }
 };
 
 const resetLayout = async () => {
-  if (confirm(t('dashboard.presets.reset_confirm'))) {
+  if (confirm(t("dashboard.presets.reset_confirm"))) {
     try {
-      await dashboardStore.switchPreset('default');
+      await dashboardStore.switchPreset("default");
     } catch (error) {
-      console.error('Failed to reset layout:', error);
+      console.error("Failed to reset layout:", error);
     }
   }
 };
@@ -292,30 +303,24 @@ const saveCustomization = async () => {
   try {
     // Here you would implement the logic to save the customized preset
     // This could involve creating a new preset or updating an existing one
-    console.log('Saving customization:', {
+    console.log("Saving customization:", {
       preset: customizePreset.value,
       enabledWidgets: Array.from(enabledWidgets.value),
-      layoutOptions: layoutOptions.value
+      layoutOptions: layoutOptions.value,
     });
-    
+
     showCustomizeModal.value = false;
   } catch (error) {
-    console.error('Failed to save customization:', error);
+    console.error("Failed to save customization:", error);
   }
 };
 
 // Initialize enabled widgets when modal opens
-const initializeCustomization = (presetId: string) => {
-  customizePreset.value = presetId;
-  const widgets = getPresetWidgets(presetId);
-  enabledWidgets.value = new Set(widgets.map(w => w.id));
-};
-
-// Watch for modal opening
-const openCustomizeModal = () => {
-  initializeCustomization(activePreset.value);
-  showCustomizeModal.value = true;
-};
+// const initializeCustomization = (presetId: string) => {
+//   customizePreset.value = presetId;
+//   const widgets = getPresetWidgets(presetId);
+//   enabledWidgets.value = new Set(widgets.map((w) => w.id));
+// };
 </script>
 
 <style scoped>

@@ -8,12 +8,31 @@ export interface Customer {
   phone?: string;
   address?: string;
   preferred_language: "en" | "fa";
-  customer_type: "individual" | "business";
+  customer_type: "retail" | "wholesale" | "vip";
   credit_limit?: number;
   payment_terms?: number;
   notes?: string;
+  birthday?: string;
+  anniversary?: string;
+  preferred_communication_method?: "email" | "sms" | "whatsapp" | "phone";
+  is_active: boolean;
+  crm_stage: "lead" | "prospect" | "customer" | "inactive";
+  lead_source?:
+    | "referral"
+    | "website"
+    | "social_media"
+    | "walk_in"
+    | "advertisement"
+    | "other";
+  tags?: string[];
   created_at: string;
   updated_at: string;
+  // Computed fields from backend
+  display_name?: string;
+  age?: number;
+  total_invoice_amount?: number;
+  outstanding_balance?: number;
+  last_invoice_date?: string;
 }
 
 // Invoice types
@@ -52,7 +71,9 @@ export interface InvoiceItem {
 export interface InventoryItem {
   id: number;
   name: string;
+  name_persian?: string;
   description?: string;
+  description_persian?: string;
   sku: string;
   category_id?: number;
   location_id?: number;
@@ -64,10 +85,107 @@ export interface InventoryItem {
   serial_number?: string;
   batch_number?: string;
   expiry_date?: string;
+  minimum_stock?: number;
+  maximum_stock?: number;
+  is_active: boolean;
+  track_serial: boolean;
+  track_batch: boolean;
+  metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
   category?: Category;
   location?: Location;
+  // Computed fields
+  localized_name?: string;
+  localized_description?: string;
+  total_value?: number;
+  total_cost?: number;
+  is_low_stock?: boolean;
+  is_expiring?: boolean;
+  is_expired?: boolean;
+}
+
+export interface InventoryMovement {
+  id: number;
+  inventory_item_id: number;
+  from_location_id?: number;
+  to_location_id?: number;
+  type: "in" | "out" | "transfer" | "adjustment" | "wastage" | "production";
+  quantity: number;
+  unit_cost?: number;
+  reference_type?: string;
+  reference_id?: number;
+  batch_number?: string;
+  notes?: string;
+  user_id?: number;
+  movement_date: string;
+  created_at: string;
+  updated_at: string;
+  inventory_item?: InventoryItem;
+  from_location?: Location;
+  to_location?: Location;
+  user?: any;
+  // Computed fields
+  total_value?: number;
+  is_inbound?: boolean;
+  is_outbound?: boolean;
+  is_transfer?: boolean;
+}
+
+export interface StockAudit {
+  id: number;
+  audit_number: string;
+  location_id?: number;
+  status: "pending" | "in_progress" | "completed" | "cancelled";
+  audit_date: string;
+  auditor_id?: number;
+  notes?: string;
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  location?: Location;
+  auditor?: any;
+  audit_items?: StockAuditItem[];
+  // Computed fields
+  total_variance_value?: number;
+  items_with_variance_count?: number;
+  completion_percentage?: number;
+  is_completed?: boolean;
+  is_in_progress?: boolean;
+}
+
+export interface StockAuditItem {
+  id: number;
+  stock_audit_id: number;
+  inventory_item_id: number;
+  expected_quantity: number;
+  actual_quantity?: number;
+  variance?: number;
+  variance_value?: number;
+  is_counted: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  inventory_item?: InventoryItem;
+}
+
+export interface BillOfMaterial {
+  id: number;
+  finished_item_id: number;
+  component_item_id: number;
+  quantity_required: number;
+  wastage_percentage: number;
+  is_active: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  finished_item?: InventoryItem;
+  component_item?: InventoryItem;
+  // Computed fields
+  total_quantity_required?: number;
+  wastage_quantity?: number;
+  total_cost?: number;
 }
 
 export interface Category {
@@ -163,14 +281,51 @@ export interface Alert {
 export interface Communication {
   id: number;
   customer_id: number;
-  type: "whatsapp" | "sms" | "email";
+  user_id?: number;
+  type: "email" | "sms" | "whatsapp" | "phone" | "meeting" | "note";
   subject?: string;
   message: string;
-  status: "pending" | "sent" | "delivered" | "failed";
+  status: "draft" | "sent" | "delivered" | "read" | "failed";
   sent_at?: string;
+  delivered_at?: string;
+  read_at?: string;
+  metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
   customer?: Customer;
+}
+
+// CRM types
+export interface CRMPipelineStage {
+  stage: "lead" | "prospect" | "customer" | "inactive";
+  name: string;
+  count: number;
+  customers: Customer[];
+}
+
+export interface CRMPipelineData {
+  stages: CRMPipelineStage[];
+  total_customers: number;
+  conversion_rates: {
+    lead_to_prospect: number;
+    prospect_to_customer: number;
+    overall: number;
+  };
+}
+
+// Customer aging report types
+export interface CustomerAgingBucket {
+  range: string;
+  customers: Customer[];
+  total_amount: number;
+  count: number;
+}
+
+export interface CustomerAgingReport {
+  buckets: CustomerAgingBucket[];
+  total_outstanding: number;
+  total_customers: number;
+  generated_at: string;
 }
 
 // Report types
