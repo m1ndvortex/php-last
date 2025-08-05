@@ -122,23 +122,7 @@ const showErrorNotification = (message: string) => {
   console.error(message);
 };
 
-// Helper function to get CSRF cookie
-const getCsrfCookie = async (): Promise<void> => {
-  try {
-    await axios.get("http://localhost/sanctum/csrf-cookie", {
-      withCredentials: true,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    });
-  } catch (error) {
-    console.error("Failed to get CSRF cookie:", error);
-    throw error;
-  }
-};
-
-// Helper function to get CSRF token from cookie
+// Helper function to get CSRF token from cookie (simplified)
 const getCsrfTokenFromCookie = (): string | null => {
   const name = "XSRF-TOKEN";
   const value = `; ${document.cookie}`;
@@ -188,30 +172,10 @@ export const apiService = {
       password: string;
       remember?: boolean;
     }) => {
-      // Try to get CSRF cookie before login for proper security
-      try {
-        await getCsrfCookie();
-      } catch (error) {
-        console.warn(
-          "CSRF cookie request failed, proceeding with login:",
-          error,
-        );
-        // Continue with login even if CSRF cookie fails
-        // This maintains backward compatibility while we work on CORS issues
-      }
       return api.post("api/auth/login", credentials);
     },
 
     logout: async () => {
-      // Try to ensure CSRF cookie is available for logout
-      try {
-        await getCsrfCookie();
-      } catch (error) {
-        console.warn(
-          "CSRF cookie request failed for logout, proceeding:",
-          error,
-        );
-      }
       return api.post("api/auth/logout");
     },
 

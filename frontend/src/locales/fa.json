@@ -154,7 +154,12 @@
     "no_data_available": "داده‌ای موجود نیست",
     "from_date": "از تاریخ",
     "to_date": "تا تاریخ",
-    "language": "زبان"
+    "language": "زبان",
+    "all_categories": "همه دسته‌بندی‌ها",
+    "all_locations": "همه مکان‌ها",
+    "all_statuses": "همه وضعیت‌ها",
+    "all_types": "همه انواع",
+    "date_from": "از تاریخ"
   },
   "table": {
     "showing": "نمایش",
@@ -682,7 +687,8 @@
     "sufficient_stock_message": "موجودی کافی در دسترس ({quantity} واحد)",
     "low_stock_message": "هشدار موجودی کم ({quantity} واحد در دسترس)",
     "insufficient_stock_message": "موجودی ناکافی (نیاز به {shortage} واحد بیشتر)",
-    "available_stock": "موجودی در دسترس"
+    "available_stock": "موجودی در دسترس",
+    "search_finished_items": "جستجوی کالاهای نهایی..."
   },
   "customers": {
     "description": "مدیریت روابط مشتریان و ارتباطات."

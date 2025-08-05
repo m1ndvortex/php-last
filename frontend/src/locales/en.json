@@ -154,7 +154,12 @@
     "no_data_available": "No data available",
     "from_date": "From Date",
     "to_date": "To Date",
-    "language": "Language"
+    "language": "Language",
+    "all_categories": "All Categories",
+    "all_locations": "All Locations",
+    "all_statuses": "All Statuses",
+    "all_types": "All Types",
+    "date_from": "Date From"
   },
   "table": {
     "showing": "Showing",
@@ -682,7 +687,8 @@
     "sufficient_stock_message": "Sufficient stock available ({quantity} units)",
     "low_stock_message": "Low stock warning ({quantity} units available)",
     "insufficient_stock_message": "Insufficient stock (need {shortage} more units)",
-    "available_stock": "Available Stock"
+    "available_stock": "Available Stock",
+    "search_finished_items": "Search finished items..."
   },
   "customers": {
     "description": "Manage customer relationships and communications.",
