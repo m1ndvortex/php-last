@@ -414,6 +414,63 @@ export const apiService = {
     getInventoryValuation: (filters?: Record<string, any>) =>
       api.get("api/inventory/reports/valuation", { params: filters }),
   },
+
+  // Invoices
+  invoices: {
+    getInvoices: (filters?: Record<string, any>) =>
+      api.get("api/invoices", { params: filters }),
+
+    getInvoice: (id: number) => api.get(`api/invoices/${id}`),
+
+    createInvoice: (data: any) => api.post("api/invoices", data),
+
+    updateInvoice: (id: number, data: any) =>
+      api.put(`api/invoices/${id}`, data),
+
+    deleteInvoice: (id: number) => api.delete(`api/invoices/${id}`),
+
+    duplicateInvoice: (id: number) =>
+      api.post(`api/invoices/${id}/duplicate`),
+
+    generatePDF: (id: number) => api.get(`api/invoices/${id}/pdf`),
+
+    previewPDF: (id: number) => api.get(`api/invoices/${id}/preview`),
+
+    sendInvoice: (id: number, data: { method: string }) =>
+      api.post(`api/invoices/${id}/send`, data),
+
+    // Templates
+    getTemplates: () => api.get("api/invoice-templates"),
+
+    getTemplate: (id: number) => api.get(`api/invoice-templates/${id}`),
+
+    createTemplate: (data: any) => api.post("api/invoice-templates", data),
+
+    updateTemplate: (id: number, data: any) =>
+      api.put(`api/invoice-templates/${id}`, data),
+
+    deleteTemplate: (id: number) =>
+      api.delete(`api/invoice-templates/${id}`),
+
+    // Batch operations
+    generateBatch: (invoiceIds: number[]) =>
+      api.post("api/invoices/batch/generate", { invoice_ids: invoiceIds }),
+
+    sendBatch: (invoiceIds: number[], data: { method: string }) =>
+      api.post("api/invoices/batch/send", { invoice_ids: invoiceIds, ...data }),
+
+    // Recurring invoices
+    getRecurringInvoices: () => api.get("api/recurring-invoices"),
+
+    createRecurringInvoice: (data: any) =>
+      api.post("api/recurring-invoices", data),
+
+    updateRecurringInvoice: (id: number, data: any) =>
+      api.put(`api/recurring-invoices/${id}`, data),
+
+    deleteRecurringInvoice: (id: number) =>
+      api.delete(`api/recurring-invoices/${id}`),
+  },
 };
 
 export default api;
