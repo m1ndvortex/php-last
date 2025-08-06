@@ -244,6 +244,7 @@ export const useInventoryStore = defineStore("inventory", () => {
   };
 
   const createCategory = async (categoryData: any) => {
+    loading.value.creating = true;
     try {
       const response = await apiService.inventory.createCategory(categoryData);
       if (response.data.success) {
@@ -253,6 +254,64 @@ export const useInventoryStore = defineStore("inventory", () => {
       }
     } catch (error) {
       console.error("Failed to create category:", error);
+      throw error;
+    } finally {
+      loading.value.creating = false;
+    }
+  };
+
+  const updateCategory = async (id: number, categoryData: any) => {
+    loading.value.updating = true;
+    try {
+      const response = await apiService.inventory.updateCategory(
+        id,
+        categoryData,
+      );
+      if (response.data.success) {
+        const updatedCategory = response.data.data;
+        const index = categories.value.findIndex(
+          (category) => category.id === id,
+        );
+        if (index !== -1) {
+          categories.value[index] = updatedCategory;
+        }
+        return updatedCategory;
+      }
+    } catch (error) {
+      console.error("Failed to update category:", error);
+      throw error;
+    } finally {
+      loading.value.updating = false;
+    }
+  };
+
+  const deleteCategory = async (id: number) => {
+    loading.value.deleting = true;
+    try {
+      const response = await apiService.inventory.deleteCategory(id);
+      if (response.data.success) {
+        categories.value = categories.value.filter(
+          (category) => category.id !== id,
+        );
+      }
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+      throw error;
+    } finally {
+      loading.value.deleting = false;
+    }
+  };
+
+  const reorderCategories = async (orderData: any) => {
+    try {
+      const response = await apiService.inventory.reorderCategories(orderData);
+      if (response.data.success) {
+        // Refresh categories to get updated order
+        await fetchCategories();
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error("Failed to reorder categories:", error);
       throw error;
     }
   };
@@ -481,6 +540,9 @@ export const useInventoryStore = defineStore("inventory", () => {
     createMovement,
     fetchCategories,
     createCategory,
+    updateCategory,
+    deleteCategory,
+    reorderCategories,
     fetchLocations,
     createLocation,
     fetchAudits,

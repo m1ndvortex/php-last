@@ -19,6 +19,7 @@ class InventoryItem extends Model
         'description_persian',
         'sku',
         'category_id',
+        'main_category_id',
         'location_id',
         'quantity',
         'unit_price',
@@ -52,11 +53,27 @@ class InventoryItem extends Model
     ];
 
     /**
-     * Get the category that owns the inventory item.
+     * Get the category that owns the inventory item (subcategory).
      */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the subcategory that owns the inventory item (alias for category).
+     */
+    public function subcategory(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    /**
+     * Get the main category that owns the inventory item.
+     */
+    public function mainCategory(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'main_category_id');
     }
 
     /**
@@ -213,5 +230,54 @@ class InventoryItem extends Model
     public function scopeInLocation($query, $locationId)
     {
         return $query->where('location_id', $locationId);
+    }
+
+    /**
+     * Scope to filter by main category.
+     */
+    public function scopeInMainCategory($query, $mainCategoryId)
+    {
+        return $query->where('main_category_id', $mainCategoryId);
+    }
+
+    /**
+     * Get the full category path (main category > subcategory).
+     */
+    public function getCategoryPathAttribute(): string
+    {
+        $path = [];
+        
+        if ($this->mainCategory) {
+            $path[] = $this->mainCategory->localized_name;
+        }
+        
+        if ($this->subcategory && $this->subcategory->id !== $this->main_category_id) {
+            $path[] = $this->subcategory->localized_name;
+        }
+        
+        return implode(' > ', $path);
+    }
+
+    /**
+     * Get the formatted gold purity for display.
+     */
+    public function getFormattedGoldPurityAttribute(): ?string
+    {
+        if (!$this->gold_purity) {
+            return null;
+        }
+
+        $locale = app()->getLocale();
+        $purity = $this->gold_purity;
+        
+        if ($locale === 'fa') {
+            // Convert to Persian numerals and add Persian text
+            $persianNumerals = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            $englishNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            $persianPurity = str_replace($englishNumerals, $persianNumerals, number_format($purity, 1));
+            return $persianPurity . ' عیار';
+        }
+        
+        return number_format($purity, 1) . 'K';
     }
 }

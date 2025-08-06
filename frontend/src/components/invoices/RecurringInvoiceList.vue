@@ -25,30 +25,46 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.template_name") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.customer") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.frequency") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.next_generation") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.amount") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.status") }}
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.actions") }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody
+            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <tr
               v-for="recurring in invoicesStore.recurringInvoices"
               :key="recurring.id"
@@ -59,7 +75,8 @@
                   {{ recurring.name }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ $t("invoices.created") }} {{ formatDate(recurring.created_at) }}
+                  {{ $t("invoices.created") }}
+                  {{ formatDate(recurring.created_at) }}
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -72,7 +89,8 @@
                   {{ $t(`invoices.frequency_${recurring.frequency}`) }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ $t("invoices.every") }} {{ recurring.interval }} {{ $t(`invoices.${recurring.frequency}`) }}
+                  {{ $t("invoices.every") }} {{ recurring.interval }}
+                  {{ $t(`invoices.${recurring.frequency}`) }}
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -93,7 +111,9 @@
                   {{ $t(`invoices.recurring_status_${recurring.status}`) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
                 <div class="flex items-center justify-end space-x-2">
                   <button
                     @click="viewRecurring(recurring)"
@@ -109,9 +129,16 @@
                   </button>
                   <button
                     @click="toggleRecurring(recurring)"
-                    :class="recurring.status === 'active' ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300' : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'"
+                    :class="
+                      recurring.status === 'active'
+                        ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                        : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                    "
                   >
-                    <component :is="recurring.status === 'active' ? PauseIcon : PlayIcon" class="h-4 w-4" />
+                    <component
+                      :is="recurring.status === 'active' ? PauseIcon : PlayIcon"
+                      class="h-4 w-4"
+                    />
                   </button>
                   <button
                     @click="$emit('delete-recurring', recurring)"
@@ -127,7 +154,10 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="invoicesStore.recurringInvoices.length === 0" class="p-8 text-center">
+      <div
+        v-if="invoicesStore.recurringInvoices.length === 0"
+        class="p-8 text-center"
+      >
         <ClockIcon class="mx-auto h-12 w-12 text-gray-400" />
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
           {{ $t("invoices.no_recurring_invoices") }}
@@ -149,9 +179,25 @@
       <!-- Loading State -->
       <div v-if="invoicesStore.loading.recurring" class="p-8 text-center">
         <div class="inline-flex items-center">
-          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <svg
+            class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           {{ $t("common.loading") }}
         </div>
@@ -206,7 +252,8 @@ const selectedRecurring = ref<any>(null);
 const getStatusClass = (status: string) => {
   const classes = {
     active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    paused: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+    paused:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
     completed: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
     cancelled: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
   };
@@ -220,7 +267,7 @@ const viewRecurring = (recurring: any) => {
 
 const toggleRecurring = async (recurring: any) => {
   try {
-    const newStatus = recurring.status === 'active' ? 'paused' : 'active';
+    const newStatus = recurring.status === "active" ? "paused" : "active";
     // In a real app, this would call the API to update the status
     console.log(`Toggle recurring invoice ${recurring.id} to ${newStatus}`);
   } catch (error) {

@@ -1,15 +1,28 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+    <div
+      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+      <div
+        class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+      >
         <form @submit.prevent="handleSubmit">
           <!-- Header -->
           <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                {{ recurringInvoice ? $t("invoices.edit_recurring") : $t("invoices.create_recurring") }}
+              <h3
+                class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+              >
+                {{
+                  recurringInvoice
+                    ? $t("invoices.edit_recurring")
+                    : $t("invoices.create_recurring")
+                }}
               </h3>
               <button
                 type="button"
@@ -25,7 +38,9 @@
               <!-- Basic Information -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.template_name") }} *
                   </label>
                   <input
@@ -41,7 +56,9 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.customer") }} *
                   </label>
                   <select
@@ -50,7 +67,9 @@
                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     :class="{ 'border-red-500': errors.customer_id }"
                   >
-                    <option value="">{{ $t("invoices.select_customer") }}</option>
+                    <option value="">
+                      {{ $t("invoices.select_customer") }}
+                    </option>
                     <option
                       v-for="customer in customers"
                       :key="customer.id"
@@ -59,7 +78,10 @@
                       {{ customer.name }}
                     </option>
                   </select>
-                  <p v-if="errors.customer_id" class="mt-1 text-sm text-red-600">
+                  <p
+                    v-if="errors.customer_id"
+                    class="mt-1 text-sm text-red-600"
+                  >
                     {{ errors.customer_id[0] }}
                   </p>
                 </div>
@@ -67,12 +89,16 @@
 
               <!-- Frequency Settings -->
               <div>
-                <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-md font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.frequency_settings") }}
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       {{ $t("invoices.frequency") }} *
                     </label>
                     <select
@@ -80,16 +106,28 @@
                       required
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
-                      <option value="daily">{{ $t("invoices.frequency_daily") }}</option>
-                      <option value="weekly">{{ $t("invoices.frequency_weekly") }}</option>
-                      <option value="monthly">{{ $t("invoices.frequency_monthly") }}</option>
-                      <option value="quarterly">{{ $t("invoices.frequency_quarterly") }}</option>
-                      <option value="yearly">{{ $t("invoices.frequency_yearly") }}</option>
+                      <option value="daily">
+                        {{ $t("invoices.frequency_daily") }}
+                      </option>
+                      <option value="weekly">
+                        {{ $t("invoices.frequency_weekly") }}
+                      </option>
+                      <option value="monthly">
+                        {{ $t("invoices.frequency_monthly") }}
+                      </option>
+                      <option value="quarterly">
+                        {{ $t("invoices.frequency_quarterly") }}
+                      </option>
+                      <option value="yearly">
+                        {{ $t("invoices.frequency_yearly") }}
+                      </option>
                     </select>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       {{ $t("invoices.interval") }} *
                     </label>
                     <input
@@ -105,20 +143,21 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       {{ $t("invoices.start_date") }} *
                     </label>
-                    <DatePicker
-                      v-model="form.start_date"
-                      required
-                    />
+                    <DatePicker v-model="form.start_date" required />
                   </div>
                 </div>
               </div>
 
               <!-- End Conditions -->
               <div>
-                <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-md font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.end_conditions") }}
                 </h4>
                 <div class="space-y-3">
@@ -133,7 +172,7 @@
                       {{ $t("invoices.never_end") }}
                     </span>
                   </label>
-                  
+
                   <label class="flex items-center">
                     <input
                       v-model="form.end_type"
@@ -145,14 +184,11 @@
                       {{ $t("invoices.end_on_date") }}
                     </span>
                   </label>
-                  
+
                   <div v-if="form.end_type === 'date'" class="ml-6">
-                    <DatePicker
-                      v-model="form.end_date"
-                      class="max-w-xs"
-                    />
+                    <DatePicker v-model="form.end_date" class="max-w-xs" />
                   </div>
-                  
+
                   <label class="flex items-center">
                     <input
                       v-model="form.end_type"
@@ -164,7 +200,7 @@
                       {{ $t("invoices.end_after_count") }}
                     </span>
                   </label>
-                  
+
                   <div v-if="form.end_type === 'count'" class="ml-6">
                     <input
                       v-model.number="form.max_occurrences"
@@ -181,12 +217,16 @@
 
               <!-- Invoice Template -->
               <div>
-                <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-md font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.invoice_template") }}
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       {{ $t("common.language") }} *
                     </label>
                     <select
@@ -200,14 +240,18 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       {{ $t("invoices.template") }}
                     </label>
                     <select
                       v-model="form.template_id"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
-                      <option value="">{{ $t("invoices.default_template") }}</option>
+                      <option value="">
+                        {{ $t("invoices.default_template") }}
+                      </option>
                       <option
                         v-for="template in templates"
                         :key="template.id"
@@ -273,7 +317,9 @@
                         @input="calculateItemTotal(index)"
                       />
                     </div>
-                    <div class="w-24 text-sm font-medium text-gray-900 dark:text-white">
+                    <div
+                      class="w-24 text-sm font-medium text-gray-900 dark:text-white"
+                    >
                       {{ formatCurrency(item.total_price || 0) }}
                     </div>
                     <button
@@ -289,7 +335,9 @@
                 <!-- Total -->
                 <div class="mt-3 flex justify-end">
                   <div class="text-sm">
-                    <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.total") }}: </span>
+                    <span class="text-gray-600 dark:text-gray-400"
+                      >{{ $t("invoices.total") }}:
+                    </span>
                     <span class="font-medium text-gray-900 dark:text-white">
                       {{ formatCurrency(totalAmount) }}
                     </span>
@@ -299,7 +347,9 @@
 
               <!-- Notes -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.notes") }}
                 </label>
                 <textarea
@@ -313,15 +363,34 @@
           </div>
 
           <!-- Footer -->
-          <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div
+            class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
+          >
             <button
               type="submit"
               :disabled="loading || form.items.length === 0"
               class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg v-if="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                v-if="loading"
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               {{ recurringInvoice ? $t("common.update") : $t("common.create") }}
             </button>
@@ -375,7 +444,7 @@ const form = ref({
   customer_id: "",
   frequency: "monthly",
   interval: 1,
-  start_date: new Date().toISOString().split('T')[0],
+  start_date: new Date().toISOString().split("T")[0],
   end_type: "never",
   end_date: "",
   max_occurrences: 12,
@@ -390,7 +459,10 @@ const customers = computed(() => customersStore.customers);
 const templates = computed(() => invoicesStore.templates);
 
 const totalAmount = computed(() => {
-  return form.value.items.reduce((sum, item) => sum + (item.total_price || 0), 0);
+  return form.value.items.reduce(
+    (sum, item) => sum + (item.total_price || 0),
+    0,
+  );
 });
 
 // Methods
@@ -420,16 +492,22 @@ const handleSubmit = async () => {
     const recurringData = {
       ...form.value,
       customer_id: Number(form.value.customer_id),
-      template_id: form.value.template_id ? Number(form.value.template_id) : undefined,
+      template_id: form.value.template_id
+        ? Number(form.value.template_id)
+        : undefined,
       amount: totalAmount.value,
     };
 
     let savedRecurring;
     if (props.recurringInvoice) {
       // Update existing recurring invoice
-      savedRecurring = await invoicesStore.updateRecurringInvoice(props.recurringInvoice.id, recurringData);
+      savedRecurring = await invoicesStore.updateRecurringInvoice(
+        props.recurringInvoice.id,
+        recurringData,
+      );
     } else {
-      savedRecurring = await invoicesStore.createRecurringInvoice(recurringData);
+      savedRecurring =
+        await invoicesStore.createRecurringInvoice(recurringData);
     }
 
     if (savedRecurring) {

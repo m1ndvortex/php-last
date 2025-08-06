@@ -1,15 +1,24 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+    <div
+      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      <div
+        class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+      >
         <div v-if="invoice" class="bg-white dark:bg-gray-800">
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+                >
                   {{ $t("invoices.invoice_details") }}
                 </h3>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -24,13 +33,21 @@
                 >
                   {{ $t(`invoices.status_${invoice.status}`) }}
                 </span>
-                
+
                 <!-- Language Badge -->
                 <span
-                  :class="invoice.language === 'fa' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'"
+                  :class="
+                    invoice.language === 'fa'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                  "
                   class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
                 >
-                  {{ invoice.language === 'fa' ? $t("common.persian") : $t("common.english") }}
+                  {{
+                    invoice.language === "fa"
+                      ? $t("common.persian")
+                      : $t("common.english")
+                  }}
                 </span>
 
                 <button
@@ -49,7 +66,9 @@
               <!-- Invoice Information -->
               <div class="space-y-4">
                 <div>
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  <h4
+                    class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                  >
                     {{ $t("invoices.invoice_information") }}
                   </h4>
                   <dl class="space-y-2">
@@ -57,7 +76,9 @@
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("invoices.invoice_number") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ invoice.invoice_number }}
                       </dd>
                     </div>
@@ -65,7 +86,9 @@
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("invoices.issue_date") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ formatDate(invoice.issue_date) }}
                       </dd>
                     </div>
@@ -73,7 +96,9 @@
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("invoices.due_date") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ formatDate(invoice.due_date) }}
                       </dd>
                     </div>
@@ -81,7 +106,9 @@
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("common.created_at") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ formatDate(invoice.created_at) }}
                       </dd>
                     </div>
@@ -90,7 +117,9 @@
 
                 <!-- Customer Information -->
                 <div v-if="invoice.customer">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  <h4
+                    class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                  >
                     {{ $t("invoices.customer_information") }}
                   </h4>
                   <dl class="space-y-2">
@@ -98,31 +127,48 @@
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("customers.name") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ invoice.customer.name }}
                       </dd>
                     </div>
-                    <div v-if="invoice.customer.email" class="flex justify-between">
+                    <div
+                      v-if="invoice.customer.email"
+                      class="flex justify-between"
+                    >
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("customers.email") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ invoice.customer.email }}
                       </dd>
                     </div>
-                    <div v-if="invoice.customer.phone" class="flex justify-between">
+                    <div
+                      v-if="invoice.customer.phone"
+                      class="flex justify-between"
+                    >
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("customers.phone") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ invoice.customer.phone }}
                       </dd>
                     </div>
-                    <div v-if="invoice.customer.address" class="flex justify-between">
+                    <div
+                      v-if="invoice.customer.address"
+                      class="flex justify-between"
+                    >
                       <dt class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $t("customers.address") }}:
                       </dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
+                      <dd
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ invoice.customer.address }}
                       </dd>
                     </div>
@@ -131,10 +177,14 @@
 
                 <!-- Notes -->
                 <div v-if="invoice.notes">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  <h4
+                    class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                  >
                     {{ $t("invoices.notes") }}
                   </h4>
-                  <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                  <p
+                    class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-md"
+                  >
                     {{ invoice.notes }}
                   </p>
                 </div>
@@ -142,39 +192,61 @@
 
               <!-- Invoice Items -->
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.items") }}
                 </h4>
                 <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <table
+                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                  >
                     <thead class="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        <th
+                          class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                        >
                           {{ $t("invoices.item_description") }}
                         </th>
-                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        <th
+                          class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                        >
                           {{ $t("invoices.quantity") }}
                         </th>
-                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        <th
+                          class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                        >
                           {{ $t("invoices.unit_price") }}
                         </th>
-                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        <th
+                          class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                        >
                           {{ $t("invoices.total") }}
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody
+                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                    >
                       <tr v-for="item in invoice.items" :key="item.id">
-                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                        <td
+                          class="px-3 py-2 text-sm text-gray-900 dark:text-white"
+                        >
                           {{ item.description }}
                         </td>
-                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white text-right">
+                        <td
+                          class="px-3 py-2 text-sm text-gray-900 dark:text-white text-right"
+                        >
                           {{ formatNumber(item.quantity) }}
                         </td>
-                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white text-right">
+                        <td
+                          class="px-3 py-2 text-sm text-gray-900 dark:text-white text-right"
+                        >
                           {{ formatCurrency(item.unit_price) }}
                         </td>
-                        <td class="px-3 py-2 text-sm font-medium text-gray-900 dark:text-white text-right">
+                        <td
+                          class="px-3 py-2 text-sm font-medium text-gray-900 dark:text-white text-right"
+                        >
                           {{ formatCurrency(item.total_price) }}
                         </td>
                       </tr>
@@ -189,7 +261,9 @@
                       <span class="text-sm text-gray-600 dark:text-gray-400">
                         {{ $t("invoices.subtotal") }}:
                       </span>
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
+                      <span
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ formatCurrency(invoice.subtotal) }}
                       </span>
                     </div>
@@ -197,16 +271,24 @@
                       <span class="text-sm text-gray-600 dark:text-gray-400">
                         {{ $t("invoices.tax") }}:
                       </span>
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
+                      <span
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ formatCurrency(invoice.tax_amount) }}
                       </span>
                     </div>
-                    <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                    <div
+                      class="border-t border-gray-200 dark:border-gray-600 pt-2"
+                    >
                       <div class="flex justify-between">
-                        <span class="text-base font-medium text-gray-900 dark:text-white">
+                        <span
+                          class="text-base font-medium text-gray-900 dark:text-white"
+                        >
                           {{ $t("invoices.total") }}:
                         </span>
-                        <span class="text-base font-bold text-gray-900 dark:text-white">
+                        <span
+                          class="text-base font-bold text-gray-900 dark:text-white"
+                        >
                           {{ formatCurrency(invoice.total_amount) }}
                         </span>
                       </div>
@@ -218,7 +300,9 @@
           </div>
 
           <!-- Footer Actions -->
-          <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div
+            class="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex flex-wrap items-center justify-between gap-3"
+          >
             <div class="flex flex-wrap items-center gap-2">
               <!-- Send Options -->
               <div class="relative">
@@ -314,7 +398,7 @@
       v-if="showPreview"
       :invoice="invoice"
       @close="showPreview = false"
-      @download="$emit('generate-pdf', invoice)"
+      @download="invoice && $emit('generate-pdf', invoice)"
     />
   </div>
 </template>
@@ -384,11 +468,11 @@ const sendInvoice = (method: "email" | "whatsapp" | "sms") => {
 // Close send menu when clicking outside
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement;
-  if (!target.closest('.relative')) {
+  if (!target.closest(".relative")) {
     showSendMenu.value = false;
   }
 };
 
 // Lifecycle
-document.addEventListener('click', handleClickOutside);
+document.addEventListener("click", handleClickOutside);
 </script>

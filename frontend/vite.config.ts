@@ -16,6 +16,13 @@ export default defineConfig({
     hmr: {
       port: 3000,
     },
+    proxy: {
+      "/api": {
+        target: "http://nginx:80",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: "dist",

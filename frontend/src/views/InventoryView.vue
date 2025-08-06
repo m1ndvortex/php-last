@@ -52,6 +52,11 @@
         />
       </div>
 
+      <!-- Categories Tab -->
+      <div v-if="activeTab === 'categories'">
+        <CategoryManagement />
+      </div>
+
       <!-- Stock Audit Tab -->
       <div v-if="activeTab === 'audit'">
         <StockAuditInterface />
@@ -109,6 +114,7 @@ import type { InventoryItem } from "@/types";
 
 // Components
 import InventoryList from "@/components/inventory/InventoryList.vue";
+import CategoryManagement from "@/components/inventory/CategoryManagement.vue";
 import StockAuditInterface from "@/components/inventory/StockAuditInterface.vue";
 import MovementHistory from "@/components/inventory/MovementHistory.vue";
 import BOMManagement from "@/components/inventory/BOMManagement.vue";
@@ -130,6 +136,7 @@ const selectedItem = ref<InventoryItem | null>(null);
 // Tabs configuration
 const tabs = [
   { key: "items", label: "inventory.tabs.items" },
+  { key: "categories", label: "inventory.tabs.categories" },
   { key: "audit", label: "inventory.tabs.stock_audit" },
   { key: "movements", label: "inventory.tabs.movements" },
   { key: "bom", label: "inventory.tabs.bom" },

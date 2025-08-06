@@ -3,12 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\CategoryService;
+use App\Services\CategoryImageService;
+use App\Services\GoldPurityService;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Requests\CategoryImageUploadRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
+    protected CategoryService $categoryService;
+    protected CategoryImageService $categoryImageService;
+    protected GoldPurityService $goldPurityService;
+
+    public function __construct(
+        CategoryService $categoryService,
+        CategoryImageService $categoryImageService,
+        GoldPurityService $goldPurityService
+    ) {
+        $this->categoryService = $categoryService;
+        $this->categoryImageService = $categoryImageService;
+        $this->goldPurityService = $goldPurityService;
+    }
     /**
      * Get all categories.
      */
@@ -51,25 +70,33 @@ class CategoryController extends Controller
     /**
      * Store a new category.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'name_persian' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'description_persian' => 'nullable|string',
-            'code' => 'required|string|max:10|unique:categories,code',
-            'is_active' => 'boolean',
-            'parent_id' => 'nullable|exists:categories,id',
-        ]);
+        $validated = $request->validated();
 
-        $category = Category::create($validated);
+        try {
+            $category = $this->categoryService->createCategory($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Category created successfully',
-            'data' => $category->load(['parent', 'children']),
-        ], 201);
+            // Handle image upload if provided
+            if ($request->hasFile('image')) {
+                $this->categoryImageService->uploadImage($category, $request->file('image'), [
+                    'alt_text' => $validated['alt_text'] ?? null,
+                    'alt_text_persian' => $validated['alt_text_persian'] ?? null,
+                    'is_primary' => true,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category created successfully',
+                'data' => $category->fresh()->load(['parent', 'children', 'images', 'primaryImage']),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     /**
@@ -86,39 +113,33 @@ class CategoryController extends Controller
     /**
      * Update a category.
      */
-    public function update(Request $request, Category $category): JsonResponse
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'name_persian' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'description_persian' => 'nullable|string',
-            'code' => ['sometimes', 'required', 'string', 'max:10', Rule::unique('categories')->ignore($category->id)],
-            'is_active' => 'boolean',
-            'parent_id' => [
-                'nullable',
-                'exists:categories,id',
-                function ($attribute, $value, $fail) use ($category) {
-                    // Prevent setting self as parent
-                    if ($value == $category->id) {
-                        $fail('A category cannot be its own parent.');
-                    }
-                    
-                    // Prevent circular references
-                    if ($value && $this->wouldCreateCircularReference($category->id, $value)) {
-                        $fail('This would create a circular reference.');
-                    }
-                },
-            ],
-        ]);
+        $validated = $request->validated();
 
-        $category->update($validated);
+        try {
+            $updatedCategory = $this->categoryService->updateCategory($category, $validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Category updated successfully',
-            'data' => $category->load(['parent', 'children']),
-        ]);
+            // Handle image upload if provided
+            if ($request->hasFile('image')) {
+                $this->categoryImageService->uploadImage($updatedCategory, $request->file('image'), [
+                    'alt_text' => $validated['alt_text'] ?? null,
+                    'alt_text_persian' => $validated['alt_text_persian'] ?? null,
+                    'is_primary' => true,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category updated successfully',
+                'data' => $updatedCategory->fresh()->load(['parent', 'children', 'images', 'primaryImage']),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     /**
@@ -126,44 +147,242 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
-        // Check if category has inventory items
-        if ($category->inventoryItems()->count() > 0) {
+        try {
+            $this->categoryService->deleteCategory($category);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category deleted successfully',
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete category with existing inventory items',
+                'message' => $e->getMessage(),
             ], 422);
         }
-
-        // Check if category has children
-        if ($category->children()->count() > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot delete category with child categories',
-            ], 422);
-        }
-
-        $category->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Category deleted successfully',
-        ]);
     }
 
     /**
-     * Check if setting a parent would create a circular reference.
+     * Get hierarchical tree structure of all categories.
      */
-    private function wouldCreateCircularReference(int $categoryId, int $parentId): bool
+    public function getHierarchy(): JsonResponse
     {
-        $parent = Category::find($parentId);
-        
-        while ($parent) {
-            if ($parent->id === $categoryId) {
-                return true;
-            }
-            $parent = $parent->parent;
+        try {
+            $hierarchy = $this->categoryService->getHierarchicalTree();
+
+            return response()->json([
+                'success' => true,
+                'data' => $hierarchy,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
-        
-        return false;
+    }
+
+    /**
+     * Upload an image for a category.
+     */
+    public function uploadImage(CategoryImageUploadRequest $request, Category $category): JsonResponse
+    {
+        $validated = $request->validated();
+
+        try {
+            $categoryImage = $this->categoryImageService->uploadImage($category, $request->file('image'), [
+                'alt_text' => $validated['alt_text'] ?? null,
+                'alt_text_persian' => $validated['alt_text_persian'] ?? null,
+                'is_primary' => $validated['is_primary'] ?? true,
+                'sort_order' => $validated['sort_order'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image uploaded successfully',
+                'data' => $categoryImage,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Remove an image from a category.
+     */
+    public function removeImage(Category $category): JsonResponse
+    {
+        try {
+            $this->categoryImageService->removeCategoryImage($category);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Reorder categories based on drag-and-drop.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'categories' => 'required|array',
+            'categories.*.id' => 'required|exists:categories,id',
+            'categories.*.sort_order' => 'required|integer|min:0',
+            'categories.*.parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        try {
+            $this->categoryService->reorderCategories($validated['categories']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Categories reordered successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Get standard gold purity options.
+     */
+    public function getGoldPurityOptions(): JsonResponse
+    {
+        try {
+            $options = $this->goldPurityService->getStandardPurities();
+
+            return response()->json([
+                'success' => true,
+                'data' => $options,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get categories formatted for selection dropdowns.
+     */
+    public function getForSelect(Request $request): JsonResponse
+    {
+        try {
+            $excludeId = $request->get('exclude_id');
+            $categories = $this->categoryService->getCategoriesForSelect($excludeId);
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get main categories (root level).
+     */
+    public function getMainCategories(): JsonResponse
+    {
+        try {
+            $categories = $this->categoryService->getMainCategories();
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get subcategories for a parent category.
+     */
+    public function getSubcategories(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'parent_id' => 'required|exists:categories,id',
+        ]);
+
+        try {
+            $subcategories = $this->categoryService->getSubcategories($validated['parent_id']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $subcategories,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Search categories by name.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'query' => 'required|string|min:1|max:255',
+        ]);
+
+        try {
+            $categories = $this->categoryService->searchCategories($validated['query']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get category path (breadcrumb) for a category.
+     */
+    public function getCategoryPath(Category $category): JsonResponse
+    {
+        try {
+            $path = $this->categoryService->getCategoryPath($category);
+
+            return response()->json([
+                'success' => true,
+                'data' => $path,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

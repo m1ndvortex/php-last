@@ -1,13 +1,24 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+    <div
+      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+      <div
+        class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+      >
         <!-- Header -->
-        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div
+          class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 dark:border-gray-700"
+        >
           <div class="flex items-center justify-between">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+            <h3
+              class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+            >
               {{ $t("invoices.batch_pdf_generation") }}
             </h3>
             <button
@@ -38,7 +49,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <div
+          class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
+        >
           <button
             @click="handleGenerate"
             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -74,7 +87,7 @@ const handleGenerate = () => {
     message: "Batch PDF generation started",
     job_id: "batch-pdf-123",
   };
-  
+
   emit("generated", result);
 };
 </script>

@@ -35,6 +35,8 @@ export const useInvoicesStore = defineStore("invoices", () => {
     last_page: 1,
     per_page: 15,
     total: 0,
+    from: 0,
+    to: 0,
   });
   const filters = ref({
     search: "",
@@ -91,6 +93,8 @@ export const useInvoicesStore = defineStore("invoices", () => {
           last_page: data.last_page,
           per_page: data.per_page,
           total: data.total,
+          from: data.from || 0,
+          to: data.to || 0,
         };
       }
     } catch (error) {
@@ -180,7 +184,7 @@ export const useInvoicesStore = defineStore("invoices", () => {
       const response = await apiService.invoices.generatePDF(id);
       if (response.data.success) {
         const { pdf_url, filename } = response.data.data;
-        
+
         // Create and download the PDF file
         const link = document.createElement("a");
         link.href = pdf_url;
@@ -214,7 +218,10 @@ export const useInvoicesStore = defineStore("invoices", () => {
     }
   };
 
-  const sendInvoice = async (id: number, method: "email" | "whatsapp" | "sms") => {
+  const sendInvoice = async (
+    id: number,
+    method: "email" | "whatsapp" | "sms",
+  ) => {
     try {
       const response = await apiService.invoices.sendInvoice(id, { method });
       if (response.data.success) {
@@ -296,10 +303,16 @@ export const useInvoicesStore = defineStore("invoices", () => {
     }
   };
 
-  const updateTemplate = async (id: number, templateData: Partial<InvoiceTemplate>) => {
+  const updateTemplate = async (
+    id: number,
+    templateData: Partial<InvoiceTemplate>,
+  ) => {
     loading.value.updating = true;
     try {
-      const response = await apiService.invoices.updateTemplate(id, templateData);
+      const response = await apiService.invoices.updateTemplate(
+        id,
+        templateData,
+      );
       if (response.data.success) {
         const updatedTemplate = response.data.data;
         const index = templates.value.findIndex((t) => t.id === id);
@@ -353,13 +366,18 @@ export const useInvoicesStore = defineStore("invoices", () => {
     }
   };
 
-  const sendBatchInvoices = async (invoiceIds: number[], method: "email" | "whatsapp" | "sms") => {
+  const sendBatchInvoices = async (
+    invoiceIds: number[],
+    method: "email" | "whatsapp" | "sms",
+  ) => {
     loading.value.batch = true;
     try {
-      const response = await apiService.invoices.sendBatch(invoiceIds, { method });
+      const response = await apiService.invoices.sendBatch(invoiceIds, {
+        method,
+      });
       if (response.data.success) {
         // Update invoice statuses
-        invoiceIds.forEach(id => {
+        invoiceIds.forEach((id) => {
           const index = invoices.value.findIndex((i) => i.id === id);
           if (index !== -1) {
             invoices.value[index].status = "sent";
@@ -394,7 +412,8 @@ export const useInvoicesStore = defineStore("invoices", () => {
   const createRecurringInvoice = async (recurringData: any) => {
     loading.value.creating = true;
     try {
-      const response = await apiService.invoices.createRecurringInvoice(recurringData);
+      const response =
+        await apiService.invoices.createRecurringInvoice(recurringData);
       if (response.data.success) {
         const newRecurring = response.data.data;
         recurringInvoices.value.unshift(newRecurring);
@@ -405,6 +424,29 @@ export const useInvoicesStore = defineStore("invoices", () => {
       throw error;
     } finally {
       loading.value.creating = false;
+    }
+  };
+
+  const updateRecurringInvoice = async (id: number, recurringData: any) => {
+    loading.value.updating = true;
+    try {
+      const response = await apiService.invoices.updateRecurringInvoice(
+        id,
+        recurringData,
+      );
+      if (response.data.success) {
+        const updatedRecurring = response.data.data;
+        const index = recurringInvoices.value.findIndex((r) => r.id === id);
+        if (index !== -1) {
+          recurringInvoices.value[index] = updatedRecurring;
+        }
+        return updatedRecurring;
+      }
+    } catch (error) {
+      console.error("Failed to update recurring invoice:", error);
+      throw error;
+    } finally {
+      loading.value.updating = false;
     }
   };
 
@@ -474,6 +516,7 @@ export const useInvoicesStore = defineStore("invoices", () => {
     sendBatchInvoices,
     fetchRecurringInvoices,
     createRecurringInvoice,
+    updateRecurringInvoice,
     updateFilters,
     resetFilters,
     clearCurrentInvoice,

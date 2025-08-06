@@ -76,6 +76,7 @@ export interface InventoryItem {
   description_persian?: string;
   sku: string;
   category_id?: number;
+  main_category_id?: number;
   location_id?: number;
   quantity: number;
   unit_price: number;
@@ -94,6 +95,7 @@ export interface InventoryItem {
   created_at: string;
   updated_at: string;
   category?: Category;
+  main_category?: Category;
   location?: Location;
   // Computed fields
   localized_name?: string;
@@ -103,6 +105,8 @@ export interface InventoryItem {
   is_low_stock?: boolean;
   is_expiring?: boolean;
   is_expired?: boolean;
+  category_path?: string;
+  formatted_gold_purity?: string;
 }
 
 export interface InventoryMovement {
@@ -191,8 +195,22 @@ export interface BillOfMaterial {
 export interface Category {
   id: number;
   name: string;
+  name_persian?: string;
   description?: string;
+  description_persian?: string;
+  code?: string;
   parent_id?: number;
+  default_gold_purity?: number;
+  image_path?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  specifications?: Record<string, any>;
+  item_count?: number;
+  subcategory_count?: number;
+  has_children?: boolean;
+  localized_name?: string;
+  localized_description?: string;
+  formatted_gold_purity?: string;
   created_at: string;
   updated_at: string;
 }

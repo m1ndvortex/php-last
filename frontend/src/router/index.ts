@@ -119,7 +119,7 @@ router.beforeEach(async (to, from, next) => {
   // Temporarily bypass authentication for testing
   next();
   return;
-  
+
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
@@ -159,7 +159,7 @@ router.beforeEach(async (to, from, next) => {
 
   // Check for role-based access if specified
   if (to.meta.roles && authStore.user) {
-    const userRole = authStore.user.role;
+    const userRole = authStore.user?.role;
     const allowedRoles = to.meta.roles as string[];
 
     if (!allowedRoles.includes(userRole || "")) {

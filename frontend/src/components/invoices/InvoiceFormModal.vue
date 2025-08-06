@@ -1,15 +1,28 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+    <div
+      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      <div
+        class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+      >
         <form @submit.prevent="handleSubmit">
           <!-- Header -->
           <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                {{ isEdit ? $t("invoices.edit_invoice") : $t("invoices.create_invoice") }}
+              <h3
+                class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+              >
+                {{
+                  isEdit
+                    ? $t("invoices.edit_invoice")
+                    : $t("invoices.create_invoice")
+                }}
               </h3>
               <button
                 type="button"
@@ -24,7 +37,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <!-- Customer Selection -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.customer") }} *
                 </label>
                 <select
@@ -36,11 +51,16 @@
                   <option value="">{{ $t("invoices.select_customer") }}</option>
                   <option
                     v-for="customer in customers"
-                    :key="customer?.id"
+                    :key="customer?.id || 'unknown'"
                     :value="customer?.id"
-                    v-if="customer"
                   >
-                    {{ customer.name }}
+                    {{ customer?.name || "Unknown Customer" }}
+                  </option>
+                  <!-- Fallback option if no customers are loaded -->
+                  <option v-if="customers.length === 0" value="" disabled>
+                    {{
+                      $t("invoices.loading_customers") || "Loading customers..."
+                    }}
                   </option>
                 </select>
                 <p v-if="errors.customer_id" class="mt-1 text-sm text-red-600">
@@ -50,7 +70,9 @@
 
               <!-- Invoice Number -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.invoice_number") }} *
                 </label>
                 <input
@@ -60,14 +82,19 @@
                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   :class="{ 'border-red-500': errors.invoice_number }"
                 />
-                <p v-if="errors.invoice_number" class="mt-1 text-sm text-red-600">
+                <p
+                  v-if="errors.invoice_number"
+                  class="mt-1 text-sm text-red-600"
+                >
                   {{ errors.invoice_number[0] }}
                 </p>
               </div>
 
               <!-- Issue Date -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.issue_date") }} *
                 </label>
                 <DatePicker
@@ -82,7 +109,9 @@
 
               <!-- Due Date -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.due_date") }} *
                 </label>
                 <DatePicker
@@ -97,7 +126,9 @@
 
               <!-- Language -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("common.language") }} *
                 </label>
                 <select
@@ -116,21 +147,30 @@
 
               <!-- Template -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {{ $t("invoices.template") }}
                 </label>
                 <select
                   v-model="form.template_id"
                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
-                  <option value="">{{ $t("invoices.default_template") }}</option>
+                  <option value="">
+                    {{ $t("invoices.default_template") }}
+                  </option>
                   <option
                     v-for="template in templates"
-                    :key="template?.id"
+                    :key="template?.id || 'unknown'"
                     :value="template?.id"
-                    v-if="template"
                   >
-                    {{ template.name }}
+                    {{ template?.name || "Unknown Template" }}
+                  </option>
+                  <!-- Fallback option if no templates are loaded -->
+                  <option v-if="templates.length === 0" value="" disabled>
+                    {{
+                      $t("invoices.loading_templates") || "Loading templates..."
+                    }}
                   </option>
                 </select>
               </div>
@@ -154,41 +194,58 @@
 
               <!-- Items Table -->
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table
+                  class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                >
                   <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("invoices.item_description") }}
                       </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("invoices.quantity") }}
                       </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("invoices.unit_price") }}
                       </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("invoices.total") }}
                       </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("common.actions") }}
                       </th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody
+                    class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                  >
                     <tr v-for="(item, index) in form.items" :key="index">
                       <td class="px-4 py-2">
                         <div class="flex space-x-2">
                           <select
                             v-model="item.inventory_item_id"
                             class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                            @change="selectInventoryItem(index, item.inventory_item_id)"
+                            @change="
+                              selectInventoryItem(index, item.inventory_item_id)
+                            "
                           >
-                            <option value="">{{ $t("invoices.select_item") }}</option>
+                            <option value="">
+                              {{ $t("invoices.select_item") }}
+                            </option>
                             <option
                               v-for="inventoryItem in inventoryItems"
-                              :key="inventoryItem?.id"
-                              :value="inventoryItem?.id"
-                              v-if="inventoryItem"
+                              :key="inventoryItem.id"
+                              :value="inventoryItem.id"
                             >
                               {{ inventoryItem.name }} ({{ inventoryItem.sku }})
                             </option>
@@ -222,7 +279,9 @@
                         />
                       </td>
                       <td class="px-4 py-2">
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
+                        <span
+                          class="text-sm font-medium text-gray-900 dark:text-white"
+                        >
                           {{ formatCurrency(item.total_price || 0) }}
                         </span>
                       </td>
@@ -264,7 +323,9 @@
                   <span class="text-sm text-gray-600 dark:text-gray-400">
                     {{ $t("invoices.subtotal") }}:
                   </span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                  <span
+                    class="text-sm font-medium text-gray-900 dark:text-white"
+                  >
                     {{ formatCurrency(subtotal) }}
                   </span>
                 </div>
@@ -272,16 +333,22 @@
                   <span class="text-sm text-gray-600 dark:text-gray-400">
                     {{ $t("invoices.tax") }}:
                   </span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                  <span
+                    class="text-sm font-medium text-gray-900 dark:text-white"
+                  >
                     {{ formatCurrency(form.tax_amount || 0) }}
                   </span>
                 </div>
                 <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
                   <div class="flex justify-between">
-                    <span class="text-base font-medium text-gray-900 dark:text-white">
+                    <span
+                      class="text-base font-medium text-gray-900 dark:text-white"
+                    >
                       {{ $t("invoices.total") }}:
                     </span>
-                    <span class="text-base font-bold text-gray-900 dark:text-white">
+                    <span
+                      class="text-base font-bold text-gray-900 dark:text-white"
+                    >
                       {{ formatCurrency(total) }}
                     </span>
                   </div>
@@ -291,7 +358,9 @@
 
             <!-- Notes -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 {{ $t("invoices.notes") }}
               </label>
               <textarea
@@ -304,15 +373,34 @@
           </div>
 
           <!-- Footer -->
-          <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div
+            class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
+          >
             <button
               type="submit"
               :disabled="loading || form.items.length === 0"
               class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg v-if="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                v-if="loading"
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               {{ isEdit ? $t("common.update") : $t("common.create") }}
             </button>
@@ -332,13 +420,24 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { XMarkIcon, PlusIcon, TrashIcon, DocumentTextIcon } from "@heroicons/vue/24/outline";
+import {
+  XMarkIcon,
+  PlusIcon,
+  TrashIcon,
+  DocumentTextIcon,
+} from "@heroicons/vue/24/outline";
 import { useInvoicesStore } from "@/stores/invoices";
 import { useCustomersStore } from "@/stores/customers";
 // import { useInventoryStore } from "@/stores/inventory";
 import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import DatePicker from "@/components/localization/DatePicker.vue";
-import type { Invoice, InvoiceItem, Customer, InventoryItem, InvoiceTemplate } from "@/types";
+import type {
+  Invoice,
+  InvoiceItem,
+  Customer,
+  InventoryItem,
+  InvoiceTemplate,
+} from "@/types";
 
 // Props
 interface Props {
@@ -369,25 +468,38 @@ const errors = ref<Record<string, string[]>>({});
 const form = ref({
   customer_id: "",
   invoice_number: "",
-  issue_date: new Date().toISOString().split('T')[0],
-  due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+  issue_date: new Date().toISOString().split("T")[0],
+  due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0], // 30 days from now
   language: "en" as "en" | "fa",
   template_id: "",
   subtotal: 0,
   tax_amount: 0,
   total_amount: 0,
-  status: "draft" as const,
+  status: "draft" as "draft" | "sent" | "paid" | "overdue" | "cancelled",
   notes: "",
-  items: [] as Partial<InvoiceItem>[],
+  items: [] as InvoiceItem[],
 });
 
 // Computed
-const customers = computed(() => customersStore.customers || []);
-const inventoryItems = computed(() => []);
-const templates = computed(() => invoicesStore.templates || []);
+const customers = computed(() => {
+  // Ensure we always return an array, even if customersStore.customers is null/undefined
+  return Array.isArray(customersStore.customers)
+    ? customersStore.customers
+    : [];
+});
+const inventoryItems = computed(() => [] as InventoryItem[]);
+const templates = computed(() => {
+  // Ensure we always return an array, even if invoicesStore.templates is null/undefined
+  return Array.isArray(invoicesStore.templates) ? invoicesStore.templates : [];
+});
 
 const subtotal = computed(() => {
-  return form.value.items.reduce((sum, item) => sum + (item.total_price || 0), 0);
+  return form.value.items.reduce(
+    (sum, item) => sum + (item.total_price || 0),
+    0,
+  );
 });
 
 const total = computed(() => {
@@ -397,11 +509,15 @@ const total = computed(() => {
 // Methods
 const addItem = () => {
   form.value.items.push({
+    id: 0,
+    invoice_id: 0,
     inventory_item_id: undefined,
     description: "",
     quantity: 1,
     unit_price: 0,
     total_price: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 };
 
@@ -410,9 +526,18 @@ const removeItem = (index: number) => {
   updateTotals();
 };
 
-const selectInventoryItem = (index: number, inventoryItemId: number | undefined) => {
-  if (inventoryItemId && inventoryItems.value.length > 0) {
-    const inventoryItem = inventoryItems.value.find(item => item && item.id === inventoryItemId);
+const selectInventoryItem = (
+  index: number,
+  inventoryItemId: number | undefined,
+) => {
+  if (
+    inventoryItemId &&
+    inventoryItems.value &&
+    inventoryItems.value.length > 0
+  ) {
+    const inventoryItem = inventoryItems.value.find(
+      (item) => item && item.id === inventoryItemId,
+    );
     if (inventoryItem) {
       form.value.items[index].description = inventoryItem.name || "";
       form.value.items[index].unit_price = inventoryItem.unit_price || 0;
@@ -440,12 +565,17 @@ const handleSubmit = async () => {
     const invoiceData = {
       ...form.value,
       customer_id: Number(form.value.customer_id),
-      template_id: form.value.template_id ? Number(form.value.template_id) : undefined,
+      template_id: form.value.template_id
+        ? Number(form.value.template_id)
+        : undefined,
     };
 
     let savedInvoice;
     if (props.isEdit && props.invoice) {
-      savedInvoice = await invoicesStore.updateInvoice(props.invoice.id, invoiceData);
+      savedInvoice = await invoicesStore.updateInvoice(
+        props.invoice.id,
+        invoiceData,
+      );
     } else {
       savedInvoice = await invoicesStore.createInvoice(invoiceData);
     }
@@ -469,8 +599,13 @@ const initializeForm = () => {
     form.value = {
       customer_id: props.invoice.customer_id?.toString() || "",
       invoice_number: props.invoice.invoice_number || "",
-      issue_date: props.invoice.issue_date || new Date().toISOString().split('T')[0],
-      due_date: props.invoice.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      issue_date:
+        props.invoice.issue_date || new Date().toISOString().split("T")[0],
+      due_date:
+        props.invoice.due_date ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
       language: props.invoice.language || "en",
       template_id: props.invoice.template_id?.toString() || "",
       subtotal: props.invoice.subtotal || 0,
@@ -489,8 +624,10 @@ const initializeForm = () => {
 const generateInvoiceNumber = () => {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
   form.value.invoice_number = `INV-${year}${month}-${random}`;
 };
 
@@ -501,12 +638,26 @@ watch([subtotal, () => form.value.tax_amount], () => {
 
 // Lifecycle
 onMounted(async () => {
-  // Load required data
-  await Promise.all([
-    customersStore.fetchCustomers(),
-    // inventoryStore.fetchItems(),
-    invoicesStore.fetchTemplates(),
-  ]);
+  // Load required data with error handling
+  try {
+    await Promise.all([
+      customersStore.fetchCustomers().catch((error) => {
+        console.warn("Failed to load customers, using fallback data:", error);
+      }),
+      // inventoryStore.fetchItems(),
+      invoicesStore.fetchTemplates().catch((error) => {
+        console.warn(
+          "Failed to load templates, continuing without templates:",
+          error,
+        );
+      }),
+    ]);
+  } catch (error) {
+    console.warn(
+      "Some data failed to load, but continuing with available data:",
+      error,
+    );
+  }
 
   initializeForm();
 });

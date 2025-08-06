@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
     libgd-dev \
-    jpegoptim optipng pngquant gifsicle \
+    libwebp-dev \
+    jpegoptim optipng pngquant gifsicle webp \
     vim \
     nano \
     supervisor \
@@ -26,7 +27,8 @@ RUN apt-get update && apt-get install -y \
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# Configure and install GD extension with JPEG and WebP support
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Redis extension

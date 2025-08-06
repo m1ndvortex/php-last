@@ -150,7 +150,19 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     });
     Route::apiResource('bom', \App\Http\Controllers\BOMController::class);
     
-    // Categories routes
+    // Categories routes - specific routes first to avoid conflicts
+    Route::prefix('categories')->group(function () {
+        Route::get('/hierarchy', [\App\Http\Controllers\CategoryController::class, 'getHierarchy']);
+        Route::get('/for-select', [\App\Http\Controllers\CategoryController::class, 'getForSelect']);
+        Route::get('/main-categories', [\App\Http\Controllers\CategoryController::class, 'getMainCategories']);
+        Route::get('/subcategories', [\App\Http\Controllers\CategoryController::class, 'getSubcategories']);
+        Route::get('/search', [\App\Http\Controllers\CategoryController::class, 'search']);
+        Route::get('/gold-purity-options', [\App\Http\Controllers\CategoryController::class, 'getGoldPurityOptions']);
+        Route::post('/reorder', [\App\Http\Controllers\CategoryController::class, 'reorder']);
+        Route::post('/{category}/image', [\App\Http\Controllers\CategoryController::class, 'uploadImage']);
+        Route::delete('/{category}/image', [\App\Http\Controllers\CategoryController::class, 'removeImage']);
+        Route::get('/{category}/path', [\App\Http\Controllers\CategoryController::class, 'getCategoryPath']);
+    });
     Route::apiResource('categories', \App\Http\Controllers\CategoryController::class);
     
     // Locations routes

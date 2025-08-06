@@ -278,13 +278,19 @@ export function useCalendarConversion() {
   /**
    * Format date based on current locale
    */
-  const formatDate = (date: Date, format?: string): string => {
+  const formatDate = (date: Date | string, format?: string): string => {
     if (!date) return "";
 
+    // Convert string to Date if needed
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) return "";
+
     if (locale.value === "fa") {
-      return formatJalaliDate(date, format);
+      return formatJalaliDate(dateObj, format);
     } else {
-      return formatGregorianDate(date, format);
+      return formatGregorianDate(dateObj, format);
     }
   };
 

@@ -143,8 +143,8 @@
       v-if="showDeleteModal"
       :title="$t('invoices.delete_invoice')"
       :message="
-        $t('invoices.delete_confirmation', { 
-          number: selectedInvoice?.invoice_number 
+        $t('invoices.delete_confirmation', {
+          number: selectedInvoice?.invoice_number,
         })
       "
       :loading="invoicesStore.loading.deleting"
@@ -189,24 +189,24 @@ const selectedRecurring = ref<any | null>(null);
 
 // Computed
 const tabs = computed(() => [
-  { 
-    key: "list", 
+  {
+    key: "list",
     label: "invoices.tabs.all_invoices",
-    count: invoicesStore.invoices.length
+    count: invoicesStore.invoices.length,
   },
-  { 
-    key: "templates", 
+  {
+    key: "templates",
     label: "invoices.tabs.templates",
-    count: invoicesStore.templates.length
+    count: invoicesStore.templates.length,
   },
-  { 
-    key: "batch", 
-    label: "invoices.tabs.batch_operations"
+  {
+    key: "batch",
+    label: "invoices.tabs.batch_operations",
   },
-  { 
-    key: "recurring", 
+  {
+    key: "recurring",
     label: "invoices.tabs.recurring",
-    count: invoicesStore.recurringInvoices.length
+    count: invoicesStore.recurringInvoices.length,
   },
 ]);
 
@@ -246,7 +246,10 @@ const generatePDF = async (invoice: Invoice) => {
   }
 };
 
-const sendInvoice = async (invoice: Invoice, method: "email" | "whatsapp" | "sms") => {
+const sendInvoice = async (
+  invoice: Invoice,
+  method: "email" | "whatsapp" | "sms",
+) => {
   try {
     await invoicesStore.sendInvoice(invoice.id, method);
   } catch (error) {
@@ -328,10 +331,21 @@ const closeRecurringModal = () => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    invoicesStore.fetchInvoices(),
-    invoicesStore.fetchTemplates(),
-    invoicesStore.fetchRecurringInvoices(),
-  ]);
+  // Load data with error handling to prevent blocking the UI
+  try {
+    await Promise.all([
+      invoicesStore.fetchInvoices().catch((error) => {
+        console.warn("Failed to load invoices:", error);
+      }),
+      invoicesStore.fetchTemplates().catch((error) => {
+        console.warn("Failed to load templates:", error);
+      }),
+      invoicesStore.fetchRecurringInvoices().catch((error) => {
+        console.warn("Failed to load recurring invoices:", error);
+      }),
+    ]);
+  } catch (error) {
+    console.warn("Some invoice data failed to load, but continuing:", error);
+  }
 });
 </script>

@@ -11,7 +11,7 @@ import router from "@/router";
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -313,17 +313,40 @@ export const apiService = {
 
     createMovement: (data: any) => api.post("api/inventory/movements", data),
 
-    getCategories: () => api.get("api/inventory/categories"),
+    getCategories: () => api.get("api/categories"),
 
-    createCategory: (data: any) => api.post("api/inventory/categories", data),
+    getCategory: (id: number) => api.get(`api/categories/${id}`),
+
+    createCategory: (data: any) =>
+      api.post("api/categories", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
 
     updateCategory: (id: number, data: any) =>
-      api.put(`api/inventory/categories/${id}`, data),
+      api.put(`api/categories/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
 
     deleteCategory: (id: number) =>
-      api.delete(`api/inventory/categories/${id}`),
+      api.delete(`api/categories/${id}`),
 
-    getLocations: () => api.get("api/inventory/locations"),
+    reorderCategories: (data: any) =>
+      api.post("api/categories/reorder", data),
+
+    getCategoryHierarchy: () => api.get("api/categories/hierarchy"),
+
+    uploadCategoryImage: (id: number, data: FormData) =>
+      api.post(`api/categories/${id}/image`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+
+    removeCategoryImage: (id: number) =>
+      api.delete(`api/categories/${id}/image`),
+
+    getGoldPurityOptions: () =>
+      api.get("api/categories/gold-purity-options"),
+
+    getLocations: () => api.get("api/locations"),
 
     createLocation: (data: any) => api.post("api/inventory/locations", data),
 
@@ -393,8 +416,7 @@ export const apiService = {
 
     deleteInvoice: (id: number) => api.delete(`api/invoices/${id}`),
 
-    duplicateInvoice: (id: number) =>
-      api.post(`api/invoices/${id}/duplicate`),
+    duplicateInvoice: (id: number) => api.post(`api/invoices/${id}/duplicate`),
 
     generatePDF: (id: number) => api.get(`api/invoices/${id}/pdf`),
 
@@ -413,8 +435,7 @@ export const apiService = {
     updateTemplate: (id: number, data: any) =>
       api.put(`api/invoice-templates/${id}`, data),
 
-    deleteTemplate: (id: number) =>
-      api.delete(`api/invoice-templates/${id}`),
+    deleteTemplate: (id: number) => api.delete(`api/invoice-templates/${id}`),
 
     // Batch operations
     generateBatch: (invoiceIds: number[]) =>

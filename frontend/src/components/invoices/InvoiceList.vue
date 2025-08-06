@@ -5,7 +5,9 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Search -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             {{ $t("common.search") }}
           </label>
           <input
@@ -19,7 +21,9 @@
 
         <!-- Status Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             {{ $t("invoices.status") }}
           </label>
           <select
@@ -32,13 +36,17 @@
             <option value="sent">{{ $t("invoices.status_sent") }}</option>
             <option value="paid">{{ $t("invoices.status_paid") }}</option>
             <option value="overdue">{{ $t("invoices.status_overdue") }}</option>
-            <option value="cancelled">{{ $t("invoices.status_cancelled") }}</option>
+            <option value="cancelled">
+              {{ $t("invoices.status_cancelled") }}
+            </option>
           </select>
         </div>
 
         <!-- Language Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             {{ $t("common.language") }}
           </label>
           <select
@@ -54,7 +62,9 @@
 
         <!-- Date Range -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             {{ $t("common.date_range") }}
           </label>
           <div class="grid grid-cols-2 gap-2">
@@ -76,11 +86,13 @@
       <div class="mt-4 flex justify-between items-center">
         <div class="flex items-center space-x-4">
           <span class="text-sm text-gray-500 dark:text-gray-400">
-            {{ $t("common.showing_results", { 
-              from: invoicesStore.pagination.from || 0,
-              to: invoicesStore.pagination.to || 0,
-              total: invoicesStore.pagination.total 
-            }) }}
+            {{
+              $t("common.showing_results", {
+                from: invoicesStore.pagination.from || 0,
+                to: invoicesStore.pagination.to || 0,
+                total: invoicesStore.pagination.total,
+              })
+            }}
           </span>
         </div>
         <div class="flex space-x-2">
@@ -101,7 +113,10 @@
       </div>
 
       <!-- Batch Actions -->
-      <div v-if="showBatchActions && selectedInvoices.length > 0" class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+      <div
+        v-if="showBatchActions && selectedInvoices.length > 0"
+        class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md"
+      >
         <div class="flex space-x-2">
           <button
             @click="batchGeneratePDF"
@@ -154,17 +169,22 @@
                     v-if="column.sortable"
                     class="h-4 w-4"
                     :class="{
-                      'text-primary-500': invoicesStore.filters.sort_by === column.key
+                      'text-primary-500':
+                        invoicesStore.filters.sort_by === column.key,
                     }"
                   />
                 </div>
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.actions") }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody
+            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <tr
               v-for="invoice in invoicesStore.invoices"
               :key="invoice.id"
@@ -213,13 +233,23 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
-                  :class="invoice.language === 'fa' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'"
+                  :class="
+                    invoice.language === 'fa'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                  "
                   class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                 >
-                  {{ invoice.language === 'fa' ? $t("common.persian") : $t("common.english") }}
+                  {{
+                    invoice.language === "fa"
+                      ? $t("common.persian")
+                      : $t("common.english")
+                  }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
                 <div class="flex items-center justify-end space-x-2">
                   <button
                     @click="$emit('view-invoice', invoice)"
@@ -294,16 +324,35 @@
       <!-- Loading State -->
       <div v-if="invoicesStore.loading.invoices" class="p-8 text-center">
         <div class="inline-flex items-center">
-          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <svg
+            class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           {{ $t("common.loading") }}
         </div>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="invoicesStore.invoices.length === 0" class="p-8 text-center">
+      <div
+        v-else-if="invoicesStore.invoices.length === 0"
+        class="p-8 text-center"
+      >
         <DocumentTextIcon class="mx-auto h-12 w-12 text-gray-400" />
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
           {{ $t("invoices.no_invoices") }}
@@ -315,7 +364,10 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="invoicesStore.pagination.last_page > 1" class="flex items-center justify-between">
+    <div
+      v-if="invoicesStore.pagination.last_page > 1"
+      class="flex items-center justify-between"
+    >
       <div class="flex-1 flex justify-between sm:hidden">
         <button
           @click="previousPage"
@@ -326,7 +378,10 @@
         </button>
         <button
           @click="nextPage"
-          :disabled="invoicesStore.pagination.current_page === invoicesStore.pagination.last_page"
+          :disabled="
+            invoicesStore.pagination.current_page ===
+            invoicesStore.pagination.last_page
+          "
           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ $t("common.next") }}
@@ -335,15 +390,19 @@
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
           <p class="text-sm text-gray-700 dark:text-gray-300">
-            {{ $t("common.pagination_info", {
-              from: invoicesStore.pagination.from || 0,
-              to: invoicesStore.pagination.to || 0,
-              total: invoicesStore.pagination.total
-            }) }}
+            {{
+              $t("common.pagination_info", {
+                from: invoicesStore.pagination.from || 0,
+                to: invoicesStore.pagination.to || 0,
+                total: invoicesStore.pagination.total,
+              })
+            }}
           </p>
         </div>
         <div>
-          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+          <nav
+            class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+          >
             <button
               @click="previousPage"
               :disabled="invoicesStore.pagination.current_page === 1"
@@ -359,14 +418,17 @@
                 'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                 page === invoicesStore.pagination.current_page
                   ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
               ]"
             >
               {{ page }}
             </button>
             <button
               @click="nextPage"
-              :disabled="invoicesStore.pagination.current_page === invoicesStore.pagination.last_page"
+              :disabled="
+                invoicesStore.pagination.current_page ===
+                invoicesStore.pagination.last_page
+              "
               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRightIcon class="h-5 w-5" />
@@ -432,22 +494,24 @@ const columns = [
 
 // Computed
 const allSelected = computed(() => {
-  return invoicesStore.invoices.length > 0 && 
-         selectedInvoices.value.length === invoicesStore.invoices.length;
+  return (
+    invoicesStore.invoices.length > 0 &&
+    selectedInvoices.value.length === invoicesStore.invoices.length
+  );
 });
 
 const visiblePages = computed(() => {
   const current = invoicesStore.pagination.current_page;
   const last = invoicesStore.pagination.last_page;
   const pages = [];
-  
+
   const start = Math.max(1, current - 2);
   const end = Math.min(last, current + 2);
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i);
   }
-  
+
   return pages;
 });
 
@@ -481,12 +545,12 @@ const resetFilters = () => {
 const sort = (column: string) => {
   const currentSort = invoicesStore.filters.sort_by;
   const currentDirection = invoicesStore.filters.sort_direction;
-  
+
   let newDirection = "asc";
   if (currentSort === column && currentDirection === "asc") {
     newDirection = "desc";
   }
-  
+
   localFilters.value.sort_by = column;
   localFilters.value.sort_direction = newDirection;
   applyFilters();
@@ -505,7 +569,9 @@ const toggleSelectAll = () => {
   if (allSelected.value) {
     selectedInvoices.value = [];
   } else {
-    selectedInvoices.value = invoicesStore.invoices.map(invoice => invoice.id);
+    selectedInvoices.value = invoicesStore.invoices.map(
+      (invoice) => invoice.id,
+    );
   }
 };
 
@@ -513,7 +579,10 @@ const toggleSendMenu = (invoiceId: number) => {
   showSendMenu.value = showSendMenu.value === invoiceId ? null : invoiceId;
 };
 
-const sendInvoice = (invoice: Invoice, method: "email" | "whatsapp" | "sms") => {
+const sendInvoice = (
+  invoice: Invoice,
+  method: "email" | "whatsapp" | "sms",
+) => {
   emit("send-invoice", invoice, method);
   showSendMenu.value = null;
 };
@@ -557,7 +626,9 @@ const previousPage = () => {
 };
 
 const nextPage = () => {
-  if (invoicesStore.pagination.current_page < invoicesStore.pagination.last_page) {
+  if (
+    invoicesStore.pagination.current_page < invoicesStore.pagination.last_page
+  ) {
     goToPage(invoicesStore.pagination.current_page + 1);
   }
 };
@@ -569,14 +640,14 @@ const goToPage = (page: number) => {
 // Close send menu when clicking outside
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement;
-  if (!target.closest('.relative')) {
+  if (!target.closest(".relative")) {
     showSendMenu.value = null;
   }
 };
 
 // Lifecycle
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 // Watch for filter changes
@@ -585,6 +656,6 @@ watch(
   (newFilters) => {
     localFilters.value = { ...newFilters };
   },
-  { deep: true }
+  { deep: true },
 );
 </script>

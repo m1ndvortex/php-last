@@ -1,14 +1,29 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+    <div
+      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full">
+      <div
+        class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full"
+      >
         <!-- Header -->
-        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div
+          class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 dark:border-gray-700"
+        >
           <div class="flex items-center justify-between">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              {{ template ? $t("invoices.edit_template") : $t("invoices.create_template") }}
+            <h3
+              class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+            >
+              {{
+                template
+                  ? $t("invoices.edit_template")
+                  : $t("invoices.create_template")
+              }}
             </h3>
             <div class="flex items-center space-x-3">
               <button
@@ -23,9 +38,26 @@
                 :disabled="loading"
                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
               >
-                <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  v-if="loading"
+                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 {{ $t("common.save") }}
               </button>
@@ -41,16 +73,22 @@
 
         <div class="flex h-[80vh]">
           <!-- Left Sidebar - Template Settings -->
-          <div class="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <div
+            class="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto"
+          >
             <div class="p-4 space-y-6">
               <!-- Basic Settings -->
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.template_settings") }}
                 </h4>
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       {{ $t("invoices.template_name") }}
                     </label>
                     <input
@@ -60,7 +98,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       {{ $t("common.language") }}
                     </label>
                     <select
@@ -72,16 +112,24 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       {{ $t("invoices.layout") }}
                     </label>
                     <select
                       v-model="templateForm.layout"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                     >
-                      <option value="standard">{{ $t("invoices.layout_standard") }}</option>
-                      <option value="modern">{{ $t("invoices.layout_modern") }}</option>
-                      <option value="classic">{{ $t("invoices.layout_classic") }}</option>
+                      <option value="standard">
+                        {{ $t("invoices.layout_standard") }}
+                      </option>
+                      <option value="modern">
+                        {{ $t("invoices.layout_modern") }}
+                      </option>
+                      <option value="classic">
+                        {{ $t("invoices.layout_classic") }}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -89,7 +137,9 @@
 
               <!-- Available Fields -->
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.available_fields") }}
                 </h4>
                 <div class="space-y-2">
@@ -101,8 +151,13 @@
                     class="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div class="flex items-center">
-                      <component :is="field.icon" class="h-4 w-4 text-gray-500 mr-2" />
-                      <span class="text-sm text-gray-900 dark:text-white">{{ $t(field.label) }}</span>
+                      <component
+                        :is="field.icon"
+                        class="h-4 w-4 text-gray-500 mr-2"
+                      />
+                      <span class="text-sm text-gray-900 dark:text-white">{{
+                        $t(field.label)
+                      }}</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {{ $t(field.description) }}
@@ -113,7 +168,9 @@
 
               <!-- Field Options -->
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.field_options") }}
                 </h4>
                 <div class="space-y-3">
@@ -142,7 +199,9 @@
 
               <!-- Custom Fields -->
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >
                   {{ $t("invoices.custom_fields") }}
                 </h4>
                 <div class="space-y-2">
@@ -216,7 +275,9 @@
               </div>
 
               <!-- Canvas -->
-              <div class="flex-1 overflow-auto p-8 bg-gray-100 dark:bg-gray-900">
+              <div
+                class="flex-1 overflow-auto p-8 bg-gray-100 dark:bg-gray-900"
+              >
                 <div
                   ref="canvasRef"
                   class="mx-auto bg-white shadow-lg"
@@ -224,7 +285,7 @@
                     width: `${canvasWidth * zoom}px`,
                     height: `${canvasHeight * zoom}px`,
                     transform: `scale(${zoom})`,
-                    transformOrigin: 'top left'
+                    transformOrigin: 'top left',
                   }"
                   @dragover.prevent
                   @drop="handleDrop"
@@ -234,16 +295,34 @@
                     <!-- Header Section -->
                     <div class="mb-8">
                       <div v-if="templateForm.fields.logo" class="mb-4">
-                        <div class="w-32 h-16 bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                          <span class="text-xs text-gray-500">{{ $t("invoices.logo_placeholder") }}</span>
+                        <div
+                          class="w-32 h-16 bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center"
+                        >
+                          <span class="text-xs text-gray-500">{{
+                            $t("invoices.logo_placeholder")
+                          }}</span>
                         </div>
                       </div>
                       <h1 class="text-2xl font-bold text-gray-900 mb-2">
-                        {{ templateForm.language === 'fa' ? 'فاکتور' : 'INVOICE' }}
+                        {{
+                          templateForm.language === "fa" ? "فاکتور" : "INVOICE"
+                        }}
                       </h1>
                       <div class="text-sm text-gray-600">
-                        <p>{{ templateForm.language === 'fa' ? 'شماره فاکتور: INV-2024-001' : 'Invoice Number: INV-2024-001' }}</p>
-                        <p>{{ templateForm.language === 'fa' ? 'تاریخ: ۱۴۰۳/۰۱/۰۱' : 'Date: 2024-01-01' }}</p>
+                        <p>
+                          {{
+                            templateForm.language === "fa"
+                              ? "شماره فاکتور: INV-2024-001"
+                              : "Invoice Number: INV-2024-001"
+                          }}
+                        </p>
+                        <p>
+                          {{
+                            templateForm.language === "fa"
+                              ? "تاریخ: ۱۴۰۳/۰۱/۰۱"
+                              : "Date: 2024-01-01"
+                          }}
+                        </p>
                       </div>
                     </div>
 
@@ -256,14 +335,15 @@
                         left: `${field.x}px`,
                         top: `${field.y}px`,
                         width: `${field.width}px`,
-                        height: `${field.height}px`
+                        height: `${field.height}px`,
                       }"
                       class="border border-dashed border-primary-300 bg-primary-50 p-2 cursor-move"
                       :draggable="true"
                       @dragstart="startFieldDrag(field, $event)"
                       @click="selectField(field)"
                       :class="{
-                        'border-primary-500 bg-primary-100': selectedField?.id === field.id
+                        'border-primary-500 bg-primary-100':
+                          selectedField?.id === field.id,
                       }"
                     >
                       <div class="flex items-center justify-between">
@@ -283,8 +363,13 @@
                     </div>
 
                     <!-- QR Code -->
-                    <div v-if="templateForm.fields.qr_code" class="absolute bottom-8 right-8">
-                      <div class="w-16 h-16 bg-gray-200 border border-gray-300 flex items-center justify-center">
+                    <div
+                      v-if="templateForm.fields.qr_code"
+                      class="absolute bottom-8 right-8"
+                    >
+                      <div
+                        class="w-16 h-16 bg-gray-200 border border-gray-300 flex items-center justify-center"
+                      >
                         <span class="text-xs text-gray-500">QR</span>
                       </div>
                     </div>
@@ -295,14 +380,21 @@
           </div>
 
           <!-- Right Sidebar - Field Properties -->
-          <div v-if="selectedField" class="w-64 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <div
+            v-if="selectedField"
+            class="w-64 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto"
+          >
             <div class="p-4">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+              <h4
+                class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+              >
                 {{ $t("invoices.field_properties") }}
               </h4>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     {{ $t("invoices.field_label") }}
                   </label>
                   <input
@@ -313,7 +405,9 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       X
                     </label>
                     <input
@@ -323,7 +417,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       Y
                     </label>
                     <input
@@ -335,7 +431,9 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       {{ $t("common.width") }}
                     </label>
                     <input
@@ -345,7 +443,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       {{ $t("common.height") }}
                     </label>
                     <input
@@ -486,9 +586,9 @@ const startDrag = (field: any) => {
 
 const handleDrop = (event: DragEvent) => {
   event.preventDefault();
-  if (!draggedField.value) return;
+  if (!draggedField.value || !canvasRef.value) return;
 
-  const rect = canvasRef.value?.getBoundingClientRect();
+  const rect = canvasRef.value.getBoundingClientRect();
   if (!rect) return;
 
   const x = (event.clientX - rect.left) / zoom.value;
@@ -508,27 +608,34 @@ const handleDrop = (event: DragEvent) => {
 };
 
 const startFieldDrag = (field: any, event: DragEvent) => {
-  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!canvasRef.value || !field) return;
+
+  const rect = canvasRef.value.getBoundingClientRect();
   if (!rect) return;
 
   const offsetX = event.clientX - rect.left - field.x * zoom.value;
   const offsetY = event.clientY - rect.top - field.y * zoom.value;
 
   const handleMouseMove = (e: MouseEvent) => {
-    const newX = (e.clientX - rect.left - offsetX) / zoom.value;
-    const newY = (e.clientY - rect.top - offsetY) / zoom.value;
+    if (!canvasRef.value) return;
 
-    field.x = Math.max(0, Math.min(canvasWidth - field.width, newX));
-    field.y = Math.max(0, Math.min(canvasHeight - field.height, newY));
+    const currentRect = canvasRef.value.getBoundingClientRect();
+    if (!currentRect) return;
+
+    const newX = (e.clientX - currentRect.left - offsetX) / zoom.value;
+    const newY = (e.clientY - currentRect.top - offsetY) / zoom.value;
+
+    field.x = Math.max(0, Math.min(canvasWidth - (field.width || 200), newX));
+    field.y = Math.max(0, Math.min(canvasHeight - (field.height || 50), newY));
   };
 
   const handleMouseUp = () => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
   };
 
-  document.addEventListener('mousemove', handleMouseMove);
-  document.addEventListener('mouseup', handleMouseUp);
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
 };
 
 const selectField = (field: any) => {
@@ -536,9 +643,16 @@ const selectField = (field: any) => {
 };
 
 const removeField = (index: number) => {
-  placedFields.value.splice(index, 1);
-  if (selectedField.value && selectedField.value.id === placedFields.value[index]?.id) {
-    selectedField.value = null;
+  if (index >= 0 && index < placedFields.value.length) {
+    const fieldToRemove = placedFields.value[index];
+    placedFields.value.splice(index, 1);
+    if (
+      selectedField.value &&
+      fieldToRemove &&
+      selectedField.value.id === fieldToRemove.id
+    ) {
+      selectedField.value = null;
+    }
   }
 };
 
@@ -583,7 +697,10 @@ const saveTemplate = async () => {
 
     let savedTemplate;
     if (props.template) {
-      savedTemplate = await invoicesStore.updateTemplate(props.template.id, templateData);
+      savedTemplate = await invoicesStore.updateTemplate(
+        props.template.id,
+        templateData,
+      );
     } else {
       savedTemplate = await invoicesStore.createTemplate(templateData);
     }

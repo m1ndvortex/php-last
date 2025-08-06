@@ -13,7 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
+// Redis removed - using Laravel native cache
 use Carbon\Carbon;
 
 class SyncOfflineDataJob implements ShouldQueue

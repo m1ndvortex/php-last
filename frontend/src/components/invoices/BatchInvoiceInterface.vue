@@ -11,9 +11,13 @@
 
       <!-- Batch Actions -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div
+          class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+        >
           <div class="flex items-center mb-3">
-            <DocumentArrowDownIcon class="h-6 w-6 text-blue-600 dark:text-blue-400 mr-2" />
+            <DocumentArrowDownIcon
+              class="h-6 w-6 text-blue-600 dark:text-blue-400 mr-2"
+            />
             <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">
               {{ $t("invoices.batch_pdf_generation") }}
             </h4>
@@ -29,9 +33,13 @@
           </button>
         </div>
 
-        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <div
+          class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4"
+        >
           <div class="flex items-center mb-3">
-            <PaperAirplaneIcon class="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
+            <PaperAirplaneIcon
+              class="h-6 w-6 text-green-600 dark:text-green-400 mr-2"
+            />
             <h4 class="text-sm font-medium text-green-900 dark:text-green-100">
               {{ $t("invoices.batch_sending") }}
             </h4>
@@ -47,10 +55,16 @@
           </button>
         </div>
 
-        <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+        <div
+          class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4"
+        >
           <div class="flex items-center mb-3">
-            <DocumentDuplicateIcon class="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2" />
-            <h4 class="text-sm font-medium text-purple-900 dark:text-purple-100">
+            <DocumentDuplicateIcon
+              class="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2"
+            />
+            <h4
+              class="text-sm font-medium text-purple-900 dark:text-purple-100"
+            >
               {{ $t("invoices.batch_creation") }}
             </h4>
           </div>
@@ -78,24 +92,36 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.operation_type") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("invoices.invoices_count") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.status") }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.created_at") }}
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ $t("common.actions") }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody
+            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <tr v-for="operation in batchOperations" :key="operation.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
@@ -108,7 +134,9 @@
                   </span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+              >
                 {{ operation.invoices_count }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -119,10 +147,14 @@
                   {{ $t(`common.status_${operation.status}`) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+              >
                 {{ formatDate(operation.created_at) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
                 <button
                   v-if="operation.download_url"
                   @click="downloadBatchResult(operation)"
@@ -250,8 +282,10 @@ const getOperationIcon = (type: string) => {
 
 const getStatusClass = (status: string) => {
   const classes = {
-    completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    in_progress: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+    completed:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    in_progress:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
     pending: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
   };

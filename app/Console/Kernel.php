@@ -75,6 +75,13 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:restart')
             ->cron('0 */6 * * *')
             ->name('restart-queue-workers');
+
+        // Clean up orphaned category images - runs weekly on Sunday at 3 AM
+        $schedule->command('category:image-maintenance cleanup --force')
+            ->weeklyOn(0, '03:00')
+            ->name('cleanup-orphaned-images')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**
