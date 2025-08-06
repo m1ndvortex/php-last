@@ -289,6 +289,85 @@ export function useNumberFormatter() {
     }
   };
 
+  /**
+   * Format gold purity for display
+   */
+  const formatGoldPurity = (purity: number | string): string => {
+    if (!purity) return "";
+    
+    const numValue = typeof purity === "string" ? parseFloat(toEnglishNumerals(purity)) : purity;
+    if (isNaN(numValue)) return "";
+
+    if (locale.value === "fa") {
+      const persianPurity = toPersianNumerals(numValue.toFixed(3));
+      return `${persianPurity} عیار`;
+    } else {
+      return `${numValue.toFixed(3)}K`;
+    }
+  };
+
+  /**
+   * Format gold purity with terminology
+   */
+  const formatGoldPurityWithLabel = (purity: number | string, label?: string): string => {
+    if (!purity) return "";
+    
+    const formattedPurity = formatGoldPurity(purity);
+    const terminology = label || (locale.value === "fa" ? "عیار طلا" : "Gold Purity");
+    
+    if (locale.value === "fa") {
+      return `${terminology}: ${formattedPurity}`;
+    }
+    return `${terminology}: ${formattedPurity}`;
+  };
+
+  /**
+   * Get standard gold purity options with localized labels
+   */
+  const getGoldPurityOptions = () => {
+    const options = [
+      { value: 10, label: locale.value === "fa" ? "طلای ۱۰ عیار" : "10K Gold" },
+      { value: 14, label: locale.value === "fa" ? "طلای ۱۴ عیار" : "14K Gold" },
+      { value: 18, label: locale.value === "fa" ? "طلای ۱۸ عیار" : "18K Gold" },
+      { value: 21, label: locale.value === "fa" ? "طلای ۲۱ عیار" : "21K Gold" },
+      { value: 22, label: locale.value === "fa" ? "طلای ۲۲ عیار" : "22K Gold" },
+      { value: 24, label: locale.value === "fa" ? "طلای ۲۴ عیار" : "24K Gold" },
+    ];
+
+    return options.map(option => ({
+      ...option,
+      displayValue: locale.value === "fa" ? toPersianNumerals(option.value.toString()) : option.value.toString()
+    }));
+  };
+
+  /**
+   * Format category data with Persian numerals if needed
+   */
+  const formatCategoryData = (data: any): any => {
+    if (!data || locale.value !== "fa") return data;
+
+    const formatted = { ...data };
+
+    // Format numeric fields
+    if (formatted.sort_order) {
+      formatted.sort_order_display = toPersianNumerals(formatted.sort_order.toString());
+    }
+
+    if (formatted.item_count) {
+      formatted.item_count_display = toPersianNumerals(formatted.item_count.toString());
+    }
+
+    if (formatted.subcategory_count) {
+      formatted.subcategory_count_display = toPersianNumerals(formatted.subcategory_count.toString());
+    }
+
+    if (formatted.default_gold_purity) {
+      formatted.gold_purity_display = formatGoldPurity(formatted.default_gold_purity);
+    }
+
+    return formatted;
+  };
+
   return {
     formatNumber,
     formatCurrency,
@@ -296,6 +375,9 @@ export function useNumberFormatter() {
     formatFileSize,
     formatDuration,
     formatForInput,
+    formatGoldPurity,
+    formatGoldPurityWithLabel,
+    formatCategoryData,
     parseNumber,
     toPersianNumerals,
     toEnglishNumerals,
@@ -303,5 +385,6 @@ export function useNumberFormatter() {
     usesPersianNumerals,
     getDecimalSeparator,
     getThousandsSeparator,
+    getGoldPurityOptions,
   };
 }

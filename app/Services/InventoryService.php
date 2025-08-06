@@ -282,6 +282,27 @@ class InventoryService
             $query->expiring($filters['expiring_days'] ?? 30);
         }
         
+        // Gold purity filtering
+        if (!empty($filters['gold_purity_min'])) {
+            $query->where('gold_purity', '>=', $filters['gold_purity_min']);
+        }
+        
+        if (!empty($filters['gold_purity_max'])) {
+            $query->where('gold_purity', '<=', $filters['gold_purity_max']);
+        }
+        
+        if (!empty($filters['gold_purity_range'])) {
+            $goldPurityService = app(GoldPurityService::class);
+            $ranges = $goldPurityService->getPurityRanges();
+            
+            foreach ($ranges as $range) {
+                if ($range['label'] === $filters['gold_purity_range']) {
+                    $query->whereBetween('gold_purity', [$range['min'], $range['max']]);
+                    break;
+                }
+            }
+        }
+        
         return $query->get();
     }
 }

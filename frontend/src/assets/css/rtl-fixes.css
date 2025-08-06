@@ -88,3 +88,97 @@ html[dir="rtl"] .widget p,
 html[dir="rtl"] .dashboard-widget p {
   text-align: right !important;
 }
+
+/* Category Management RTL Fixes */
+html[dir="rtl"] .category-tree {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-tree-node {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-tree-node .category-name {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-form-modal input[type="text"],
+html[dir="rtl"] .category-form-modal textarea {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-form-modal input[dir="rtl"] {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-selector {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-selector option {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .gold-purity-selector {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .gold-purity-display {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* Category hierarchy display */
+html[dir="rtl"] .category-path {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="rtl"] .category-breadcrumb {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-breadcrumb .separator {
+  transform: scaleX(-1);
+}
+
+/* Category image upload area */
+html[dir="rtl"] .category-image-upload {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-image-upload .upload-text {
+  text-align: right !important;
+}
+
+/* Category management table */
+html[dir="rtl"] .categories-table th,
+html[dir="rtl"] .categories-table td {
+  text-align: right !important;
+}
+
+/* Category form labels */
+html[dir="rtl"] .category-form label {
+  text-align: right !important;
+}
+
+/* Category tree expand/collapse buttons */
+html[dir="rtl"] .category-tree-toggle {
+  margin-left: 0.5rem !important;
+  margin-right: 0 !important;
+}
+
+/* Category actions dropdown */
+html[dir="rtl"] .category-actions {
+  direction: rtl !important;
+}
+
+html[dir="rtl"] .category-actions .dropdown-menu {
+  right: 0 !important;
+  left: auto !important;
+}

@@ -82,6 +82,96 @@
         </div>
       </div>
 
+      <!-- Additional Category Filters Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <!-- Main Category Filter -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            {{ $t("categories.main_category") }}
+          </label>
+          <select
+            v-model="localFilters.main_category_id"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            @change="applyFilters"
+          >
+            <option value="">{{ $t("common.all") }}</option>
+            <option
+              v-for="category in mainCategories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.localized_name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Subcategory Filter -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            {{ $t("categories.subcategory") }}
+          </label>
+          <select
+            v-model="localFilters.category_id"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            @change="applyFilters"
+          >
+            <option value="">{{ $t("common.all") }}</option>
+            <option
+              v-for="category in availableSubcategories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.localized_name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Gold Purity Range -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            {{ $t("inventory.gold_purity_range") }}
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <input
+              v-model.number="localFilters.gold_purity_min"
+              type="number"
+              step="0.1"
+              min="0"
+              max="24"
+              :placeholder="$t('common.min')"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+              @input="applyFilters"
+            />
+            <input
+              v-model.number="localFilters.gold_purity_max"
+              type="number"
+              step="0.1"
+              min="0"
+              max="24"
+              :placeholder="$t('common.max')"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+              @input="applyFilters"
+            />
+          </div>
+        </div>
+
+        <!-- Filter Toggle -->
+        <div class="flex items-end">
+          <button
+            @click="showAdvancedFilters = !showAdvancedFilters"
+            class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+          >
+            {{ showAdvancedFilters ? $t("common.hide_filters") : $t("common.show_filters") }}
+          </button>
+        </div>
+      </div>
+
       <!-- Filter Actions -->
       <div class="mt-4 flex justify-between items-center">
         <div class="flex items-center space-x-4">
@@ -456,10 +546,11 @@ import {
   ChevronRightIcon,
 } from "@heroicons/vue/24/outline";
 import { useInvoicesStore } from "@/stores/invoices";
+import { useInventoryStore } from "@/stores/inventory";
 import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import { useCalendarConversion } from "@/composables/useCalendarConversion";
 import DatePicker from "@/components/localization/DatePicker.vue";
-import type { Invoice } from "@/types";
+import type { Invoice, Category } from "@/types";
 
 // Emits
 const emit = defineEmits<{
@@ -472,6 +563,7 @@ const emit = defineEmits<{
 }>();
 
 const invoicesStore = useInvoicesStore();
+const inventoryStore = useInventoryStore();
 const { formatCurrency } = useNumberFormatter();
 const { formatDate } = useCalendarConversion();
 
@@ -480,6 +572,7 @@ const localFilters = ref({ ...invoicesStore.filters });
 const selectedInvoices = ref<number[]>([]);
 const showBatchActions = ref(false);
 const showSendMenu = ref<number | null>(null);
+const showAdvancedFilters = ref(false);
 
 // Table columns
 const columns = [
@@ -515,6 +608,19 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+const mainCategories = computed(() => {
+  return inventoryStore.categories.filter((cat: Category) => !cat.parent_id);
+});
+
+const availableSubcategories = computed(() => {
+  if (!localFilters.value.main_category_id) {
+    return inventoryStore.categories.filter((cat: Category) => cat.parent_id);
+  }
+  return inventoryStore.categories.filter(
+    (cat: Category) => cat.parent_id === parseInt(localFilters.value.main_category_id)
+  );
+});
+
 // Methods
 const debouncedSearch = debounce(() => {
   applyFilters();
@@ -535,6 +641,10 @@ const resetFilters = () => {
     date_to: "",
     template_id: "",
     tags: "",
+    main_category_id: "",
+    category_id: "",
+    gold_purity_min: "",
+    gold_purity_max: "",
     sort_by: "created_at",
     sort_direction: "desc",
   };
@@ -646,8 +756,15 @@ const handleClickOutside = (event: Event) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener("click", handleClickOutside);
+  
+  // Load categories for filtering
+  try {
+    await inventoryStore.fetchCategories();
+  } catch (error) {
+    console.warn("Failed to load categories for filtering:", error);
+  }
 });
 
 // Watch for filter changes

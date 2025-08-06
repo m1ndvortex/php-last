@@ -30,7 +30,8 @@ class InvoiceController extends Controller
         try {
             $filters = $request->only([
                 'status', 'start_date', 'end_date', 'customer_id', 
-                'language', 'tags', 'search', 'sort_by', 'sort_order', 'per_page'
+                'language', 'tags', 'search', 'sort_by', 'sort_order', 'per_page',
+                'main_category_id', 'category_id', 'gold_purity_min', 'gold_purity_max'
             ]);
 
             $invoices = $this->invoiceService->getInvoicesWithFilters($filters);
@@ -43,6 +44,50 @@ class InvoiceController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve invoices',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get category-based invoice statistics.
+     */
+    public function getCategoryStats(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(['start_date', 'end_date', 'status']);
+            $stats = $this->invoiceService->getCategoryBasedStats($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve category statistics',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get gold purity distribution in invoices.
+     */
+    public function getGoldPurityStats(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(['start_date', 'end_date', 'category_id', 'main_category_id']);
+            $stats = $this->invoiceService->getGoldPurityStats($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve gold purity statistics',
                 'error' => $e->getMessage(),
             ], 500);
         }

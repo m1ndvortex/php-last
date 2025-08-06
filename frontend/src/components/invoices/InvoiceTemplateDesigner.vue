@@ -194,6 +194,36 @@
                       {{ $t("invoices.include_qr_code") }}
                     </span>
                   </label>
+                  <label class="flex items-center">
+                    <input
+                      v-model="templateForm.fields.category_hierarchy"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      {{ $t("invoices.include_category_hierarchy") }}
+                    </span>
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      v-model="templateForm.fields.category_images"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      {{ $t("invoices.include_category_images") }}
+                    </span>
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      v-model="templateForm.fields.gold_purity"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      {{ $t("invoices.include_gold_purity") }}
+                    </span>
+                  </label>
                 </div>
               </div>
 
@@ -515,6 +545,9 @@ const templateForm = ref({
   fields: {
     logo: true,
     qr_code: true,
+    category_hierarchy: true,
+    category_images: true,
+    gold_purity: true,
     custom_fields: [] as string[],
   },
 });
@@ -576,6 +609,20 @@ const availableFields = [
     description: "invoices.invoice_number_desc",
     icon: HashtagIcon,
     sampleValue: "INV-2024-001",
+  },
+  {
+    key: "category_summary",
+    label: "invoices.category_summary",
+    description: "invoices.category_summary_desc",
+    icon: DocumentTextIcon,
+    sampleValue: "Rings: 3 items, Necklaces: 2 items",
+  },
+  {
+    key: "gold_purity_summary",
+    label: "invoices.gold_purity_summary",
+    description: "invoices.gold_purity_summary_desc",
+    icon: DocumentTextIcon,
+    sampleValue: "18K: 2 items, 21K: 3 items",
   },
 ];
 
@@ -725,6 +772,9 @@ const initializeForm = () => {
       fields: {
         logo: props.template.fields.logo,
         qr_code: props.template.fields.qr_code,
+        category_hierarchy: props.template.fields.category_hierarchy ?? true,
+        category_images: props.template.fields.category_images ?? true,
+        gold_purity: props.template.fields.gold_purity ?? true,
         custom_fields: props.template.fields.custom_fields || [],
       },
     };

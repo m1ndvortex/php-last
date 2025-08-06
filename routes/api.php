@@ -82,6 +82,8 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
     
     // Invoice routes - specific routes first to avoid conflicts
     Route::prefix('invoices')->group(function () {
+        Route::get('/category-stats', [\App\Http\Controllers\InvoiceController::class, 'getCategoryStats']);
+        Route::get('/gold-purity-stats', [\App\Http\Controllers\InvoiceController::class, 'getGoldPurityStats']);
         Route::post('/batch-pdf', [\App\Http\Controllers\InvoiceController::class, 'generateBatchPDFs']);
         Route::post('/batch-download', [\App\Http\Controllers\InvoiceController::class, 'downloadBatchPDFs']);
         Route::post('/{invoice}/duplicate', [\App\Http\Controllers\InvoiceController::class, 'duplicate']);
@@ -121,6 +123,7 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('/expired', [\App\Http\Controllers\InventoryController::class, 'expired']);
         Route::get('/summary/location', [\App\Http\Controllers\InventoryController::class, 'summaryByLocation']);
         Route::get('/summary/category', [\App\Http\Controllers\InventoryController::class, 'summaryByCategory']);
+        Route::get('/gold-purity-options', [\App\Http\Controllers\InventoryController::class, 'goldPurityOptions']);
         Route::post('/{inventory}/transfer', [\App\Http\Controllers\InventoryController::class, 'transfer']);
         Route::get('/{inventory}/movements', [\App\Http\Controllers\InventoryController::class, 'movements']);
     });

@@ -82,7 +82,7 @@ class GoldPurityService
     /**
      * Convert English numerals to Persian numerals.
      */
-    private function convertToPersianNumerals(string $text): string
+    public function convertToPersianNumerals(string $text): string
     {
         return strtr($text, self::PERSIAN_NUMERALS);
     }

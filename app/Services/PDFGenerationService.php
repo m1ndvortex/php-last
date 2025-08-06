@@ -79,9 +79,14 @@ class PDFGenerationService
                 'quantity' => $this->formatNumber($item->quantity, $invoice->language),
                 'unit_price' => $this->formatCurrency($item->unit_price, $invoice->language),
                 'total_price' => $this->formatCurrency($item->total_price, $invoice->language),
-                'gold_purity' => $item->gold_purity ? $this->formatNumber($item->gold_purity, $invoice->language) : null,
-                'weight' => $item->weight ? $this->formatNumber($item->weight, $invoice->language) . ' g' : null,
+                'gold_purity' => $item->formatted_gold_purity,
+                'weight' => $item->weight ? $this->formatNumber($item->weight, $invoice->language) . ($invoice->language === 'fa' ? ' گرم' : ' g') : null,
                 'serial_number' => $item->serial_number,
+                'category_path' => $item->category_display,
+                'main_category' => $item->mainCategory ? $item->mainCategory->localized_name : null,
+                'subcategory' => $item->category ? $item->category->localized_name : null,
+                'category_image' => $item->category_image_url,
+                'category_name_localized' => $item->localized_category_name,
             ];
         });
 
@@ -179,6 +184,19 @@ class PDFGenerationService
         }
         
         return $formatted;
+    }
+
+    /**
+     * Format gold purity based on language.
+     */
+    protected function formatGoldPurity($purity, $language)
+    {
+        if ($language === 'fa') {
+            $formatted = number_format($purity, 1);
+            return $this->convertToPersianNumbers($formatted) . ' عیار';
+        } else {
+            return number_format($purity, 1) . 'K';
+        }
     }
 
     /**

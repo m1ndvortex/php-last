@@ -59,10 +59,21 @@ export interface InvoiceItem {
   id: number;
   invoice_id: number;
   inventory_item_id?: number;
+  name?: string;
   description: string;
   quantity: number;
   unit_price: number;
   total_price: number;
+  gold_purity?: number;
+  weight?: number;
+  serial_number?: string;
+  category_id?: number;
+  main_category_id?: number;
+  category_path?: string;
+  main_category_name?: string;
+  category_name?: string;
+  category_image_url?: string;
+  gold_purity_from_category?: number;
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +88,7 @@ export interface InventoryItem {
   sku: string;
   category_id?: number;
   main_category_id?: number;
+  category_path?: string;
   location_id?: number;
   quantity: number;
   unit_price: number;
@@ -105,7 +117,6 @@ export interface InventoryItem {
   is_low_stock?: boolean;
   is_expiring?: boolean;
   is_expired?: boolean;
-  category_path?: string;
   formatted_gold_purity?: string;
 }
 
@@ -381,6 +392,9 @@ export interface InvoiceTemplate {
   fields: {
     logo: boolean;
     qr_code: boolean;
+    category_hierarchy: boolean;
+    category_images: boolean;
+    gold_purity: boolean;
     custom_fields: string[];
   };
   created_at: string;

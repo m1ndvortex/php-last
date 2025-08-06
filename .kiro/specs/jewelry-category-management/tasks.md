@@ -101,7 +101,20 @@
   - Create image cleanup for deleted categories
   - _Requirements: 3.1, 3.2, 3.4, 3.5, 9.2_
 
-- [ ] 8. Gold Purity System Implementation
+- [x] 8. Gold Purity System Implementation
+
+
+
+
+
+
+
+
+
+
+
+
+
   - Create gold purity formatting for Persian/English display
   - Implement karat to purity conversion utilities
   - Add gold purity validation and range checking
@@ -110,7 +123,15 @@
   - Add gold purity filtering in inventory lists
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [ ] 9. Localization and Bilingual Support
+- [x] 9. Localization and Bilingual Support
+
+
+
+
+
+
+
+
   - Add category-related translations to en.json and fa.json
   - Implement RTL layout support for category management
   - Add Persian gold purity terminology (عیار طلا)
@@ -119,7 +140,28 @@
   - Add Persian numeral formatting for category data
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 10. Invoice Integration with Categories
+- [x] 10. Invoice Integration with Categories
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   - Update invoice line items to display category hierarchy
   - Add category information to invoice PDF templates
   - Include gold purity in invoice item details

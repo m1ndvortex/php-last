@@ -25,7 +25,8 @@ class InventoryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only([
-            'search', 'category_id', 'location_id', 'low_stock', 'expiring', 'expiring_days'
+            'search', 'category_id', 'location_id', 'low_stock', 'expiring', 'expiring_days',
+            'gold_purity_min', 'gold_purity_max', 'gold_purity_range'
         ]);
 
         $items = $this->inventoryService->searchItems($filters);
@@ -259,6 +260,22 @@ class InventoryController extends Controller
         return response()->json([
             'success' => true,
             'data' => $summary,
+        ]);
+    }
+
+    /**
+     * Get gold purity options and ranges.
+     */
+    public function goldPurityOptions(): JsonResponse
+    {
+        $goldPurityService = app(\App\Services\GoldPurityService::class);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'standard_purities' => $goldPurityService->getStandardPurities(),
+                'purity_ranges' => $goldPurityService->getPurityRanges(),
+            ],
         ]);
     }
 }

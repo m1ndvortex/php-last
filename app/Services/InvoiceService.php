@@ -98,6 +98,31 @@ class InvoiceService
         foreach ($items as $itemData) {
             $totalPrice = $itemData['quantity'] * $itemData['unit_price'];
 
+            // Get category information from inventory item if not provided
+            $categoryId = $itemData['category_id'] ?? null;
+            $mainCategoryId = $itemData['main_category_id'] ?? null;
+            $categoryPath = $itemData['category_path'] ?? null;
+
+            if (isset($itemData['inventory_item_id']) && $itemData['inventory_item_id']) {
+                $inventoryItem = InventoryItem::with(['category', 'mainCategory'])->find($itemData['inventory_item_id']);
+                if ($inventoryItem) {
+                    $categoryId = $categoryId ?? $inventoryItem->category_id;
+                    $mainCategoryId = $mainCategoryId ?? $inventoryItem->main_category_id;
+                    
+                    // Build category path if not provided
+                    if (!$categoryPath) {
+                        $pathParts = [];
+                        if ($inventoryItem->mainCategory) {
+                            $pathParts[] = $inventoryItem->mainCategory->localized_name;
+                        }
+                        if ($inventoryItem->category && $inventoryItem->category->id !== $mainCategoryId) {
+                            $pathParts[] = $inventoryItem->category->localized_name;
+                        }
+                        $categoryPath = implode(' > ', $pathParts);
+                    }
+                }
+            }
+
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
                 'inventory_item_id' => $itemData['inventory_item_id'] ?? null,
@@ -109,6 +134,9 @@ class InvoiceService
                 'gold_purity' => $itemData['gold_purity'] ?? null,
                 'weight' => $itemData['weight'] ?? null,
                 'serial_number' => $itemData['serial_number'] ?? null,
+                'category_id' => $categoryId,
+                'main_category_id' => $mainCategoryId,
+                'category_path' => $categoryPath,
             ]);
         }
     }
@@ -150,7 +178,7 @@ class InvoiceService
      */
     public function getInvoicesWithFilters(array $filters = [])
     {
-        $query = Invoice::with(['customer', 'items', 'tags', 'template']);
+        $query = Invoice::with(['customer', 'items.category', 'items.mainCategory', 'tags', 'template']);
 
         // Filter by status
         if (isset($filters['status'])) {
@@ -172,6 +200,32 @@ class InvoiceService
             $query->byLanguage($filters['language']);
         }
 
+        // Filter by main category
+        if (isset($filters['main_category_id']) && $filters['main_category_id']) {
+            $query->whereHas('items', function ($q) use ($filters) {
+                $q->where('main_category_id', $filters['main_category_id']);
+            });
+        }
+
+        // Filter by category (subcategory)
+        if (isset($filters['category_id']) && $filters['category_id']) {
+            $query->whereHas('items', function ($q) use ($filters) {
+                $q->where('category_id', $filters['category_id']);
+            });
+        }
+
+        // Filter by gold purity range
+        if (isset($filters['gold_purity_min']) || isset($filters['gold_purity_max'])) {
+            $query->whereHas('items', function ($q) use ($filters) {
+                if (isset($filters['gold_purity_min'])) {
+                    $q->where('gold_purity', '>=', $filters['gold_purity_min']);
+                }
+                if (isset($filters['gold_purity_max'])) {
+                    $q->where('gold_purity', '<=', $filters['gold_purity_max']);
+                }
+            });
+        }
+
         // Filter by tags
         if (isset($filters['tags']) && is_array($filters['tags'])) {
             $query->whereHas('tags', function ($q) use ($filters) {
@@ -179,13 +233,21 @@ class InvoiceService
             });
         }
 
-        // Search by invoice number or customer name
+        // Search by invoice number, customer name, or item category
         if (isset($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('invoice_number', 'like', "%{$search}%")
                   ->orWhereHas('customer', function ($customerQuery) use ($search) {
                       $customerQuery->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('items.category', function ($categoryQuery) use ($search) {
+                      $categoryQuery->where('name', 'like', "%{$search}%")
+                                   ->orWhere('name_persian', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('items.mainCategory', function ($mainCategoryQuery) use ($search) {
+                      $mainCategoryQuery->where('name', 'like', "%{$search}%")
+                                       ->orWhere('name_persian', 'like', "%{$search}%");
                   });
             });
         }
@@ -301,5 +363,162 @@ class InvoiceService
 
             return true;
         });
+    }
+
+    /**
+     * Get category-based invoice statistics.
+     */
+    public function getCategoryBasedStats(array $filters = [])
+    {
+        $query = Invoice::with(['items.category', 'items.mainCategory']);
+
+        // Apply date filters
+        if (isset($filters['start_date']) && isset($filters['end_date'])) {
+            $query->byDateRange($filters['start_date'], $filters['end_date']);
+        }
+
+        // Apply status filter
+        if (isset($filters['status'])) {
+            $query->byStatus($filters['status']);
+        }
+
+        $invoices = $query->get();
+
+        $stats = [
+            'by_main_category' => [],
+            'by_subcategory' => [],
+            'category_revenue' => [],
+            'top_categories' => [],
+        ];
+
+        // Group by main categories
+        foreach ($invoices as $invoice) {
+            foreach ($invoice->items as $item) {
+                if ($item->mainCategory) {
+                    $categoryName = $item->mainCategory->localized_name;
+                    
+                    if (!isset($stats['by_main_category'][$categoryName])) {
+                        $stats['by_main_category'][$categoryName] = [
+                            'count' => 0,
+                            'total_amount' => 0,
+                            'items_count' => 0,
+                        ];
+                    }
+                    
+                    $stats['by_main_category'][$categoryName]['count']++;
+                    $stats['by_main_category'][$categoryName]['total_amount'] += $item->total_price;
+                    $stats['by_main_category'][$categoryName]['items_count']++;
+                }
+
+                if ($item->category) {
+                    $subcategoryName = $item->category->localized_name;
+                    
+                    if (!isset($stats['by_subcategory'][$subcategoryName])) {
+                        $stats['by_subcategory'][$subcategoryName] = [
+                            'count' => 0,
+                            'total_amount' => 0,
+                            'items_count' => 0,
+                        ];
+                    }
+                    
+                    $stats['by_subcategory'][$subcategoryName]['count']++;
+                    $stats['by_subcategory'][$subcategoryName]['total_amount'] += $item->total_price;
+                    $stats['by_subcategory'][$subcategoryName]['items_count']++;
+                }
+            }
+        }
+
+        // Sort by revenue
+        uasort($stats['by_main_category'], function ($a, $b) {
+            return $b['total_amount'] <=> $a['total_amount'];
+        });
+
+        uasort($stats['by_subcategory'], function ($a, $b) {
+            return $b['total_amount'] <=> $a['total_amount'];
+        });
+
+        // Get top 10 categories
+        $stats['top_categories'] = array_slice($stats['by_main_category'], 0, 10, true);
+
+        return $stats;
+    }
+
+    /**
+     * Get gold purity distribution statistics.
+     */
+    public function getGoldPurityStats(array $filters = [])
+    {
+        $query = InvoiceItem::with(['invoice', 'category', 'mainCategory'])
+            ->whereNotNull('gold_purity');
+
+        // Apply date filters through invoice relationship
+        if (isset($filters['start_date']) && isset($filters['end_date'])) {
+            $query->whereHas('invoice', function ($q) use ($filters) {
+                $q->byDateRange($filters['start_date'], $filters['end_date']);
+            });
+        }
+
+        // Apply category filters
+        if (isset($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+
+        if (isset($filters['main_category_id'])) {
+            $query->where('main_category_id', $filters['main_category_id']);
+        }
+
+        $items = $query->get();
+
+        $stats = [
+            'purity_distribution' => [],
+            'average_purity' => 0,
+            'total_items' => $items->count(),
+            'purity_ranges' => [
+                '14K-16K' => 0,
+                '17K-19K' => 0,
+                '20K-22K' => 0,
+                '23K-24K' => 0,
+            ],
+        ];
+
+        $totalPurity = 0;
+        foreach ($items as $item) {
+            $purity = $item->gold_purity;
+            $purityKey = number_format($purity, 1) . 'K';
+            
+            if (!isset($stats['purity_distribution'][$purityKey])) {
+                $stats['purity_distribution'][$purityKey] = [
+                    'count' => 0,
+                    'total_amount' => 0,
+                    'percentage' => 0,
+                ];
+            }
+            
+            $stats['purity_distribution'][$purityKey]['count']++;
+            $stats['purity_distribution'][$purityKey]['total_amount'] += $item->total_price;
+            $totalPurity += $purity;
+
+            // Categorize into ranges
+            if ($purity >= 14 && $purity < 17) {
+                $stats['purity_ranges']['14K-16K']++;
+            } elseif ($purity >= 17 && $purity < 20) {
+                $stats['purity_ranges']['17K-19K']++;
+            } elseif ($purity >= 20 && $purity < 23) {
+                $stats['purity_ranges']['20K-22K']++;
+            } elseif ($purity >= 23) {
+                $stats['purity_ranges']['23K-24K']++;
+            }
+        }
+
+        // Calculate percentages and average
+        if ($stats['total_items'] > 0) {
+            $stats['average_purity'] = $totalPurity / $stats['total_items'];
+            
+            foreach ($stats['purity_distribution'] as $key => &$data) {
+                $data['percentage'] = ($data['count'] / $stats['total_items']) * 100;
+            }
+        }
+
+        return $stats;
     }
 }

@@ -146,6 +146,7 @@
         <thead>
             <tr>
                 <th>کالا</th>
+                <th>دسته‌بندی</th>
                 <th>توضیحات</th>
                 <th class="number">تعداد</th>
                 <th class="number">قیمت واحد</th>
@@ -161,7 +162,24 @@
         <tbody>
             @foreach($items_formatted as $item)
                 <tr>
-                    <td>{{ $item['name'] }}</td>
+                    <td>
+                        @if($item['category_image'])
+                            <img src="{{ $item['category_image'] }}" alt="دسته‌بندی" style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; vertical-align: middle;">
+                        @endif
+                        <strong>{{ $item['name'] }}</strong>
+                        @if($item['serial_number'])
+                            <br><small style="color: #666;">شماره سریال: {{ $item['serial_number'] }}</small>
+                        @endif
+                    </td>
+                    <td>
+                        @if($item['category_path'])
+                            {{ $item['category_path'] }}
+                        @elseif($item['category_name_localized'])
+                            {{ $item['category_name_localized'] }}
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>{{ $item['description'] ?? '-' }}</td>
                     <td class="number">{{ $item['quantity'] }}</td>
                     <td class="number">{{ $item['unit_price'] }}</td>

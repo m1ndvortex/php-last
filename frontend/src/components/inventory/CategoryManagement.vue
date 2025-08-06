@@ -10,7 +10,11 @@
           {{ $t("inventory.categories.description") }}
         </p>
       </div>
-      <div class="mt-4 sm:mt-0 sm:flex-none">
+      <div class="mt-4 sm:mt-0 sm:flex-none space-x-3 flex items-center">
+        <!-- Language indicator -->
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          {{ currentLanguage === 'fa' ? 'فارسی' : 'English' }}
+        </div>
         <button
           @click="showCreateModal = true"
           type="button"
@@ -132,6 +136,8 @@
 import { ref, computed, onMounted } from "vue";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useInventoryStore } from "@/stores/inventory";
+import { useLocale } from "@/composables/useLocale";
+import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import type { Category } from "@/types";
 
 // Components
@@ -140,6 +146,8 @@ import CategoryFormModal from "./CategoryFormModal.vue";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.vue";
 
 const inventoryStore = useInventoryStore();
+const { currentLanguage, isRTL, getLocalizedCategoryName } = useLocale();
+const { formatCategoryData } = useNumberFormatter();
 
 // State
 const searchQuery = ref("");

@@ -207,12 +207,22 @@
                       <th
                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                       >
+                        {{ $t("invoices.category") }}
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
                         {{ $t("invoices.quantity") }}
                       </th>
                       <th
                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                       >
                         {{ $t("invoices.unit_price") }}
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                      >
+                        {{ $t("invoices.gold_purity") }}
                       </th>
                       <th
                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
@@ -231,10 +241,10 @@
                   >
                     <tr v-for="(item, index) in form.items" :key="index">
                       <td class="px-4 py-2">
-                        <div class="flex space-x-2">
+                        <div class="space-y-2">
                           <select
                             v-model="item.inventory_item_id"
-                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                             @change="
                               selectInventoryItem(index, item.inventory_item_id)
                             "
@@ -251,11 +261,46 @@
                             </option>
                           </select>
                           <input
+                            v-model="item.name"
+                            type="text"
+                            :placeholder="$t('invoices.item_name')"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+                          />
+                          <input
                             v-model="item.description"
                             type="text"
                             :placeholder="$t('invoices.custom_description')"
-                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                           />
+                        </div>
+                      </td>
+                      <td class="px-4 py-2">
+                        <div class="text-sm">
+                          <div v-if="item.category_path" class="font-medium flex items-center">
+                            <img 
+                              v-if="item.category_image_url" 
+                              :src="item.category_image_url" 
+                              :alt="item.category_name || 'Category'"
+                              class="w-4 h-4 mr-2 rounded"
+                            />
+                            {{ item.category_path }}
+                          </div>
+                          <div v-else-if="item.main_category_name || item.category_name" class="font-medium flex items-center">
+                            <img 
+                              v-if="item.category_image_url" 
+                              :src="item.category_image_url" 
+                              :alt="item.category_name || item.main_category_name || 'Category'"
+                              class="w-4 h-4 mr-2 rounded"
+                            />
+                            {{ item.main_category_name }}
+                            <span v-if="item.category_name"> > {{ item.category_name }}</span>
+                          </div>
+                          <div v-else class="text-gray-400">
+                            {{ $t("invoices.no_category") }}
+                          </div>
+                          <div v-if="item.gold_purity_from_category" class="text-xs text-blue-600 mt-1">
+                            {{ $t("invoices.default_gold_purity") }}: {{ formatGoldPurity(item.gold_purity_from_category) }}
+                          </div>
                         </div>
                       </td>
                       <td class="px-4 py-2">
@@ -276,6 +321,17 @@
                           min="0"
                           class="w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                           @input="calculateItemTotal(index)"
+                        />
+                      </td>
+                      <td class="px-4 py-2">
+                        <input
+                          v-model.number="item.gold_purity"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="24"
+                          :placeholder="$t('invoices.gold_purity_placeholder')"
+                          class="w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                         />
                       </td>
                       <td class="px-4 py-2">
@@ -512,10 +568,19 @@ const addItem = () => {
     id: 0,
     invoice_id: 0,
     inventory_item_id: undefined,
+    name: "",
     description: "",
     quantity: 1,
     unit_price: 0,
     total_price: 0,
+    gold_purity: undefined,
+    weight: undefined,
+    serial_number: undefined,
+    category_id: undefined,
+    main_category_id: undefined,
+    category_path: undefined,
+    main_category_name: undefined,
+    category_name: undefined,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
@@ -539,8 +604,17 @@ const selectInventoryItem = (
       (item) => item && item.id === inventoryItemId,
     );
     if (inventoryItem) {
-      form.value.items[index].description = inventoryItem.name || "";
+      form.value.items[index].name = inventoryItem.name || "";
+      form.value.items[index].description = inventoryItem.description || "";
       form.value.items[index].unit_price = inventoryItem.unit_price || 0;
+      form.value.items[index].gold_purity = inventoryItem.gold_purity || undefined;
+      form.value.items[index].weight = inventoryItem.weight || undefined;
+      form.value.items[index].serial_number = inventoryItem.serial_number || undefined;
+      form.value.items[index].category_id = inventoryItem.category_id || undefined;
+      form.value.items[index].main_category_id = inventoryItem.main_category_id || undefined;
+      form.value.items[index].category_path = inventoryItem.category_path || undefined;
+      form.value.items[index].main_category_name = inventoryItem.main_category?.name || undefined;
+      form.value.items[index].category_name = inventoryItem.category?.name || undefined;
       calculateItemTotal(index);
     }
   }
@@ -555,6 +629,11 @@ const calculateItemTotal = (index: number) => {
 const updateTotals = () => {
   form.value.subtotal = subtotal.value;
   form.value.total_amount = total.value;
+};
+
+const formatGoldPurity = (purity: number | undefined): string => {
+  if (!purity) return '';
+  return `${purity.toFixed(1)}K`;
 };
 
 const handleSubmit = async () => {

@@ -86,6 +86,70 @@
         </div>
       </div>
 
+      <!-- Gold Purity Filters Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <!-- Gold Purity Range Filter -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            {{ $t("inventory.gold_purity_range") }}
+          </label>
+          <select
+            v-model="filters.gold_purity_range"
+            @change="applyFilters"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          >
+            <option value="">{{ $t("common.all") }}</option>
+            <option
+              v-for="range in goldPurityRanges"
+              :key="range.label"
+              :value="range.label"
+            >
+              {{ range.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Min Gold Purity -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            {{ $t("inventory.gold_purity_min") }}
+          </label>
+          <input
+            v-model.number="filters.gold_purity_min"
+            @input="debouncedApplyFilters"
+            type="number"
+            step="0.001"
+            min="0"
+            max="24"
+            :placeholder="$t('inventory.gold_purity_min')"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          />
+        </div>
+
+        <!-- Max Gold Purity -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            {{ $t("inventory.gold_purity_max") }}
+          </label>
+          <input
+            v-model.number="filters.gold_purity_max"
+            @input="debouncedApplyFilters"
+            type="number"
+            step="0.001"
+            min="0"
+            max="24"
+            :placeholder="$t('inventory.gold_purity_max')"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          />
+        </div>
+      </div>
+
       <!-- Quick Stats -->
       <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
@@ -190,6 +254,11 @@
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
+                {{ $t("inventory.gold_purity") }}
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
                 {{ $t("common.status") }}
               </th>
               <th
@@ -258,6 +327,14 @@
                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
               >
                 {{ formatCurrency(item.unit_price) }}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+              >
+                <span v-if="item.gold_purity">
+                  {{ formatGoldPurity(item.gold_purity) }}
+                </span>
+                <span v-else class="text-gray-400">-</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex flex-col space-y-1">
@@ -370,7 +447,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-// import { useI18n } from "vue-i18n";
+import { useI18n } from "vue-i18n";
 import { debounce } from "lodash-es";
 import {
   CubeIcon,
@@ -380,6 +457,8 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useInventoryStore } from "@/stores/inventory";
 import { useNumberFormatter } from "@/composables/useNumberFormatter";
+import { useApi } from "@/composables/useApi";
+import { apiService } from "@/services/api";
 import type { InventoryItem } from "@/types";
 
 // Emits
@@ -389,9 +468,10 @@ defineEmits<{
   "delete-item": [item: InventoryItem];
 }>();
 
-// const {} = useI18n();
+const { locale } = useI18n();
 const inventoryStore = useInventoryStore();
 const { formatNumber, formatCurrency } = useNumberFormatter();
+const { execute } = useApi();
 
 // State
 const searchQuery = ref("");
@@ -399,12 +479,46 @@ const filters = ref({
   category_id: "",
   location_id: "",
   status: "",
+  gold_purity_range: "",
+  gold_purity_min: null as number | null,
+  gold_purity_max: null as number | null,
 });
+const goldPurityRanges = ref<Array<{ label: string; min: number; max: number }>>([]);
 
 // Methods
 const debouncedSearch = debounce(() => {
   applyFilters();
 }, 300);
+
+const debouncedApplyFilters = debounce(() => {
+  applyFilters();
+}, 500);
+
+const formatGoldPurity = (purity: number): string => {
+  if (!purity) return "-";
+  
+  if (locale.value === "fa") {
+    // Convert to Persian numerals
+    const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+    const formattedPurity = purity.toFixed(1).replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
+    return `${formattedPurity} عیار`;
+  }
+  
+  return `${purity.toFixed(1)}K`;
+};
+
+const fetchGoldPurityOptions = async () => {
+  try {
+    const result = await execute(() => 
+      apiService.get("/inventory/gold-purity-options")
+    );
+    if (result) {
+      goldPurityRanges.value = result.purity_ranges || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch gold purity options:", error);
+  }
+};
 
 const applyFilters = () => {
   const params: Record<string, any> = {
@@ -444,6 +558,7 @@ const changePage = (page: number) => {
 
 // Lifecycle
 onMounted(() => {
+  fetchGoldPurityOptions();
   applyFilters();
 });
 </script>

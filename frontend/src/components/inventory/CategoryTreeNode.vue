@@ -50,12 +50,13 @@
         </div>
 
         <!-- Category Info -->
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0 category-tree-node">
           <div class="flex items-center space-x-2">
             <h4
-              class="text-sm font-medium text-gray-900 dark:text-white truncate"
+              class="text-sm font-medium text-gray-900 dark:text-white truncate category-name"
+              :dir="isRTL ? 'rtl' : 'ltr'"
             >
-              {{ category.localized_name }}
+              {{ getLocalizedCategoryName(category) }}
             </h4>
             <span
               v-if="category.code"
@@ -72,10 +73,11 @@
           </div>
           <div
             class="flex items-center space-x-4 mt-1 text-xs text-gray-500 dark:text-gray-400"
+            :dir="isRTL ? 'rtl' : 'ltr'"
           >
             <span v-if="category.item_count">
               {{ $t("inventory.categories.item_count") }}:
-              {{ category.item_count }}
+              {{ formatNumber(category.item_count) }}
             </span>
             <span v-if="category.subcategory_count">
               {{ $t("inventory.categories.subcategory_count") }}:
@@ -161,6 +163,8 @@ import {
   TrashIcon,
   Bars3Icon,
 } from "@heroicons/vue/24/outline";
+import { useLocale } from "@/composables/useLocale";
+import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import type { Category } from "@/types";
 
 interface Props {
@@ -184,6 +188,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+// Composables
+const { isRTL, getLocalizedCategoryName } = useLocale();
+const { formatNumber } = useNumberFormatter();
 
 // State
 const dragOver = ref(false);

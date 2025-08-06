@@ -20,24 +20,32 @@
       >
         <form @submit.prevent="handleSubmit">
           <!-- Header -->
-          <div class="mb-6">
-            <h3
-              class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
-              id="modal-title"
-            >
-              {{
-                isEdit
-                  ? $t("inventory.categories.edit_category")
-                  : $t("inventory.categories.add_category")
-              }}
-            </h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {{
-                isEdit
-                  ? $t("inventory.categories.edit_category")
-                  : $t("inventory.categories.description")
-              }}
-            </p>
+          <div class="mb-6 category-form-header">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+                  id="modal-title"
+                >
+                  {{
+                    isEdit
+                      ? $t("inventory.categories.edit_category")
+                      : $t("inventory.categories.add_category")
+                  }}
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{
+                    isEdit
+                      ? $t("inventory.categories.edit_category")
+                      : $t("inventory.categories.description")
+                  }}
+                </p>
+              </div>
+              <!-- Language indicator -->
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                {{ $t("language.current_language") }}
+              </div>
+            </div>
           </div>
 
           <!-- General Error Message -->
@@ -318,6 +326,8 @@
 import { ref, reactive, watch, onMounted } from "vue";
 import { useInventoryStore } from "@/stores/inventory";
 import { useI18n } from "vue-i18n";
+import { useLocale } from "@/composables/useLocale";
+import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import type { Category } from "@/types";
 
 // Components
@@ -346,6 +356,8 @@ const emit = defineEmits<Emits>();
 
 const inventoryStore = useInventoryStore();
 const { t } = useI18n();
+const { isRTL, getLocalizedCategoryName, formatGoldPurityDisplay } = useLocale();
+const { formatGoldPurity, toPersianNumerals } = useNumberFormatter();
 
 // State
 const loading = ref(false);

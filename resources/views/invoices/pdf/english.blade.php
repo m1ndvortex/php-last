@@ -124,6 +124,7 @@
         <thead>
             <tr>
                 <th>Item</th>
+                <th>Category</th>
                 <th>Description</th>
                 <th class="number">Qty</th>
                 <th class="number">Unit Price</th>
@@ -139,7 +140,24 @@
         <tbody>
             @foreach($items_formatted as $item)
                 <tr>
-                    <td>{{ $item['name'] }}</td>
+                    <td>
+                        @if($item['category_image'])
+                            <img src="{{ $item['category_image'] }}" alt="Category" style="width: 16px; height: 16px; display: inline-block; margin-right: 4px; vertical-align: middle;">
+                        @endif
+                        <strong>{{ $item['name'] }}</strong>
+                        @if($item['serial_number'])
+                            <br><small style="color: #666;">S/N: {{ $item['serial_number'] }}</small>
+                        @endif
+                    </td>
+                    <td>
+                        @if($item['category_path'])
+                            {{ $item['category_path'] }}
+                        @elseif($item['category_name_localized'])
+                            {{ $item['category_name_localized'] }}
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>{{ $item['description'] ?? '-' }}</td>
                     <td class="number">{{ $item['quantity'] }}</td>
                     <td class="number">{{ $item['unit_price'] }}</td>

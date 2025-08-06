@@ -46,6 +46,70 @@ export function useLocale() {
     localStorage.setItem("preferred-language", newLocale);
   };
 
+  // Category-specific localization methods
+  const getLocalizedCategoryName = (category: any): string => {
+    if (!category) return "";
+    
+    if (locale.value === "fa" && category.name_persian) {
+      return category.name_persian;
+    }
+    return category.name || "";
+  };
+
+  const getLocalizedCategoryDescription = (category: any): string => {
+    if (!category) return "";
+    
+    if (locale.value === "fa" && category.description_persian) {
+      return category.description_persian;
+    }
+    return category.description || "";
+  };
+
+  const formatGoldPurity = (purity: number): string => {
+    if (!purity) return "";
+    
+    if (locale.value === "fa") {
+      // Format with Persian numerals and terminology
+      const persianPurity = formatNumber(purity);
+      return `${persianPurity} ${t("inventory.categories.gold_purity_karat")}`;
+    }
+    return `${purity}K`;
+  };
+
+  const formatGoldPurityDisplay = (purity: number): string => {
+    if (!purity) return "";
+    
+    const formattedPurity = formatGoldPurity(purity);
+    const terminology = t("inventory.categories.gold_purity_terminology");
+    
+    if (locale.value === "fa") {
+      return `${terminology}: ${formattedPurity}`;
+    }
+    return `${terminology}: ${formattedPurity}`;
+  };
+
+  const getCategoryPath = (category: any, categories: any[] = []): string => {
+    if (!category) return "";
+    
+    const path: string[] = [];
+    let current = category;
+    
+    while (current) {
+      path.unshift(getLocalizedCategoryName(current));
+      current = categories.find(c => c.id === current.parent_id);
+    }
+    
+    const separator = locale.value === "fa" ? " ← " : " → ";
+    return path.join(separator);
+  };
+
+  const formatPersianNumerals = (text: string): string => {
+    if (locale.value !== "fa") return text;
+    
+    const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+    return text.replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
+  };
+
   return {
     locale,
     isRTL,
@@ -55,6 +119,12 @@ export function useLocale() {
     formatDate,
     getDirection,
     switchLanguage,
+    getLocalizedCategoryName,
+    getLocalizedCategoryDescription,
+    formatGoldPurity,
+    formatGoldPurityDisplay,
+    getCategoryPath,
+    formatPersianNumerals,
     t,
   };
 }

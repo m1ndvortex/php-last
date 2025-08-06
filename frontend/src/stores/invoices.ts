@@ -47,6 +47,10 @@ export const useInvoicesStore = defineStore("invoices", () => {
     date_to: "",
     template_id: "",
     tags: "",
+    main_category_id: "",
+    category_id: "",
+    gold_purity_min: "",
+    gold_purity_max: "",
     sort_by: "created_at",
     sort_direction: "desc",
   });
@@ -465,6 +469,10 @@ export const useInvoicesStore = defineStore("invoices", () => {
       date_to: "",
       template_id: "",
       tags: "",
+      main_category_id: "",
+      category_id: "",
+      gold_purity_min: "",
+      gold_purity_max: "",
       sort_by: "created_at",
       sort_direction: "desc",
     };

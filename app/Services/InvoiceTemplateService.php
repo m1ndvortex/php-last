@@ -124,12 +124,17 @@ class InvoiceTemplateService
                 'position' => ['x' => 0, 'y' => 35],
                 'size' => ['width' => 100, 'height' => 40],
                 'columns' => [
-                    'name' => ['width' => 30, 'label' => $language === 'fa' ? 'نام کالا' : 'Item Name'],
-                    'quantity' => ['width' => 15, 'label' => $language === 'fa' ? 'تعداد' : 'Quantity'],
-                    'unit_price' => ['width' => 20, 'label' => $language === 'fa' ? 'قیمت واحد' : 'Unit Price'],
-                    'total_price' => ['width' => 20, 'label' => $language === 'fa' ? 'قیمت کل' : 'Total Price'],
-                    'gold_purity' => ['width' => 15, 'label' => $language === 'fa' ? 'عیار طلا' : 'Gold Purity'],
-                ]
+                    'name' => ['width' => 20, 'label' => $language === 'fa' ? 'نام کالا' : 'Item Name'],
+                    'category_hierarchy' => ['width' => 18, 'label' => $language === 'fa' ? 'دسته‌بندی' : 'Category'],
+                    'description' => ['width' => 15, 'label' => $language === 'fa' ? 'توضیحات' : 'Description'],
+                    'quantity' => ['width' => 8, 'label' => $language === 'fa' ? 'تعداد' : 'Qty'],
+                    'unit_price' => ['width' => 12, 'label' => $language === 'fa' ? 'قیمت واحد' : 'Unit Price'],
+                    'gold_purity' => ['width' => 12, 'label' => $language === 'fa' ? 'عیار طلا' : 'Gold Purity'],
+                    'total_price' => ['width' => 15, 'label' => $language === 'fa' ? 'قیمت کل' : 'Total Price'],
+                ],
+                'show_category_images' => true,
+                'show_gold_purity' => true,
+                'show_category_hierarchy' => true
             ],
             'totals' => [
                 'type' => 'totals',

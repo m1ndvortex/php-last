@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { FolderIcon } from "@heroicons/vue/24/outline";
+import { useLocale } from "@/composables/useLocale";
 import type { Category } from "@/types";
 
 // Components
