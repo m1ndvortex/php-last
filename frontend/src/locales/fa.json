@@ -191,6 +191,7 @@
   },
   "common": {
     "save": "ذخیره",
+    "saving": "در حال ذخیره...",
     "cancel": "لغو",
     "edit": "ویرایش",
     "delete": "حذف",
@@ -251,7 +252,23 @@
     "all_locations": "همه مکان‌ها",
     "all_statuses": "همه وضعیت‌ها",
     "all_types": "همه انواع",
-    "date_from": "از تاریخ"
+    "date_from": "از تاریخ",
+    "min": "حداقل",
+    "max": "حداکثر",
+    "show_filters": "نمایش فیلترها",
+    "view": "مشاهده",
+    "type": "نوع",
+    "date": "تاریخ",
+    "description": "توضیحات",
+    "total": "مجموع",
+    "continue": "ادامه",
+    "verify": "تأیید",
+    "verifying": "در حال تأیید...",
+    "approve": "تأیید",
+    "block": "مسدود",
+    "select_all": "انتخاب همه",
+    "deselect_all": "لغو انتخاب همه",
+    "minutes": "دقیقه"
   },
   "table": {
     "showing": "نمایش",
@@ -1153,7 +1170,13 @@
     "total_amount": "مبلغ کل",
     "transaction_metadata": "متادیتای تراکنش",
     "created_by": "ایجاد شده توسط",
-    "approved_by": "تأیید شده توسط"
+    "approved_by": "تأیید شده توسط",
+    "search_accounts": "جستجوی حساب‌ها...",
+    "reference_number": "شماره مرجع"
+  },
+  "categories": {
+    "main_category": "دسته‌بندی اصلی",
+    "subcategory": "زیردسته"
   },
   "reports": {
     "description": "تولید گزارشات کسب و کار و تجزیه و تحلیل."
@@ -1650,28 +1673,5 @@
       "changes": "تغییرات",
       "system": "سیستم"
     }
-  },
-  "common": {
-    "save": "ذخیره",
-    "saving": "در حال ذخیره...",
-    "cancel": "لغو",
-    "delete": "حذف",
-    "edit": "ویرایش",
-    "view": "مشاهده",
-    "close": "بستن",
-    "continue": "ادامه",
-    "verify": "تأیید",
-    "verifying": "در حال تأیید...",
-    "approve": "تأیید",
-    "block": "مسدود",
-    "add": "افزودن",
-    "loading": "در حال بارگذاری...",
-    "active": "فعال",
-    "inactive": "غیرفعال",
-    "select_all": "انتخاب همه",
-    "deselect_all": "لغو انتخاب همه",
-    "minutes": "دقیقه",
-    "days": "روز",
-    "coming_soon": "به زودی"
   }
 }

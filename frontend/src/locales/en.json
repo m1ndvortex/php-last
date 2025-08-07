@@ -191,6 +191,7 @@
   },
   "common": {
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
@@ -251,7 +252,23 @@
     "all_locations": "All Locations",
     "all_statuses": "All Statuses",
     "all_types": "All Types",
-    "date_from": "Date From"
+    "date_from": "Date From",
+    "min": "Min",
+    "max": "Max",
+    "show_filters": "Show Filters",
+    "view": "View",
+    "type": "Type",
+    "date": "Date",
+    "description": "Description",
+    "total": "Total",
+    "continue": "Continue",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "approve": "Approve",
+    "block": "Block",
+    "select_all": "Select All",
+    "deselect_all": "Deselect All",
+    "minutes": "minutes"
   },
   "table": {
     "showing": "Showing",
@@ -1284,7 +1301,13 @@
     "total_amount": "Total Amount",
     "transaction_metadata": "Transaction Metadata",
     "created_by": "Created By",
-    "approved_by": "Approved By"
+    "approved_by": "Approved By",
+    "search_accounts": "Search accounts...",
+    "reference_number": "Reference Number"
+  },
+  "categories": {
+    "main_category": "Main Category",
+    "subcategory": "Subcategory"
   },
   "reports": {
     "description": "Generate business reports and analytics."
@@ -1780,28 +1803,5 @@
       "changes": "Changes",
       "system": "System"
     }
-  },
-  "common": {
-    "save": "Save",
-    "saving": "Saving...",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "view": "View",
-    "close": "Close",
-    "continue": "Continue",
-    "verify": "Verify",
-    "verifying": "Verifying...",
-    "approve": "Approve",
-    "block": "Block",
-    "add": "Add",
-    "loading": "Loading...",
-    "active": "Active",
-    "inactive": "Inactive",
-    "select_all": "Select All",
-    "deselect_all": "Deselect All",
-    "minutes": "minutes",
-    "days": "days",
-    "coming_soon": "Coming Soon"
   }
 }
