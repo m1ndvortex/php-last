@@ -458,4 +458,10 @@ export const apiService = {
   },
 };
 
+// Export direct HTTP methods
+export const get = (url: string, config?: AxiosRequestConfig) => api.get(url, config);
+export const post = (url: string, data?: any, config?: AxiosRequestConfig) => api.post(url, data, config);
+export const put = (url: string, data?: any, config?: AxiosRequestConfig) => api.put(url, data, config);
+export const del = (url: string, config?: AxiosRequestConfig) => api.delete(url, config);
+
 export default api;

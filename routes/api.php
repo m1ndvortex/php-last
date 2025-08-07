@@ -313,6 +313,28 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         });
     });
     
+    // Communication routes
+    Route::prefix('communications')->group(function () {
+        Route::get('customers/{customer}', [\App\Http\Controllers\CommunicationController::class, 'index']);
+        Route::post('send', [\App\Http\Controllers\CommunicationController::class, 'send']);
+        Route::post('send-invoice', [\App\Http\Controllers\CommunicationController::class, 'sendInvoice']);
+        Route::post('send-birthday-reminder', [\App\Http\Controllers\CommunicationController::class, 'sendBirthdayReminder']);
+        Route::post('send-anniversary-reminder', [\App\Http\Controllers\CommunicationController::class, 'sendAnniversaryReminder']);
+        Route::get('stats', [\App\Http\Controllers\CommunicationController::class, 'stats']);
+        Route::get('{communication}/status', [\App\Http\Controllers\CommunicationController::class, 'status']);
+        Route::post('{communication}/resend', [\App\Http\Controllers\CommunicationController::class, 'resend']);
+    });
+
+    // Notification routes
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index']);
+        Route::get('stats', [\App\Http\Controllers\NotificationController::class, 'stats']);
+        Route::get('realtime', [\App\Http\Controllers\NotificationController::class, 'realTime']);
+        Route::post('{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+        Route::post('mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+        Route::post('send-test', [\App\Http\Controllers\NotificationController::class, 'sendTest']);
+    });
+
     // Queue Management routes
     Route::prefix('queue')->group(function () {
         Route::get('/', [\App\Http\Controllers\QueueController::class, 'index']);

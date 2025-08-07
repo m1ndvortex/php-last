@@ -11,10 +11,17 @@ use Exception;
 class CommunicationService
 {
     protected LocalizationService $localizationService;
+    protected WhatsAppService $whatsAppService;
+    protected SMSService $smsService;
 
-    public function __construct(LocalizationService $localizationService)
-    {
+    public function __construct(
+        LocalizationService $localizationService,
+        WhatsAppService $whatsAppService,
+        SMSService $smsService
+    ) {
         $this->localizationService = $localizationService;
+        $this->whatsAppService = $whatsAppService;
+        $this->smsService = $smsService;
     }
 
     /**
@@ -66,17 +73,30 @@ class CommunicationService
             throw new Exception('Customer email address is required');
         }
 
-        // TODO: Implement actual email sending logic
-        // This would integrate with Laravel's mail system
-        Log::info('Email would be sent', [
-            'to' => $customer->email,
-            'subject' => $communication->subject,
-            'message' => $communication->message,
-            'language' => $customer->preferred_language
-        ]);
+        $result = $this->sendEmailDirect(
+            $customer->email,
+            $communication->subject ?: 'Message from ' . config('app.business_name'),
+            $communication->message,
+            $customer->preferred_language,
+            [
+                'communication_id' => $communication->id,
+                'customer_id' => $customer->id
+            ]
+        );
 
-        $communication->markAsSent();
-        return true;
+        if ($result['success']) {
+            $communication->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'metadata' => array_merge($communication->metadata ?? [], [
+                    'external_id' => $result['external_id'] ?? null,
+                    'provider_response' => $result['response'] ?? null
+                ])
+            ]);
+            return true;
+        } else {
+            throw new Exception($result['error'] ?? 'Email sending failed');
+        }
     }
 
     /**
@@ -84,27 +104,70 @@ class CommunicationService
      *
      * @param string $phone
      * @param string $message
-     * @return bool
+     * @param string $language
+     * @return array
      */
-    public function sendSMS(string $phone, string $message): bool
+    public function sendSMS(string $phone, string $message, string $language = 'en'): array
+    {
+        return $this->smsService->sendMessage($phone, $message, $language);
+    }
+
+    /**
+     * Send WhatsApp message directly to a phone number
+     *
+     * @param string $phone
+     * @param string $message
+     * @param string $language
+     * @param array $data
+     * @return array
+     */
+    public function sendWhatsAppMessage(string $phone, string $message, string $language = 'en', array $data = []): array
+    {
+        return $this->whatsAppService->sendMessage($phone, $message, $language, $data);
+    }
+
+    /**
+     * Send email directly to an email address
+     *
+     * @param string $email
+     * @param string $subject
+     * @param string $message
+     * @param string $language
+     * @param array $data
+     * @return array
+     */
+    public function sendEmailDirect(string $email, string $subject, string $message, string $language = 'en', array $data = []): array
     {
         try {
-            // TODO: Implement actual SMS API integration
-            $smsData = [
-                'to' => $phone,
-                'message' => $message,
+            // TODO: Implement actual email sending logic
+            Log::info('Email would be sent', [
+                'to' => $email,
+                'subject' => $subject,
+                'message' => substr($message, 0, 100) . '...',
+                'language' => $language,
+                'data' => $data
+            ]);
+
+            // Simulate email sending
+            usleep(200000); // 0.2 seconds
+            $success = rand(1, 100) <= 98; // 98% success rate
+
+            return [
+                'success' => $success,
+                'external_id' => $success ? 'email_sim_' . uniqid() : null,
+                'error' => $success ? null : 'Simulated email failure'
             ];
 
-            Log::info('SMS would be sent', $smsData);
-
-            // Simulate API call
-            return $this->simulateSMSAPI($smsData);
         } catch (Exception $e) {
-            Log::error('SMS sending failed', [
-                'phone' => $phone,
+            Log::error('Email sending failed', [
+                'email' => $email,
                 'error' => $e->getMessage()
             ]);
-            return false;
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
 
@@ -125,24 +188,28 @@ class CommunicationService
         // Localize message if needed
         $message = $this->localizeMessage($communication->message, $customer->preferred_language);
 
-        // TODO: Implement actual SMS API integration
-        // This would integrate with services like Twilio, AWS SNS, etc.
-        $smsData = [
-            'to' => $customer->phone,
-            'message' => $message,
-            'language' => $customer->preferred_language
-        ];
+        $result = $this->smsService->sendMessage(
+            $customer->phone,
+            $message,
+            $customer->preferred_language,
+            [
+                'communication_id' => $communication->id,
+                'customer_id' => $customer->id
+            ]
+        );
 
-        Log::info('SMS would be sent', $smsData);
-
-        // Simulate API call
-        $success = $this->simulateSMSAPI($smsData);
-
-        if ($success) {
-            $communication->markAsSent();
+        if ($result['success']) {
+            $communication->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'metadata' => array_merge($communication->metadata ?? [], [
+                    'external_id' => $result['external_id'] ?? null,
+                    'provider_response' => $result['response'] ?? null
+                ])
+            ]);
             return true;
         } else {
-            throw new Exception('SMS API call failed');
+            throw new Exception($result['error'] ?? 'SMS API call failed');
         }
     }
 
@@ -163,24 +230,28 @@ class CommunicationService
         // Localize message if needed
         $message = $this->localizeMessage($communication->message, $customer->preferred_language);
 
-        // TODO: Implement actual WhatsApp API integration
-        // This would integrate with WhatsApp Business API
-        $whatsappData = [
-            'to' => $customer->phone,
-            'message' => $message,
-            'language' => $customer->preferred_language
-        ];
+        $result = $this->whatsAppService->sendMessage(
+            $customer->phone,
+            $message,
+            $customer->preferred_language,
+            [
+                'communication_id' => $communication->id,
+                'customer_id' => $customer->id
+            ]
+        );
 
-        Log::info('WhatsApp message would be sent', $whatsappData);
-
-        // Simulate API call
-        $success = $this->simulateWhatsAppAPI($whatsappData);
-
-        if ($success) {
-            $communication->markAsSent();
+        if ($result['success']) {
+            $communication->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'metadata' => array_merge($communication->metadata ?? [], [
+                    'external_id' => $result['external_id'] ?? null,
+                    'provider_response' => $result['response'] ?? null
+                ])
+            ]);
             return true;
         } else {
-            throw new Exception('WhatsApp API call failed');
+            throw new Exception($result['error'] ?? 'WhatsApp API call failed');
         }
     }
 

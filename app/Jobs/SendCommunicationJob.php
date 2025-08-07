@@ -141,7 +141,7 @@ class SendCommunicationJob implements ShouldQueue
             return ['success' => false, 'error' => 'Customer email not available'];
         }
 
-        return $service->sendEmail(
+        return $service->sendEmailDirect(
             $customer->email,
             $this->data['subject'] ?? 'Message from ' . config('app.business_name'),
             $this->message,

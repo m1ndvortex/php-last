@@ -43,8 +43,11 @@ export function useNotifications() {
     appStore.clearNotifications();
   };
 
-  const showNotification = (notification: { type: "success" | "error" | "warning" | "info"; title: string; message: string }) => {
-    appStore.addNotification(notification);
+  const showNotification = (notification: { type: "success" | "error" | "warning" | "info"; title: string; message?: string; duration?: number }) => {
+    appStore.addNotification({
+      ...notification,
+      message: notification.message || ''
+    });
   };
 
   return {

@@ -6,7 +6,7 @@ export const mockCategories: Category[] = [
     name: 'Jewelry',
     code: 'JEWELRY',
     localized_name: 'Jewelry',
-    parent_id: null,
+    parent_id: undefined,
     sort_order: 1,
     is_active: true,
     created_at: '2024-01-01T00:00:00Z',
