@@ -30,6 +30,76 @@
     "expand": "Expand",
     "collapse": "Collapse"
   },
+  "pwa": {
+    "install": {
+      "title": "Install App",
+      "description": "Install this app on your device for a better experience",
+      "install": "Install",
+      "later": "Maybe Later",
+      "modalTitle": "Install Jewelry Platform",
+      "modalDescription": "Get the full app experience with offline capabilities and faster performance.",
+      "features": "App Features:",
+      "feature1": "Work offline when internet is unavailable",
+      "feature2": "Faster loading and better performance",
+      "feature3": "Native app-like experience",
+      "feature4": "Automatic background sync",
+      "instructions": "Installation Instructions:",
+      "chromeInstructions": "Click the install button in your browser's address bar or use the menu option 'Install Jewelry Platform'.",
+      "firefoxInstructions": "Look for the install icon in the address bar or check the page menu for install options.",
+      "safariInstructions": "Tap the share button and select 'Add to Home Screen' to install the app.",
+      "edgeInstructions": "Click the install button in the address bar or use the menu option 'Install this site as an app'.",
+      "genericInstructions": "Look for install options in your browser menu or address bar."
+    }
+  },
+  "offline": {
+    "indicator": "You are offline",
+    "online": "Online",
+    "offline": "Offline",
+    "queueTitle": "Offline Form Queue",
+    "noQueuedForms": "No queued forms",
+    "allFormsSynced": "All forms have been synchronized",
+    "syncWhenOnline": "Sync when online",
+    "createdAt": "Created",
+    "formData": "Data",
+    "untitled": "Untitled",
+    "formDataPreview": "Form Data Preview",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "syncNow": "Sync now",
+    "deleteForm": "Delete form",
+    "totalQueued": "{count} forms queued",
+    "syncing": "Syncing...",
+    "syncAll": "Sync All",
+    "clearAll": "Clear All",
+    "confirmDelete": "Are you sure you want to delete this form?",
+    "confirmClearAll": "Are you sure you want to clear all queued forms?",
+    "synced": "Synced",
+    "pending": "Pending",
+    "readyToSync": "Ready to sync"
+  },
+  "sync": {
+    "syncing": "Syncing data...",
+    "completed": "Sync completed",
+    "failed": "Sync failed",
+    "offline": "Currently offline",
+    "queued": "Queued for sync",
+    "retry": "Retry",
+    "progress": "Syncing {current} of {total}"
+  },
+  "storage": {
+    "warning": "Storage space is running low",
+    "usage": "Using {percentage}% of available storage",
+    "clear": "Clear old data",
+    "cleared": "Old data cleared successfully",
+    "clearError": "Failed to clear old data"
+  },
+  "forms": {
+    "customer": "Customer Form",
+    "invoice": "Invoice Form", 
+    "inventory": "Inventory Form",
+    "transaction": "Transaction Form",
+    "unknown": "Unknown Form"
+  },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome to your Jewelry Business Platform",

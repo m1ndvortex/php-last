@@ -2,18 +2,30 @@
   <RTLProvider>
     <div id="app" :class="{ dark: isDarkMode }">
       <router-view />
+      
+      <!-- PWA Components -->
+      <OfflineIndicator />
+      <InstallPrompt ref="installPrompt" />
     </div>
   </RTLProvider>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useAppStore } from "./stores/app";
 import RTLProvider from "./components/localization/RTLProvider.vue";
+import OfflineIndicator from "./components/pwa/OfflineIndicator.vue";
+import InstallPrompt from "./components/pwa/InstallPrompt.vue";
 import "./assets/css/rtl-fixes.css";
 
 const appStore = useAppStore();
 const isDarkMode = computed(() => appStore.isDarkMode);
+const installPrompt = ref<InstanceType<typeof InstallPrompt>>();
+
+onMounted(() => {
+  // Initialize app store
+  appStore.initialize();
+});
 </script>
 
 <style>

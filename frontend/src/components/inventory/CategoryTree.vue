@@ -29,7 +29,7 @@
           :key="category.id"
           :category="category"
           :level="0"
-          :expanded="expandedNodes.has(category.id)"
+          :expanded="expandedNodes?.has(category.id) || false"
           :all-categories="categories"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
