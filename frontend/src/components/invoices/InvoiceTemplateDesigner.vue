@@ -735,11 +735,16 @@ const saveTemplate = async () => {
 
   try {
     const templateData = {
-      ...templateForm.value,
-      fields: {
-        ...templateForm.value.fields,
-        placed_fields: placedFields.value,
+      name: templateForm.value.name,
+      language: templateForm.value.language,
+      template_data: {
+        layout: templateForm.value.layout,
+        fields: {
+          ...templateForm.value.fields,
+          placed_fields: placedFields.value,
+        },
       },
+      is_active: true,
     };
 
     let savedTemplate;
@@ -765,23 +770,26 @@ const saveTemplate = async () => {
 // Initialize form with existing template data
 const initializeForm = () => {
   if (props.template) {
+    const templateData = props.template.template_data || {};
+    const fields = templateData.fields || {};
+    
     templateForm.value = {
       name: props.template.name,
       language: props.template.language,
-      layout: props.template.layout,
+      layout: templateData.layout || 'standard',
       fields: {
-        logo: props.template.fields.logo,
-        qr_code: props.template.fields.qr_code,
-        category_hierarchy: props.template.fields.category_hierarchy ?? true,
-        category_images: props.template.fields.category_images ?? true,
-        gold_purity: props.template.fields.gold_purity ?? true,
-        custom_fields: props.template.fields.custom_fields || [],
+        logo: fields.logo ?? true,
+        qr_code: fields.qr_code ?? true,
+        category_hierarchy: fields.category_hierarchy ?? true,
+        category_images: fields.category_images ?? true,
+        gold_purity: fields.gold_purity ?? true,
+        custom_fields: fields.custom_fields || [],
       },
     };
 
     // Load placed fields if they exist
-    if ((props.template.fields as any).placed_fields) {
-      placedFields.value = (props.template.fields as any).placed_fields;
+    if (fields.placed_fields) {
+      placedFields.value = fields.placed_fields;
     }
   }
 };

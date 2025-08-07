@@ -404,16 +404,22 @@ export interface SalesReport {
 export interface InvoiceTemplate {
   id: number;
   name: string;
+  description?: string;
   language: "en" | "fa";
-  layout: "standard" | "modern" | "classic";
-  fields: {
-    logo: boolean;
-    qr_code: boolean;
-    category_hierarchy: boolean;
-    category_images: boolean;
-    gold_purity: boolean;
-    custom_fields: string[];
+  template_data: {
+    layout: "standard" | "modern" | "classic";
+    fields: {
+      logo: boolean;
+      qr_code: boolean;
+      category_hierarchy: boolean;
+      category_images: boolean;
+      gold_purity: boolean;
+      custom_fields: string[];
+      placed_fields?: any[];
+    };
   };
+  is_default: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -132,30 +132,30 @@
           <div
             class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3"
           >
-            <span>{{ $t(`invoices.layout_${template.layout}`) }}</span>
+            <span>{{ $t(`invoices.layout_${template.template_data?.layout || 'standard'}`) }}</span>
             <span>{{ formatDate(template.created_at) }}</span>
           </div>
 
           <!-- Template Features -->
           <div class="flex flex-wrap gap-1 mb-3">
             <span
-              v-if="template.fields.logo"
+              v-if="template.template_data?.fields?.logo"
               class="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded dark:bg-gray-700 dark:text-gray-300"
             >
               {{ $t("invoices.logo") }}
             </span>
             <span
-              v-if="template.fields.qr_code"
+              v-if="template.template_data?.fields?.qr_code"
               class="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded dark:bg-gray-700 dark:text-gray-300"
             >
               {{ $t("invoices.qr_code") }}
             </span>
             <span
-              v-if="template.fields.custom_fields?.length"
+              v-if="template.template_data?.fields?.custom_fields?.length"
               class="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded dark:bg-gray-700 dark:text-gray-300"
             >
               {{ $t("invoices.custom_fields") }} ({{
-                template.fields.custom_fields.length
+                template.template_data.fields.custom_fields.length
               }})
             </span>
           </div>

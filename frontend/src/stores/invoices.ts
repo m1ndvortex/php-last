@@ -265,10 +265,52 @@ export const useInvoicesStore = defineStore("invoices", () => {
     try {
       const response = await apiService.invoices.getTemplates();
       if (response.data.success) {
-        templates.value = response.data.data;
+        templates.value = Array.isArray(response.data.data) ? response.data.data : [];
+      } else {
+        console.warn("Templates fetch returned unsuccessful response:", response.data);
+        templates.value = [];
       }
-    } catch (error) {
-      console.error("Failed to fetch templates:", error);
+    } catch (error: any) {
+      console.error("Failed to fetch templates via apiService:", error);
+      
+      // Fallback: Try direct fetch with authentication headers
+      try {
+        console.log("Attempting fallback fetch for templates...");
+        const authToken = localStorage.getItem('auth_token');
+        if (authToken) {
+          const fallbackResponse = await fetch('/api/invoice-templates', {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'include'
+          });
+          
+          const fallbackData = await fallbackResponse.json();
+          if (fallbackData.success && fallbackData.data?.data) {
+            templates.value = Array.isArray(fallbackData.data.data) ? fallbackData.data.data : [];
+            console.log("Successfully fetched templates via fallback method");
+            return;
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Fallback fetch also failed:", fallbackError);
+      }
+      
+      // Ensure templates.value remains an array even on error
+      if (!Array.isArray(templates.value)) {
+        templates.value = [];
+      }
+      
+      // Don't throw authentication errors to prevent breaking the UI
+      if (error.response?.status === 401) {
+        console.warn("Authentication error when fetching templates - user may need to re-login");
+        return; // Don't throw, just return
+      }
+      
       throw error;
     } finally {
       loading.value.templates = false;
@@ -296,6 +338,10 @@ export const useInvoicesStore = defineStore("invoices", () => {
       const response = await apiService.invoices.createTemplate(templateData);
       if (response.data.success) {
         const newTemplate = response.data.data;
+        // Ensure templates.value is an array
+        if (!Array.isArray(templates.value)) {
+          templates.value = [];
+        }
         templates.value.unshift(newTemplate);
         return newTemplate;
       }
