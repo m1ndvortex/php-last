@@ -281,15 +281,19 @@ class DashboardService
         $cacheKey = 'category_performance';
         
         return Cache::remember($cacheKey, 600, function () {
-            return DB::table('categories')
-                ->leftJoin('inventory_items', 'categories.id', '=', 'inventory_items.category_id')
+            // Get main category performance
+            $mainCategoryPerformance = DB::table('categories as main_categories')
+                ->leftJoin('inventory_items', 'main_categories.id', '=', 'inventory_items.main_category_id')
                 ->leftJoin('invoice_items', 'inventory_items.id', '=', 'invoice_items.inventory_item_id')
                 ->leftJoin('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
                 ->where('invoices.status', 'paid')
-                ->groupBy('categories.id', 'categories.name')
+                ->whereNull('main_categories.parent_id') // Only main categories
+                ->groupBy('main_categories.id', 'main_categories.name', 'main_categories.name_persian')
                 ->select([
-                    'categories.id',
-                    'categories.name',
+                    'main_categories.id',
+                    'main_categories.name',
+                    'main_categories.name_persian',
+                    DB::raw("'main' as category_type"),
                     DB::raw('COUNT(DISTINCT invoices.id) as total_orders'),
                     DB::raw('SUM(invoice_items.quantity) as total_quantity'),
                     DB::raw('SUM(invoice_items.quantity * invoice_items.unit_price) as total_revenue'),
@@ -297,6 +301,100 @@ class DashboardService
                     DB::raw('(SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) as profit'),
                     DB::raw('CASE WHEN SUM(invoice_items.quantity * invoice_items.unit_price) > 0 THEN ((SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) / SUM(invoice_items.quantity * invoice_items.unit_price)) * 100 ELSE 0 END as margin_percentage')
                 ])
+                ->get();
+
+            // Get subcategory performance
+            $subcategoryPerformance = DB::table('categories as subcategories')
+                ->leftJoin('inventory_items', 'subcategories.id', '=', 'inventory_items.category_id')
+                ->leftJoin('invoice_items', 'inventory_items.id', '=', 'invoice_items.inventory_item_id')
+                ->leftJoin('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+                ->leftJoin('categories as main_categories', 'subcategories.parent_id', '=', 'main_categories.id')
+                ->where('invoices.status', 'paid')
+                ->whereNotNull('subcategories.parent_id') // Only subcategories
+                ->groupBy('subcategories.id', 'subcategories.name', 'subcategories.name_persian', 'main_categories.name', 'main_categories.name_persian')
+                ->select([
+                    'subcategories.id',
+                    'subcategories.name',
+                    'subcategories.name_persian',
+                    'main_categories.name as parent_name',
+                    'main_categories.name_persian as parent_name_persian',
+                    DB::raw("'sub' as category_type"),
+                    DB::raw('COUNT(DISTINCT invoices.id) as total_orders'),
+                    DB::raw('SUM(invoice_items.quantity) as total_quantity'),
+                    DB::raw('SUM(invoice_items.quantity * invoice_items.unit_price) as total_revenue'),
+                    DB::raw('SUM(invoice_items.quantity * inventory_items.cost_price) as total_cost'),
+                    DB::raw('(SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) as profit'),
+                    DB::raw('CASE WHEN SUM(invoice_items.quantity * invoice_items.unit_price) > 0 THEN ((SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) / SUM(invoice_items.quantity * invoice_items.unit_price)) * 100 ELSE 0 END as margin_percentage')
+                ])
+                ->get();
+
+            return [
+                'main_categories' => $mainCategoryPerformance->toArray(),
+                'subcategories' => $subcategoryPerformance->toArray(),
+                'combined' => $mainCategoryPerformance->concat($subcategoryPerformance)->toArray(),
+            ];
+        });
+    }
+
+    /**
+     * Get gold purity performance analytics
+     */
+    public function getGoldPurityPerformance(): array
+    {
+        $cacheKey = 'gold_purity_performance';
+        
+        return Cache::remember($cacheKey, 600, function () {
+            return DB::table('inventory_items')
+                ->leftJoin('invoice_items', 'inventory_items.id', '=', 'invoice_items.inventory_item_id')
+                ->leftJoin('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+                ->where('invoices.status', 'paid')
+                ->whereNotNull('inventory_items.gold_purity')
+                ->groupBy('inventory_items.gold_purity')
+                ->select([
+                    'inventory_items.gold_purity',
+                    DB::raw('COUNT(DISTINCT invoices.id) as total_orders'),
+                    DB::raw('SUM(invoice_items.quantity) as total_quantity'),
+                    DB::raw('SUM(invoice_items.quantity * invoice_items.unit_price) as total_revenue'),
+                    DB::raw('SUM(invoice_items.quantity * inventory_items.cost_price) as total_cost'),
+                    DB::raw('(SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) as profit'),
+                    DB::raw('CASE WHEN SUM(invoice_items.quantity * invoice_items.unit_price) > 0 THEN ((SUM(invoice_items.quantity * invoice_items.unit_price) - SUM(invoice_items.quantity * inventory_items.cost_price)) / SUM(invoice_items.quantity * invoice_items.unit_price)) * 100 ELSE 0 END as margin_percentage'),
+                    DB::raw('SUM(inventory_items.weight * invoice_items.quantity) as total_weight_sold')
+                ])
+                ->orderBy('inventory_items.gold_purity', 'desc')
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get category stock alerts
+     */
+    public function getCategoryStockAlerts(): array
+    {
+        $cacheKey = 'category_stock_alerts';
+        
+        return Cache::remember($cacheKey, 300, function () {
+            $lowStockThreshold = 10;
+            
+            return DB::table('inventory_items')
+                ->leftJoin('categories as main_categories', 'inventory_items.main_category_id', '=', 'main_categories.id')
+                ->leftJoin('categories as subcategories', 'inventory_items.category_id', '=', 'subcategories.id')
+                ->where('inventory_items.quantity', '<=', $lowStockThreshold)
+                ->select([
+                    'inventory_items.id',
+                    'inventory_items.name',
+                    'inventory_items.name_persian',
+                    'inventory_items.sku',
+                    'inventory_items.quantity',
+                    'inventory_items.unit_price',
+                    'main_categories.name as main_category_name',
+                    'main_categories.name_persian as main_category_name_persian',
+                    'subcategories.name as subcategory_name',
+                    'subcategories.name_persian as subcategory_name_persian',
+                    DB::raw('CASE WHEN inventory_items.quantity = 0 THEN "out_of_stock" ELSE "low_stock" END as alert_type')
+                ])
+                ->orderBy('inventory_items.quantity', 'asc')
+                ->limit(20)
                 ->get()
                 ->toArray();
         });
@@ -310,5 +408,7 @@ class DashboardService
         Cache::forget('dashboard_kpis_*');
         Cache::forget('sales_chart_data_*');
         Cache::forget('category_performance');
+        Cache::forget('gold_purity_performance');
+        Cache::forget('category_stock_alerts');
     }
 }

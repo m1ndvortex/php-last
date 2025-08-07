@@ -61,6 +61,18 @@ test: ## Run PHP tests
 test-frontend: ## Run frontend tests
 	docker-compose exec frontend npm test
 
+test-categories: ## Run category management Docker integration tests
+	docker-compose exec app bash /var/www/docker/scripts/run-all-category-tests.sh
+
+test-category-env: ## Validate category Docker environment
+	docker-compose exec app bash /var/www/docker/scripts/validate-category-environment.sh
+
+test-category-migrations: ## Test category database migrations
+	docker-compose exec app bash /var/www/docker/scripts/test-migrations.sh
+
+test-category-permissions: ## Test category file permissions
+	docker-compose exec app bash /var/www/docker/scripts/test-file-permissions.sh
+
 # Production commands
 prod-build: ## Build production containers
 	docker-compose -f docker-compose.prod.yml build
@@ -78,6 +90,21 @@ clean: ## Clean up Docker resources
 
 backup: ## Create database backup
 	docker-compose exec mysql mysqldump -u root -p$(DB_ROOT_PASSWORD) jewelry_platform > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+
+backup-categories: ## Create category images and data backup
+	docker-compose exec app bash /var/www/docker/scripts/backup-categories.sh
+
+restore-categories: ## Restore category images and data from backup
+	@echo "Usage: make restore-categories TIMESTAMP=YYYYMMDD_HHMMSS"
+	@if [ -z "$(TIMESTAMP)" ]; then \
+		echo "Please provide TIMESTAMP parameter"; \
+		docker-compose exec app bash /var/www/docker/scripts/restore-categories.sh; \
+	else \
+		docker-compose exec app bash /var/www/docker/scripts/restore-categories.sh $(TIMESTAMP); \
+	fi
+
+init-categories: ## Initialize category management system
+	docker-compose exec app bash /var/www/docker/scripts/init-categories.sh --seed
 
 # Setup commands
 setup: ## Initial setup for development

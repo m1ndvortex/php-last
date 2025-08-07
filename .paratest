@@ -1,0 +1,6 @@
+# Paratest configuration
+processes=6
+functional=true
+runner=WrapperRunner
+coverage-clover=coverage.xml
+coverage-html=coverage-html

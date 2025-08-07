@@ -54,6 +54,8 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('/kpis', [\App\Http\Controllers\DashboardController::class, 'getKPIs']);
         Route::get('/sales-chart', [\App\Http\Controllers\DashboardController::class, 'getSalesChart']);
         Route::get('/category-performance', [\App\Http\Controllers\DashboardController::class, 'getCategoryPerformance']);
+        Route::get('/gold-purity-performance', [\App\Http\Controllers\DashboardController::class, 'getGoldPurityPerformance']);
+        Route::get('/category-stock-alerts', [\App\Http\Controllers\DashboardController::class, 'getCategoryStockAlerts']);
         Route::get('/alerts', [\App\Http\Controllers\DashboardController::class, 'getAlerts']);
         Route::post('/alerts/mark-read', [\App\Http\Controllers\DashboardController::class, 'markAlertAsRead']);
         Route::get('/layout', [\App\Http\Controllers\DashboardController::class, 'getDashboardLayout']);
@@ -66,6 +68,15 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::put('/widgets/config', [\App\Http\Controllers\DashboardController::class, 'updateWidgetConfig']);
         Route::post('/reset', [\App\Http\Controllers\DashboardController::class, 'resetDashboard']);
         Route::post('/clear-cache', [\App\Http\Controllers\DashboardController::class, 'clearCache']);
+    });
+
+    // Inventory Reports routes
+    Route::prefix('inventory-reports')->group(function () {
+        Route::get('/category-hierarchy', [\App\Http\Controllers\InventoryReportController::class, 'categoryHierarchyReport']);
+        Route::get('/category-sales-performance', [\App\Http\Controllers\InventoryReportController::class, 'categorySalesPerformance']);
+        Route::get('/category-stock-levels', [\App\Http\Controllers\InventoryReportController::class, 'categoryStockLevels']);
+        Route::get('/gold-purity-analysis', [\App\Http\Controllers\InventoryReportController::class, 'goldPurityAnalysis']);
+        Route::get('/inventory-analytics', [\App\Http\Controllers\InventoryReportController::class, 'inventoryAnalytics']);
     });
     
     // Customer routes - specific routes first to avoid conflicts

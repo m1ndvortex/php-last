@@ -8,6 +8,9 @@ A comprehensive bilingual Persian/English jewelry business management web applic
 - **Docker-First**: Fully containerized application with Docker Compose
 - **Modern Stack**: Laravel 10+ backend with Vue.js 3 + TypeScript frontend
 - **Enterprise Features**: Invoicing, inventory management, CRM, and accounting
+- **Category Management**: Hierarchical jewelry categories with gold purity specifications
+- **Image Management**: Optimized category images with thumbnail generation
+- **Gold Purity System**: Specialized karat-based purity management with Persian support
 - **PWA Support**: Progressive Web App capabilities for offline usage
 - **Real-time Analytics**: Dashboard with business KPIs and metrics
 
@@ -222,6 +225,21 @@ docker-compose logs -f frontend
 
 This project is licensed under the MIT License.
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Complete Documentation Index](docs/README.md)**: Overview of all documentation
+- **[User Guide](docs/user-guide/category-management.md)**: End-user guide for category management
+- **[API Documentation](docs/api/category-management.md)**: Complete API reference
+- **[Technical Guide](docs/technical/gold-purity-system.md)**: Technical implementation details
+- **[Deployment Guide](docs/deployment/image-storage-setup.md)**: Deployment and configuration
+- **[System Requirements](docs/system-requirements.md)**: Hardware and software requirements
+- **[Troubleshooting](docs/troubleshooting/category-management-issues.md)**: Common issues and solutions
+
 ## Support
 
-For support and questions, please refer to the project documentation or create an issue in the repository.
+For support and questions:
+1. Check the [documentation](docs/README.md) first
+2. Review the [troubleshooting guide](docs/troubleshooting/category-management-issues.md)
+3. Create an issue in the repository for bugs or feature requests

@@ -106,7 +106,7 @@ class CategoryController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $category->load(['parent', 'children', 'inventoryItems']),
+            'data' => $category->load(['parent', 'children', 'images', 'primaryImage']),
         ]);
     }
 

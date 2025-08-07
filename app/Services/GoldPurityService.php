@@ -41,6 +41,7 @@ class GoldPurityService
                 'purity' => $purity['purity'],
                 'percentage' => $purity['percentage'],
                 'display' => $this->formatPurityDisplay($purity['purity'], $locale),
+                'display_name' => $this->formatPurityDisplay($purity['purity'], $locale),
                 'label' => $this->getPurityLabel($purity['purity'], $locale),
             ];
         }, self::STANDARD_PURITIES);
@@ -118,6 +119,14 @@ class GoldPurityService
     public function convertKaratToPurity(float $karat): float
     {
         return $karat;
+    }
+
+    /**
+     * Convert purity to karat (they're the same for our purposes).
+     */
+    public function convertPurityToKarat(float $purity): float
+    {
+        return $purity;
     }
 
     /**

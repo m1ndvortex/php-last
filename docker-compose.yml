@@ -13,10 +13,25 @@ services:
       - ./:/var/www
       - ./docker/app/local.ini:/usr/local/etc/php/conf.d/local.ini
       - category_images:/var/www/storage/app/public/categories
+      - category_thumbnails:/var/www/storage/app/public/categories/thumbnails
+      - category_backups:/var/www/storage/backups/categories
     networks:
       - jewelry_network
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    environment:
+      - CATEGORY_IMAGE_MAX_SIZE=5120
+      - CATEGORY_IMAGE_QUALITY=85
+      - CATEGORY_THUMBNAIL_SIZE=150
+      - GD_EXTENSION_ENABLED=1
+      - CATEGORY_BACKUP_RETENTION_DAYS=30
+    healthcheck:
+      test: ["CMD", "php", "artisan", "tinker", "--execute=echo 'healthy';"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Vue.js Frontend Container
   frontend:
@@ -53,6 +68,12 @@ services:
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - jewelry_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 
 
@@ -72,6 +93,7 @@ services:
       - ./docker/nginx/sites/:/etc/nginx/sites-available/
       - ./docker/nginx/ssl/:/etc/nginx/ssl/
       - category_images:/var/www/storage/app/public/categories
+      - category_thumbnails:/var/www/storage/app/public/categories/thumbnails
     networks:
       - jewelry_network
     depends_on:
@@ -89,6 +111,8 @@ services:
     volumes:
       - ./:/var/www
       - category_images:/var/www/storage/app/public/categories
+      - category_thumbnails:/var/www/storage/app/public/categories/thumbnails
+      - category_backups:/var/www/storage/backups/categories
     networks:
       - jewelry_network
     depends_on:
@@ -106,11 +130,34 @@ services:
     volumes:
       - ./:/var/www
       - category_images:/var/www/storage/app/public/categories
+      - category_thumbnails:/var/www/storage/app/public/categories/thumbnails
+      - category_backups:/var/www/storage/backups/categories
     networks:
       - jewelry_network
     depends_on:
-      - mysql
+      app:
+        condition: service_healthy
     command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+  # Category System Initialization
+  category_init:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: jewelry_category_init
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - category_images:/var/www/storage/app/public/categories
+      - category_thumbnails:/var/www/storage/app/public/categories/thumbnails
+      - category_backups:/var/www/storage/backups/categories
+    networks:
+      - jewelry_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: bash /var/www/docker/scripts/init-categories.sh
+    restart: "no"
 
 networks:
   jewelry_network:
@@ -120,4 +167,8 @@ volumes:
   mysql_data:
     driver: local
   category_images:
+    driver: local
+  category_thumbnails:
+    driver: local
+  category_backups:
     driver: local

@@ -43,20 +43,24 @@
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                {{ $t("inventory.name") }} *
+                {{ $t("inventory.name") }}
               </label>
               <input
                 v-model="form.name"
                 type="text"
-                required
                 :class="[
                   'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm',
                   errors.name
                     ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                     : '',
                 ]"
-                :placeholder="$t('inventory.name_placeholder')"
+                :placeholder="getNamePlaceholder()"
               />
+              <p v-if="!form.name && selectedSubcategory" class="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                {{ $t("inventory.name_auto_from_category", { 
+                  category: selectedSubcategory.localized_name || selectedSubcategory.name 
+                }) }}
+              </p>
               <p
                 v-if="errors.name"
                 class="mt-1 text-sm text-red-600 dark:text-red-400"
@@ -701,6 +705,14 @@ const selectedCategory = computed(() => {
   return null;
 });
 
+// Get selected subcategory for name auto-population
+const selectedSubcategory = computed(() => {
+  if (form.category_id) {
+    return inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
+  }
+  return null;
+});
+
 // Get category path for display
 const categoryPath = computed(() => {
   const path = [];
@@ -743,6 +755,14 @@ const removeImage = (index: number) => {
   imagePreview.value.splice(index, 1);
 };
 
+// Get name placeholder based on selected subcategory
+const getNamePlaceholder = () => {
+  if (selectedSubcategory.value) {
+    return selectedSubcategory.value.localized_name || selectedSubcategory.value.name;
+  }
+  return "Enter item name";
+};
+
 // Category handling methods
 const onMainCategoryChange = () => {
   // Clear subcategory when main category changes
@@ -760,6 +780,14 @@ const onSubcategoryChange = () => {
   const subcategory = inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
   if (subcategory?.default_gold_purity) {
     form.gold_purity = subcategory.default_gold_purity;
+  }
+  
+  // Auto-populate name fields if they're empty
+  if (!form.name && subcategory) {
+    form.name = subcategory.name;
+  }
+  if (!form.name_persian && subcategory?.name_persian) {
+    form.name_persian = subcategory.name_persian;
   }
 };
 

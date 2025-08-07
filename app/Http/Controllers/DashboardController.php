@@ -84,6 +84,32 @@ class DashboardController extends Controller
     }
 
     /**
+     * Get gold purity performance analytics
+     */
+    public function getGoldPurityPerformance(): JsonResponse
+    {
+        $performance = $this->dashboardService->getGoldPurityPerformance();
+
+        return response()->json([
+            'success' => true,
+            'data' => $performance
+        ]);
+    }
+
+    /**
+     * Get category stock alerts
+     */
+    public function getCategoryStockAlerts(): JsonResponse
+    {
+        $alerts = $this->dashboardService->getCategoryStockAlerts();
+
+        return response()->json([
+            'success' => true,
+            'data' => $alerts
+        ]);
+    }
+
+    /**
      * Get dashboard alerts
      */
     public function getAlerts(): JsonResponse

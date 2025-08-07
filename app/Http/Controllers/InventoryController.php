@@ -43,7 +43,7 @@ class InventoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'name_persian' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'description_persian' => 'nullable|string',
@@ -65,9 +65,21 @@ class InventoryController extends Controller
             'metadata' => 'nullable|array',
         ]);
 
+        // Get category for name and SKU generation
+        $category = Category::find($validated['category_id']);
+
+        // Use category name as default if name is not provided
+        if (empty($validated['name'])) {
+            $validated['name'] = $category->name;
+        }
+
+        // Use category Persian name as default if Persian name is not provided
+        if (empty($validated['name_persian']) && $category->name_persian) {
+            $validated['name_persian'] = $category->name_persian;
+        }
+
         // Generate SKU if not provided
         if (empty($validated['sku'])) {
-            $category = Category::find($validated['category_id']);
             $validated['sku'] = $this->inventoryService->generateSKU($category);
         }
 
