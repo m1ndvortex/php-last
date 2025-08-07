@@ -239,11 +239,17 @@ export interface Location {
 export interface Account {
   id: number;
   name: string;
+  name_persian?: string;
   code: string;
   type: "asset" | "liability" | "equity" | "revenue" | "expense";
+  subtype?: string;
   parent_id?: number;
+  currency?: string;
+  opening_balance?: number;
+  current_balance?: number;
   balance: number;
   is_active: boolean;
+  description?: string;
   created_at: string;
   updated_at: string;
 }
@@ -253,10 +259,21 @@ export interface Transaction {
   account_id: number;
   reference_number: string;
   description: string;
+  description_persian?: string;
   debit_amount: number;
   credit_amount: number;
   transaction_date: string;
   type: string;
+  total_amount?: number;
+  currency?: string;
+  exchange_rate?: number;
+  cost_center_id?: number;
+  tags?: string[];
+  notes?: string;
+  created_by?: number;
+  approved_by?: number;
+  creator?: any;
+  approver?: any;
   is_locked: boolean;
   created_at: string;
   updated_at: string;
