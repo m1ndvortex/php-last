@@ -60,7 +60,7 @@ class InvoiceSeeder extends Seeder
                     'status' => fake()->randomElement(['draft', 'sent', 'paid', 'overdue']),
                     'notes' => fake()->optional(0.3)->sentence(),
                     'internal_notes' => fake()->optional(0.2)->sentence(),
-                    'discount_amount' => fake()->optional(0.3)->randomFloat(2, 0, 100),
+                    'discount_amount' => fake()->boolean(30) ? fake()->randomFloat(2, 0, 100) : 0,
                 ]);
 
                 // Add 1-5 items to each invoice
