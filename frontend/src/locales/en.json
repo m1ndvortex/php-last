@@ -268,7 +268,12 @@
     "block": "Block",
     "select_all": "Select All",
     "deselect_all": "Deselect All",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "view_details": "View Details",
+    "status_completed": "Completed",
+    "status_in_progress": "In Progress",
+    "status_failed": "Failed",
+    "status_pending": "Pending"
   },
   "table": {
     "showing": "Showing",
@@ -542,6 +547,8 @@
     "generate_batch_pdf": "Generate Batch PDFs",
     "send_batch_invoices": "Send Batch Invoices",
     "create_batch_invoices": "Create Batch Invoices",
+    "batch_send_description": "Send multiple invoices via email or messaging",
+    "batch_create_description": "Create multiple invoices from templates",
     "recent_batch_operations": "Recent Batch Operations",
     "operation_type": "Operation Type",
     "invoices_count": "Invoices Count",

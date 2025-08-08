@@ -36,14 +36,14 @@
             {{ $t("invoices.batch_create_description") }}
           </p>
 
-          <!-- Placeholder content -->
+          <!-- Not implemented notice -->
           <div class="text-center py-8">
-            <DocumentDuplicateIcon class="mx-auto h-12 w-12 text-gray-400" />
+            <DocumentDuplicateIcon class="mx-auto h-12 w-12 text-yellow-400" />
             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              {{ $t("invoices.batch_create_placeholder") }}
+              {{ $t("common.coming_soon") }}
             </h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {{ $t("invoices.batch_create_placeholder_description") }}
+              Batch invoice creation feature is not yet implemented. This will allow you to create multiple invoices from templates.
             </p>
           </div>
         </div>
@@ -53,10 +53,10 @@
           class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
         >
           <button
-            @click="handleCreate"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
+            disabled
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-400 text-base font-medium text-white cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {{ $t("invoices.create_invoices") }}
+            {{ $t("invoices.create_invoices") }} ({{ $t("common.coming_soon") }})
           </button>
           <button
             @click="$emit('close')"

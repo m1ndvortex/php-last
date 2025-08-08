@@ -439,7 +439,10 @@ export const apiService = {
 
     // Batch operations
     generateBatch: (invoiceIds: number[]) =>
-      api.post("api/invoices/batch/generate", { invoice_ids: invoiceIds }),
+      api.post("api/invoices/batch-pdf", { invoice_ids: invoiceIds }),
+
+    downloadBatch: (invoiceIds: number[]) =>
+      api.post("api/invoices/batch-download", { invoice_ids: invoiceIds }),
 
     sendBatch: (invoiceIds: number[], data: { method: string }) =>
       api.post("api/invoices/batch/send", { invoice_ids: invoiceIds, ...data }),

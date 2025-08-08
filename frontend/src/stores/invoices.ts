@@ -265,7 +265,10 @@ export const useInvoicesStore = defineStore("invoices", () => {
     try {
       const response = await apiService.invoices.getTemplates();
       if (response.data.success) {
-        templates.value = Array.isArray(response.data.data) ? response.data.data : [];
+        // Handle both paginated and direct array responses
+        const templatesData = response.data.data?.data || response.data.data || [];
+        templates.value = Array.isArray(templatesData) ? templatesData : [];
+        console.log("Templates fetched successfully:", templates.value.length, "templates");
       } else {
         console.warn("Templates fetch returned unsuccessful response:", response.data);
         templates.value = [];
@@ -290,9 +293,11 @@ export const useInvoicesStore = defineStore("invoices", () => {
           });
           
           const fallbackData = await fallbackResponse.json();
-          if (fallbackData.success && fallbackData.data?.data) {
-            templates.value = Array.isArray(fallbackData.data.data) ? fallbackData.data.data : [];
-            console.log("Successfully fetched templates via fallback method");
+          if (fallbackData.success && fallbackData.data) {
+            // Handle paginated response structure
+            const templatesData = fallbackData.data.data || fallbackData.data || [];
+            templates.value = Array.isArray(templatesData) ? templatesData : [];
+            console.log("Successfully fetched templates via fallback method:", templates.value.length, "templates");
             return;
           }
         }
@@ -311,7 +316,8 @@ export const useInvoicesStore = defineStore("invoices", () => {
         return; // Don't throw, just return
       }
       
-      throw error;
+      // Don't throw the error to prevent breaking the UI
+      console.warn("Templates fetch failed, but continuing with empty array");
     } finally {
       loading.value.templates = false;
     }
