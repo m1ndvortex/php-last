@@ -1,0 +1,33 @@
+1754677149a:6:{s:17:"connection_status";a:3:{s:6:"status";s:12:"disconnected";s:5:"error";s:64:"could not find driver (Connection: mysql, SQL: SELECT 1 as test)";s:9:"timestamp";s:27:"2025-08-08T18:14:09.798485Z";}s:17:"query_performance";a:2:{s:5:"error";s:35:"Query performance stats unavailable";s:7:"message";s:281:"could not find driver (Connection: mysql, SQL: 
+                SHOW STATUS WHERE Variable_name IN (
+                    'Queries', 'Questions', 'Slow_queries', 'Connections',
+                    'Threads_connected', 'Threads_running', 'Uptime'
+                )
+            )";}s:16:"table_statistics";a:2:{s:5:"error";s:28:"Table statistics unavailable";s:7:"message";s:571:"could not find driver (Connection: mysql, SQL: 
+                SELECT 
+                    TABLE_NAME as table_name,
+                    TABLE_ROWS as row_count,
+                    DATA_LENGTH as data_size,
+                    INDEX_LENGTH as index_size,
+                    (DATA_LENGTH + INDEX_LENGTH) as total_size
+                FROM information_schema.TABLES 
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_TYPE = 'BASE TABLE'
+                ORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC
+                LIMIT 10
+            )";}s:11:"index_usage";a:2:{s:5:"error";s:29:"Index usage stats unavailable";s:7:"message";s:472:"could not find driver (Connection: mysql, SQL: 
+                SELECT 
+                    TABLE_NAME as table_name,
+                    INDEX_NAME as index_name,
+                    NON_UNIQUE as non_unique,
+                    COLUMN_NAME as column_name
+                FROM information_schema.STATISTICS 
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND INDEX_NAME != 'PRIMARY'
+                ORDER BY TABLE_NAME, INDEX_NAME
+            )";}s:12:"slow_queries";a:2:{s:5:"error";s:27:"Slow query info unavailable";s:7:"message";s:84:"could not find driver (Connection: mysql, SQL: SHOW VARIABLES LIKE 'slow_query_log')";}s:15:"connection_info";a:2:{s:5:"error";s:27:"Connection info unavailable";s:7:"message";s:297:"could not find driver (Connection: mysql, SQL: 
+                SHOW VARIABLES WHERE Variable_name IN (
+                    'version', 'max_connections', 'innodb_buffer_pool_size',
+                    'query_cache_size', 'table_open_cache', 'thread_cache_size'
+                )
+            )";}}

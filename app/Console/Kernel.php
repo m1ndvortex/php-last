@@ -82,6 +82,13 @@ class Kernel extends ConsoleKernel
             ->name('cleanup-orphaned-images')
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Database performance monitoring - runs every 15 minutes
+        $schedule->command('db:monitor --log')
+            ->cron('*/15 * * * *')
+            ->name('database-monitoring')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

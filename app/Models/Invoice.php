@@ -10,6 +10,11 @@ class Invoice extends Model
     use HasFactory;
 
     /**
+     * Default relationships to eager load
+     */
+    protected $with = ['customer'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -57,15 +62,15 @@ class Invoice extends Model
      */
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)->select(['id', 'name', 'email', 'phone', 'preferred_language']);
     }
 
     /**
-     * Get the invoice items.
+     * Get the invoice items with optimized loading.
      */
     public function items()
     {
-        return $this->hasMany(InvoiceItem::class);
+        return $this->hasMany(InvoiceItem::class)->with(['inventoryItem:id,name,name_persian,sku,gold_purity,weight']);
     }
 
     /**
@@ -73,7 +78,7 @@ class Invoice extends Model
      */
     public function template()
     {
-        return $this->belongsTo(InvoiceTemplate::class);
+        return $this->belongsTo(InvoiceTemplate::class)->select(['id', 'name', 'template_data']);
     }
 
     /**
@@ -93,7 +98,7 @@ class Invoice extends Model
     }
 
     /**
-     * Scope for filtering by status.
+     * Scope for filtering by status with index optimization.
      */
     public function scopeByStatus($query, $status)
     {
@@ -101,7 +106,7 @@ class Invoice extends Model
     }
 
     /**
-     * Scope for filtering by date range.
+     * Scope for filtering by date range with index optimization.
      */
     public function scopeByDateRange($query, $startDate, $endDate)
     {
@@ -109,11 +114,36 @@ class Invoice extends Model
     }
 
     /**
-     * Scope for filtering by language.
+     * Scope for filtering by language with index optimization.
      */
     public function scopeByLanguage($query, $language)
     {
         return $query->where('language', $language);
+    }
+
+    /**
+     * Scope for recent invoices (optimized with index).
+     */
+    public function scopeRecent($query, int $days = 30)
+    {
+        return $query->where('issue_date', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Scope for overdue invoices.
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('due_date', '<', now())
+                    ->whereNotIn('status', ['paid', 'cancelled']);
+    }
+
+    /**
+     * Scope for paid invoices.
+     */
+    public function scopePaid($query)
+    {
+        return $query->where('status', 'paid');
     }
 
     /**

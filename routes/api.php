@@ -349,4 +349,14 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::delete('/failed-jobs', [\App\Http\Controllers\QueueController::class, 'clearFailedJobs']);
         Route::post('/retry-job', [\App\Http\Controllers\QueueController::class, 'retryFailedJob']);
     });
+
+    // Database Performance Monitoring routes
+    Route::prefix('database')->group(function () {
+        Route::get('/metrics', [\App\Http\Controllers\DatabasePerformanceController::class, 'metrics']);
+        Route::get('/health', [\App\Http\Controllers\DatabasePerformanceController::class, 'health']);
+        Route::post('/clear-cache', [\App\Http\Controllers\DatabasePerformanceController::class, 'clearCache']);
+        Route::get('/slow-queries', [\App\Http\Controllers\DatabasePerformanceController::class, 'slowQueries']);
+        Route::get('/dashboard-kpis', [\App\Http\Controllers\DatabasePerformanceController::class, 'dashboardKpis']);
+        Route::get('/inventory-stats', [\App\Http\Controllers\DatabasePerformanceController::class, 'inventoryStats']);
+    });
 });

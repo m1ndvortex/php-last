@@ -13,14 +13,24 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class CategoryImageService
 {
-    private ImageManager $imageManager;
+    private ?ImageManager $imageManager = null;
     private ImageSecurityService $securityService;
     
     public function __construct(ImageSecurityService $securityService)
     {
-        // Use GD driver for better Docker compatibility
-        $this->imageManager = new ImageManager(new Driver());
         $this->securityService = $securityService;
+    }
+
+    /**
+     * Get the image manager instance (lazy-loaded)
+     */
+    private function getImageManager(): ImageManager
+    {
+        if ($this->imageManager === null) {
+            // Use GD driver for better Docker compatibility
+            $this->imageManager = new ImageManager(new Driver());
+        }
+        return $this->imageManager;
     }
 
     /**
@@ -142,7 +152,7 @@ class CategoryImageService
     private function processAndStoreImage(UploadedFile $image, string $path): string
     {
         // Read and process the image
-        $processedImage = $this->imageManager->read($image->getPathname());
+        $processedImage = $this->getImageManager()->read($image->getPathname());
 
         // Resize image while maintaining aspect ratio
         $processedImage->resize(400, 400, function ($constraint) {
@@ -331,7 +341,7 @@ class CategoryImageService
             try {
                 if (Storage::disk('public')->exists($categoryImage->image_path)) {
                     $imageContent = Storage::disk('public')->get($categoryImage->image_path);
-                    $image = $this->imageManager->read($imageContent);
+                    $image = $this->getImageManager()->read($imageContent);
                     
                     // Re-process and save
                     $this->generateThumbnails($image, $categoryImage->image_path);

@@ -60,7 +60,32 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // Connection timeout settings
+                PDO::ATTR_TIMEOUT => env('DB_TIMEOUT', 60),
+                PDO::MYSQL_ATTR_CONNECT_TIMEOUT => env('DB_CONNECT_TIMEOUT', 10),
+                // Enable persistent connections for connection pooling
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', false),
+                // Set connection charset
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                // Disable prepared statement emulation for better performance
+                PDO::ATTR_EMULATE_PREPARES => false,
+                // Set error mode
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                // Set default fetch mode
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]) : [],
+            // Connection pool settings
+            'pool' => [
+                'min_connections' => env('DB_POOL_MIN', 5),
+                'max_connections' => env('DB_POOL_MAX', 20),
+                'acquire_timeout' => env('DB_POOL_ACQUIRE_TIMEOUT', 30),
+                'timeout' => env('DB_POOL_TIMEOUT', 60),
+                'idle_timeout' => env('DB_POOL_IDLE_TIMEOUT', 300),
+                'size' => env('DB_POOL_SIZE', 10),
+            ],
+            // Query timeout settings
+            'read_timeout' => env('DB_READ_TIMEOUT', 60),
+            'write_timeout' => env('DB_WRITE_TIMEOUT', 60),
         ],
 
         'pgsql' => [

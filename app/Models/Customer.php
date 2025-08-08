@@ -98,19 +98,35 @@ class Customer extends Model
     ];
 
     /**
-     * Get the invoices for the customer.
+     * Get the invoices for the customer with optimized loading.
      */
     public function invoices()
     {
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(Invoice::class)->select([
+            'id', 'customer_id', 'invoice_number', 'issue_date', 'due_date', 
+            'total_amount', 'status', 'language'
+        ]);
     }
 
     /**
-     * Get the communications for the customer.
+     * Get recent invoices for the customer.
+     */
+    public function recentInvoices()
+    {
+        return $this->hasMany(Invoice::class)
+                    ->select(['id', 'customer_id', 'invoice_number', 'issue_date', 'total_amount', 'status'])
+                    ->latest('issue_date')
+                    ->limit(10);
+    }
+
+    /**
+     * Get the communications for the customer with optimized loading.
      */
     public function communications()
     {
-        return $this->hasMany(Communication::class);
+        return $this->hasMany(Communication::class)->select([
+            'id', 'customer_id', 'type', 'subject', 'sent_at', 'status'
+        ]);
     }
 
     /**

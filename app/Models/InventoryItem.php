@@ -12,6 +12,11 @@ class InventoryItem extends Model
 {
     use HasFactory;
 
+    /**
+     * Default relationships to eager load
+     */
+    protected $with = ['category', 'location'];
+
     protected $fillable = [
         'name',
         'name_persian',
@@ -57,7 +62,7 @@ class InventoryItem extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->select(['id', 'name', 'name_persian', 'parent_id']);
     }
 
     /**
@@ -65,7 +70,7 @@ class InventoryItem extends Model
      */
     public function subcategory(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class, 'category_id')->select(['id', 'name', 'name_persian', 'parent_id']);
     }
 
     /**
@@ -73,7 +78,7 @@ class InventoryItem extends Model
      */
     public function mainCategory(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'main_category_id');
+        return $this->belongsTo(Category::class, 'main_category_id')->select(['id', 'name', 'name_persian']);
     }
 
     /**
@@ -81,7 +86,7 @@ class InventoryItem extends Model
      */
     public function location(): BelongsTo
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsTo(Location::class)->select(['id', 'name', 'address']);
     }
 
     /**
