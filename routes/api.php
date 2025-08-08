@@ -361,4 +361,17 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('/dashboard-kpis', [\App\Http\Controllers\DatabasePerformanceController::class, 'dashboardKpis']);
         Route::get('/inventory-stats', [\App\Http\Controllers\DatabasePerformanceController::class, 'inventoryStats']);
     });
+
+    // Batch operation routes
+    Route::prefix('batch-operations')->group(function () {
+        Route::get('/', [App\Http\Controllers\BatchOperationController::class, 'index']);
+        Route::get('/statistics', [App\Http\Controllers\BatchOperationController::class, 'statistics']);
+        Route::get('/{id}', [App\Http\Controllers\BatchOperationController::class, 'show']);
+        Route::post('/invoices', [App\Http\Controllers\BatchOperationController::class, 'createBatchInvoices']);
+        Route::post('/pdfs', [App\Http\Controllers\BatchOperationController::class, 'generateBatchPDFs']);
+        Route::post('/communications', [App\Http\Controllers\BatchOperationController::class, 'sendBatchCommunications']);
+        Route::post('/{id}/cancel', [App\Http\Controllers\BatchOperationController::class, 'cancel']);
+        Route::post('/{id}/retry', [App\Http\Controllers\BatchOperationController::class, 'retryFailed']);
+        Route::get('/{id}/download-pdf', [App\Http\Controllers\BatchOperationController::class, 'downloadCombinedPDF']);
+    });
 });

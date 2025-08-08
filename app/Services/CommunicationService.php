@@ -502,4 +502,129 @@ class CommunicationService
 
         return $stats;
     }
+
+    /**
+     * Send communication with data array
+     */
+    public function send(array $data): Communication
+    {
+        $communication = Communication::create([
+            'customer_id' => $data['customer_id'],
+            'user_id' => auth()->id() ?? 1,
+            'type' => $data['type'],
+            'subject' => $data['subject'] ?? null,
+            'message' => $data['message'],
+            'recipient' => $data['recipient'] ?? null,
+            'status' => 'draft',
+            'metadata' => $data['metadata'] ?? []
+        ]);
+
+        $this->sendCommunication($communication);
+        
+        return $communication;
+    }
+
+    /**
+     * Send invoice via email
+     */
+    public function sendInvoiceEmail($invoice, array $options = []): array
+    {
+        $customer = $invoice->customer;
+        
+        if (!$customer->email) {
+            throw new \Exception('Customer does not have an email address');
+        }
+
+        $subject = $options['subject'] ?? __('Your Invoice #:number', ['number' => $invoice->invoice_number]);
+        $message = $options['message'] ?? __('Please find your invoice attached.');
+
+        $communication = $this->send([
+            'customer_id' => $customer->id,
+            'type' => 'email',
+            'subject' => $subject,
+            'message' => $message,
+            'recipient' => $customer->email,
+            'metadata' => [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'include_pdf' => $options['include_pdf'] ?? true
+            ]
+        ]);
+
+        return [
+            'recipient' => $customer->email,
+            'communication_id' => $communication->id,
+            'status' => $communication->status
+        ];
+    }
+
+    /**
+     * Send invoice via SMS
+     */
+    public function sendInvoiceSMS($invoice, array $options = []): array
+    {
+        $customer = $invoice->customer;
+        
+        if (!$customer->phone) {
+            throw new \Exception('Customer does not have a phone number');
+        }
+
+        $message = $options['message'] ?? __('Invoice #:number is ready. Total: :amount', [
+            'number' => $invoice->invoice_number,
+            'amount' => number_format($invoice->total_amount, 2)
+        ]);
+
+        $communication = $this->send([
+            'customer_id' => $customer->id,
+            'type' => 'sms',
+            'message' => $message,
+            'recipient' => $customer->phone,
+            'metadata' => [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number
+            ]
+        ]);
+
+        return [
+            'recipient' => $customer->phone,
+            'communication_id' => $communication->id,
+            'status' => $communication->status
+        ];
+    }
+
+    /**
+     * Send invoice via WhatsApp
+     */
+    public function sendInvoiceWhatsApp($invoice, array $options = []): array
+    {
+        $customer = $invoice->customer;
+        
+        if (!$customer->phone) {
+            throw new \Exception('Customer does not have a phone number');
+        }
+
+        $message = $options['message'] ?? __('Hello :name, your invoice #:number is ready. Total: :amount', [
+            'name' => $customer->name,
+            'number' => $invoice->invoice_number,
+            'amount' => number_format($invoice->total_amount, 2)
+        ]);
+
+        $communication = $this->send([
+            'customer_id' => $customer->id,
+            'type' => 'whatsapp',
+            'message' => $message,
+            'recipient' => $customer->phone,
+            'metadata' => [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'include_pdf' => $options['include_pdf'] ?? true
+            ]
+        ]);
+
+        return [
+            'recipient' => $customer->phone,
+            'communication_id' => $communication->id,
+            'status' => $communication->status
+        ];
+    }
 }
