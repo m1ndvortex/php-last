@@ -1,6 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import AppLayout from "@/components/layout/AppLayout.vue";
+
+// Lazy load the main layout
+const AppLayout = () => import("@/components/layout/AppLayout.vue");
+
+// Preload critical routes for better UX
+const preloadRoute = (routeImport: () => Promise<any>) => {
+  // Preload on idle or after a short delay
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => routeImport());
+  } else {
+    setTimeout(() => routeImport(), 100);
+  }
+  return routeImport;
+};
+
+// Critical routes that should be preloaded
+const DashboardView = preloadRoute(() => import("@/views/DashboardView.vue"));
+const LoginView = preloadRoute(() => import("@/views/LoginView.vue"));
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,16 +25,17 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: () => import("../views/LoginView.vue"),
+      component: LoginView,
       meta: {
         requiresAuth: false,
         layout: "auth",
+        preload: true,
       },
     },
     {
       path: "/forgot-password",
       name: "forgot-password",
-      component: () => import("../views/ForgotPasswordView.vue"),
+      component: () => import("@/views/ForgotPasswordView.vue"),
       meta: {
         requiresAuth: false,
         layout: "auth",
@@ -35,16 +53,17 @@ const router = createRouter({
         {
           path: "dashboard",
           name: "dashboard",
-          component: () => import("../views/DashboardView.vue"),
+          component: DashboardView,
           meta: {
             requiresAuth: true,
             title: "Dashboard",
+            preload: true,
           },
         },
         {
           path: "invoices",
           name: "invoices",
-          component: () => import("../views/InvoicesView.vue"),
+          component: () => import("@/views/InvoicesView.vue"),
           meta: {
             requiresAuth: true,
             title: "Invoices",
@@ -53,7 +72,7 @@ const router = createRouter({
         {
           path: "inventory",
           name: "inventory",
-          component: () => import("../views/InventoryView.vue"),
+          component: () => import("@/views/InventoryView.vue"),
           meta: {
             requiresAuth: true,
             title: "Inventory",
@@ -62,7 +81,7 @@ const router = createRouter({
         {
           path: "customers",
           name: "customers",
-          component: () => import("../views/CustomersView.vue"),
+          component: () => import("@/views/CustomersView.vue"),
           meta: {
             requiresAuth: true,
             title: "Customers",
@@ -71,7 +90,7 @@ const router = createRouter({
         {
           path: "accounting",
           name: "accounting",
-          component: () => import("../views/AccountingView.vue"),
+          component: () => import("@/views/AccountingView.vue"),
           meta: {
             requiresAuth: true,
             title: "Accounting",
@@ -80,7 +99,7 @@ const router = createRouter({
         {
           path: "reports",
           name: "reports",
-          component: () => import("../views/ReportsView.vue"),
+          component: () => import("@/views/ReportsView.vue"),
           meta: {
             requiresAuth: true,
             title: "Reports",
@@ -89,7 +108,7 @@ const router = createRouter({
         {
           path: "profile",
           name: "profile",
-          component: () => import("../views/ProfileView.vue"),
+          component: () => import("@/views/ProfileView.vue"),
           meta: {
             requiresAuth: true,
             title: "Profile",
@@ -98,7 +117,7 @@ const router = createRouter({
         {
           path: "settings",
           name: "settings",
-          component: () => import("../views/SettingsView.vue"),
+          component: () => import("@/views/SettingsView.vue"),
           meta: {
             requiresAuth: true,
             title: "Settings",
@@ -109,7 +128,7 @@ const router = createRouter({
     {
       path: "/:pathMatch(.*)*",
       name: "not-found",
-      component: () => import("../views/NotFoundView.vue"),
+      component: () => import("@/views/NotFoundView.vue"),
     },
   ],
 });

@@ -196,15 +196,7 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="inventoryStore.loading.items" class="p-6">
-        <div class="animate-pulse space-y-4">
-          <div
-            v-for="i in 5"
-            :key="i"
-            class="h-16 bg-gray-200 dark:bg-gray-700 rounded"
-          ></div>
-        </div>
-      </div>
+      <TableSkeleton v-if="inventoryStore.loading.items" :rows="10" :columns="9" />
 
       <!-- Empty State -->
       <div
@@ -448,18 +440,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-// Simple debounce implementation
-const debounce = (func: Function, wait: number) => {
-  let timeout: NodeJS.Timeout
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}
 import {
   CubeIcon,
   EyeIcon,
@@ -469,7 +449,10 @@ import {
 import { useInventoryStore } from "@/stores/inventory";
 import { useNumberFormatter } from "@/composables/useNumberFormatter";
 import { useApi } from "@/composables/useApi";
+import { usePerformanceMonitoring } from "@/composables/usePerformanceMonitoring";
+import { debounce } from "@/utils/performanceOptimizations";
 import { apiService } from "@/services/api";
+import TableSkeleton from "@/components/ui/TableSkeleton.vue";
 import type { InventoryItem } from "@/types";
 
 // Emits
@@ -483,6 +466,7 @@ const { locale } = useI18n();
 const inventoryStore = useInventoryStore();
 const { formatNumber, formatCurrency } = useNumberFormatter();
 const { execute } = useApi();
+const { mark, measure } = usePerformanceMonitoring('InventoryList');
 
 // State
 const searchQuery = ref("");
@@ -498,11 +482,15 @@ const goldPurityRanges = ref<Array<{ label: string; min: number; max: number }>>
 
 // Methods
 const debouncedSearch = debounce(() => {
+  mark('search-start');
   applyFilters();
+  measure('search-duration', 'search-start');
 }, 300);
 
 const debouncedApplyFilters = debounce(() => {
+  mark('filter-start');
   applyFilters();
+  measure('filter-duration', 'filter-start');
 }, 500);
 
 const formatGoldPurity = (purity: number): string => {

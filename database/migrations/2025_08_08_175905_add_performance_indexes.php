@@ -14,8 +14,8 @@ return new class extends Migration
         // Add composite indexes to inventory_items table
         if (Schema::hasTable('inventory_items')) {
             Schema::table('inventory_items', function (Blueprint $table) {
-                // Composite index for category, location, and status filtering
-                $table->index(['category_id', 'location_id', 'status'], 'idx_inventory_category_location_status');
+                // Composite index for category, location, and active status filtering
+                $table->index(['category_id', 'location_id', 'is_active'], 'idx_inventory_category_location_active');
                 
                 // Index for date-based queries
                 $table->index(['created_at', 'updated_at'], 'idx_inventory_dates');
@@ -24,13 +24,13 @@ return new class extends Migration
                 $table->index(['gold_purity', 'weight'], 'idx_inventory_gold_weight');
                 
                 // Index for stock level queries
-                $table->index(['quantity', 'status'], 'idx_inventory_quantity_status');
+                $table->index(['quantity', 'is_active'], 'idx_inventory_quantity_active');
                 
                 // Index for price range queries
                 $table->index(['unit_price', 'cost_price'], 'idx_inventory_prices');
                 
-                // Index for active items with category
-                $table->index(['is_active', 'category_id'], 'idx_inventory_active_category');
+                // Index for SKU and active status
+                $table->index(['sku', 'is_active'], 'idx_inventory_sku_active');
             });
         }
 
@@ -139,12 +139,12 @@ return new class extends Migration
         // Drop indexes from inventory_items table
         if (Schema::hasTable('inventory_items')) {
             Schema::table('inventory_items', function (Blueprint $table) {
-                $table->dropIndex('idx_inventory_category_location_status');
+                $table->dropIndex('idx_inventory_category_location_active');
                 $table->dropIndex('idx_inventory_dates');
                 $table->dropIndex('idx_inventory_gold_weight');
-                $table->dropIndex('idx_inventory_quantity_status');
+                $table->dropIndex('idx_inventory_quantity_active');
                 $table->dropIndex('idx_inventory_prices');
-                $table->dropIndex('idx_inventory_active_category');
+                $table->dropIndex('idx_inventory_sku_active');
             });
         }
 
