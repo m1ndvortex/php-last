@@ -1,0 +1,6 @@
+# Ignore all volume data but keep directory structure
+*
+!.gitignore
+!.gitkeep
+!*/
+!*/.gitkeep

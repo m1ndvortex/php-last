@@ -1,0 +1,61 @@
+[mysqld]
+# Performance Optimization Settings
+innodb_buffer_pool_size = 256M
+innodb_log_file_size = 64M
+innodb_flush_log_at_trx_commit = 2
+innodb_lock_wait_timeout = 120
+innodb_thread_concurrency = 0
+innodb_read_io_threads = 4
+innodb_write_io_threads = 4
+
+# Query Cache Settings (Removed in MySQL 8.0)
+# query_cache_type = 1
+# query_cache_size = 32M
+# query_cache_limit = 2M
+
+# Connection Settings
+max_connections = 100
+max_allowed_packet = 64M
+connect_timeout = 30
+wait_timeout = 600
+interactive_timeout = 600
+
+# Slow Query Log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 1.0
+log_queries_not_using_indexes = 1
+
+# Binary Log Settings
+log_bin = /var/log/mysql/mysql-bin.log
+binlog_format = ROW
+expire_logs_days = 7
+max_binlog_size = 100M
+
+# Character Set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# Table Settings
+table_open_cache = 2000
+table_definition_cache = 1400
+
+# MyISAM Settings
+key_buffer_size = 32M
+myisam_sort_buffer_size = 8M
+
+# Temp Table Settings
+tmp_table_size = 32M
+max_heap_table_size = 32M
+
+# Sort and Group Settings
+sort_buffer_size = 2M
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+join_buffer_size = 128K
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
