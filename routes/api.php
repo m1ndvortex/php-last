@@ -97,11 +97,13 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('/gold-purity-stats', [\App\Http\Controllers\InvoiceController::class, 'getGoldPurityStats']);
         Route::post('/batch-pdf', [\App\Http\Controllers\InvoiceController::class, 'generateBatchPDFs']);
         Route::post('/batch-download', [\App\Http\Controllers\InvoiceController::class, 'downloadBatchPDFs']);
+        Route::post('/process-overdue', [\App\Http\Controllers\InvoiceController::class, 'processOverdue']);
         Route::post('/{invoice}/duplicate', [\App\Http\Controllers\InvoiceController::class, 'duplicate']);
         Route::post('/{invoice}/pdf', [\App\Http\Controllers\InvoiceController::class, 'generatePDF']);
         Route::get('/{invoice}/pdf/download', [\App\Http\Controllers\InvoiceController::class, 'downloadPDF']);
         Route::post('/{invoice}/mark-sent', [\App\Http\Controllers\InvoiceController::class, 'markAsSent']);
         Route::post('/{invoice}/mark-paid', [\App\Http\Controllers\InvoiceController::class, 'markAsPaid']);
+        Route::post('/{invoice}/cancel', [\App\Http\Controllers\InvoiceController::class, 'cancel']);
         Route::post('/{invoice}/attachments', [\App\Http\Controllers\InvoiceController::class, 'addAttachment']);
         Route::delete('/{invoice}/attachments/{attachment}', [\App\Http\Controllers\InvoiceController::class, 'removeAttachment']);
     });

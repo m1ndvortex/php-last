@@ -86,6 +86,9 @@
 <body>
     <div class="header clearfix">
         <div class="company-info">
+            @if($company['logo_path'])
+                <img src="{{ Storage::url($company['logo_path']) }}" alt="Company Logo" style="max-height: 60px; margin-bottom: 10px;">
+            @endif
             <h1>{{ $company['name'] }}</h1>
             @if($company['address'])
                 <p>{{ $company['address'] }}</p>
@@ -95,6 +98,15 @@
             @endif
             @if($company['email'])
                 <p>Email: {{ $company['email'] }}</p>
+            @endif
+            @if($company['website'])
+                <p>Website: {{ $company['website'] }}</p>
+            @endif
+            @if($company['tax_id'])
+                <p>Tax ID: {{ $company['tax_id'] }}</p>
+            @endif
+            @if($company['registration_number'])
+                <p>Reg. No: {{ $company['registration_number'] }}</p>
             @endif
         </div>
         <div class="invoice-info">

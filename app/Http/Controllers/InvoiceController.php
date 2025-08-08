@@ -281,12 +281,20 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Mark invoice as paid.
+     * Mark invoice as paid with payment data.
      */
-    public function markAsPaid(Invoice $invoice): JsonResponse
+    public function markAsPaid(Invoice $invoice, Request $request): JsonResponse
     {
         try {
-            $updatedInvoice = $this->invoiceService->markAsPaid($invoice);
+            $paymentData = $request->validate([
+                'payment_method' => 'nullable|string|in:cash,card,bank_transfer,check,other',
+                'amount' => 'nullable|numeric|min:0',
+                'payment_date' => 'nullable|date',
+                'transaction_id' => 'nullable|string',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            $updatedInvoice = $this->invoiceService->markAsPaid($invoice, $paymentData);
 
             return response()->json([
                 'success' => true,
@@ -297,6 +305,54 @@ class InvoiceController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to mark invoice as paid',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel an invoice.
+     */
+    public function cancel(Invoice $invoice, Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'reason' => 'required|string|max:500',
+            ]);
+
+            $cancelledInvoice = $this->invoiceService->cancelInvoice($invoice, $request->reason);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice cancelled successfully',
+                'data' => $cancelledInvoice,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel invoice',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Process overdue invoices.
+     */
+    public function processOverdue(): JsonResponse
+    {
+        try {
+            $processed = $this->invoiceService->processOverdueInvoices();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Processed {$processed} overdue invoices",
+                'data' => ['processed_count' => $processed],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process overdue invoices',
                 'error' => $e->getMessage(),
             ], 500);
         }

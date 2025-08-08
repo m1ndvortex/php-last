@@ -88,15 +88,27 @@
 <body>
     <div class="header clearfix">
         <div class="company-info">
-            <h1>{{ $company['name'] }}</h1>
-            @if($company['address'])
-                <p>{{ $company['address'] }}</p>
+            @if($company['logo_path'])
+                <img src="{{ Storage::url($company['logo_path']) }}" alt="لوگو شرکت" style="max-height: 60px; margin-bottom: 10px;">
+            @endif
+            <h1>{{ $company['name_persian'] ?: $company['name'] }}</h1>
+            @if($company['address_persian'] ?: $company['address'])
+                <p>{{ $company['address_persian'] ?: $company['address'] }}</p>
             @endif
             @if($company['phone'])
                 <p>تلفن: {{ $company['phone'] }}</p>
             @endif
             @if($company['email'])
                 <p>ایمیل: {{ $company['email'] }}</p>
+            @endif
+            @if($company['website'])
+                <p>وب‌سایت: {{ $company['website'] }}</p>
+            @endif
+            @if($company['tax_id'])
+                <p>شناسه مالیاتی: {{ $company['tax_id'] }}</p>
+            @endif
+            @if($company['registration_number'])
+                <p>شماره ثبت: {{ $company['registration_number'] }}</p>
             @endif
         </div>
         <div class="invoice-info">

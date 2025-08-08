@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\InvoiceTemplate;
+use App\Models\BusinessConfiguration;
+use App\Services\CalendarService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -129,32 +131,66 @@ class PDFGenerationService
     }
 
     /**
-     * Get company information.
+     * Get company information from business configuration.
      */
     protected function getCompanyInfo()
     {
-        return [
-            'name' => config('app.company_name', 'Jewelry Business'),
-            'address' => config('app.company_address', ''),
-            'phone' => config('app.company_phone', ''),
-            'email' => config('app.company_email', ''),
-            'website' => config('app.company_website', ''),
-            'logo_path' => config('app.company_logo', ''),
-        ];
+        try {
+            return [
+                'name' => BusinessConfiguration::getValue('business_name', config('app.company_name', 'Jewelry Business')),
+                'name_persian' => BusinessConfiguration::getValue('business_name_persian', ''),
+                'address' => BusinessConfiguration::getValue('business_address', config('app.company_address', '')),
+                'address_persian' => BusinessConfiguration::getValue('business_address_persian', ''),
+                'phone' => BusinessConfiguration::getValue('business_phone', config('app.company_phone', '')),
+                'email' => BusinessConfiguration::getValue('business_email', config('app.company_email', '')),
+                'website' => BusinessConfiguration::getValue('business_website', config('app.company_website', '')),
+                'logo_path' => BusinessConfiguration::getValue('business_logo', config('app.company_logo', '')),
+                'tax_id' => BusinessConfiguration::getValue('business_tax_id', ''),
+                'registration_number' => BusinessConfiguration::getValue('business_registration_number', ''),
+            ];
+        } catch (\Exception $e) {
+            // Fallback to config values if business configuration fails
+            return [
+                'name' => config('app.company_name', 'Jewelry Business'),
+                'name_persian' => '',
+                'address' => config('app.company_address', ''),
+                'address_persian' => '',
+                'phone' => config('app.company_phone', ''),
+                'email' => config('app.company_email', ''),
+                'website' => config('app.company_website', ''),
+                'logo_path' => config('app.company_logo', ''),
+                'tax_id' => '',
+                'registration_number' => '',
+            ];
+        }
     }
 
     /**
-     * Format currency based on language.
+     * Format currency based on language and business configuration.
      */
     protected function formatCurrency($amount, $language)
     {
-        if ($language === 'fa') {
-            // Persian formatting
-            $formatted = number_format($amount, 0, '.', ',');
-            return $this->convertToPersianNumbers($formatted) . ' ریال';
-        } else {
-            // English formatting
-            return '$' . number_format($amount, 2);
+        try {
+            $currencySymbol = BusinessConfiguration::getValue('currency_symbol', '$');
+            $currencyName = BusinessConfiguration::getValue('currency_name', 'USD');
+            $currencyNamePersian = BusinessConfiguration::getValue('currency_name_persian', 'ریال');
+            
+            if ($language === 'fa') {
+                // Persian formatting
+                $formatted = number_format($amount, 0, '.', ',');
+                return $this->convertToPersianNumbers($formatted) . ' ' . $currencyNamePersian;
+            } else {
+                // English formatting
+                return $currencySymbol . number_format($amount, 2);
+            }
+        } catch (\Exception $e) {
+            // Fallback formatting
+            if ($language === 'fa') {
+                $formatted = number_format($amount, 0, '.', ',');
+                return $this->convertToPersianNumbers($formatted) . ' ریال';
+            } else {
+                return '$' . number_format($amount, 2);
+            }
         }
     }
 

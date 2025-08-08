@@ -147,12 +147,50 @@ class Invoice extends Model
     }
 
     /**
-     * Generate next invoice number.
+     * Generate next invoice number with proper sequencing.
      */
     public static function generateInvoiceNumber()
     {
-        $lastInvoice = static::orderBy('id', 'desc')->first();
-        $nextNumber = $lastInvoice ? (int)substr($lastInvoice->invoice_number, 4) + 1 : 1;
-        return 'INV-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        // Get current year and month for better organization
+        $year = now()->format('Y');
+        $month = now()->format('m');
+        
+        // Get the last invoice number for this year/month
+        $lastInvoice = static::where('invoice_number', 'like', "INV-{$year}{$month}-%")
+            ->orderBy('invoice_number', 'desc')
+            ->first();
+        
+        if ($lastInvoice) {
+            // Extract the sequence number and increment
+            $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        return "INV-{$year}{$month}-" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Check if invoice is overdue.
+     */
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->due_date < now() && !in_array($this->status, ['paid', 'cancelled']);
+    }
+
+    /**
+     * Get formatted total amount.
+     */
+    public function getFormattedTotalAttribute(): string
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'fa') {
+            $formatted = number_format($this->total_amount, 0, '.', ',');
+            $persianNumerals = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            $englishNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            return str_replace($englishNumerals, $persianNumerals, $formatted) . ' ریال';
+        }
+        return '$' . number_format($this->total_amount, 2);
     }
 }

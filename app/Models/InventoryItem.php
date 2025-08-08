@@ -86,7 +86,7 @@ class InventoryItem extends Model
      */
     public function location(): BelongsTo
     {
-        return $this->belongsTo(Location::class)->select(['id', 'name', 'address']);
+        return $this->belongsTo(Location::class)->select(['id', 'name', 'description']);
     }
 
     /**
