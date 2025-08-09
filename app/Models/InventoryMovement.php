@@ -22,6 +22,7 @@ class InventoryMovement extends Model
         'batch_number',
         'notes',
         'user_id',
+        'created_by',
         'movement_date',
     ];
 
@@ -37,6 +38,8 @@ class InventoryMovement extends Model
     const TYPE_ADJUSTMENT = 'adjustment';
     const TYPE_WASTAGE = 'wastage';
     const TYPE_PRODUCTION = 'production';
+    const TYPE_SALE = 'sale';
+    const TYPE_RETURN = 'return';
 
     /**
      * Get the inventory item that owns the movement.
@@ -71,6 +74,14 @@ class InventoryMovement extends Model
     }
 
     /**
+     * Get the user who created the movement (alias for created_by).
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
      * Get the total value of this movement.
      */
     public function getTotalValueAttribute(): float
@@ -91,7 +102,7 @@ class InventoryMovement extends Model
      */
     public function getIsOutboundAttribute(): bool
     {
-        return in_array($this->type, [self::TYPE_OUT, self::TYPE_WASTAGE]);
+        return in_array($this->type, [self::TYPE_OUT, self::TYPE_WASTAGE, self::TYPE_SALE]);
     }
 
     /**

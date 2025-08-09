@@ -53,7 +53,12 @@
   - Store gold pricing parameters in invoice record
   - _Requirements: 3.1, 3.5, 3.6, 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 5. Create InventoryManagementService for stock control
+- [x] 5. Create InventoryManagementService for stock control
+
+
+
+
+
   - Implement checkInventoryAvailability method to validate stock before invoice creation
   - Create reserveInventory method to reduce stock when invoice is created
   - Add restoreInventory method to return stock when invoice is cancelled
