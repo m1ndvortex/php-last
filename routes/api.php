@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -373,5 +374,15 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::post('/{id}/cancel', [App\Http\Controllers\BatchOperationController::class, 'cancel']);
         Route::post('/{id}/retry', [App\Http\Controllers\BatchOperationController::class, 'retryFailed']);
         Route::get('/{id}/download-pdf', [App\Http\Controllers\BatchOperationController::class, 'downloadCombinedPDF']);
+    });
+
+    // Enterprise Reports routes
+    Route::prefix('reports')->group(function () {
+        Route::get('/types', [App\Http\Controllers\ReportController::class, 'getReportTypes']);
+        Route::post('/generate', [App\Http\Controllers\ReportController::class, 'generateReport']);
+        Route::post('/export', [App\Http\Controllers\ReportController::class, 'exportReport']);
+        Route::post('/schedule', [App\Http\Controllers\ReportController::class, 'scheduleReport']);
+        Route::get('/scheduled', [App\Http\Controllers\ReportController::class, 'getScheduledReports']);
+        Route::delete('/scheduled/{id}', [App\Http\Controllers\ReportController::class, 'deleteScheduledReport']);
     });
 });

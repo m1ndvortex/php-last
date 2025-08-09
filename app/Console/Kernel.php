@@ -89,6 +89,13 @@ class Kernel extends ConsoleKernel
             ->name('database-monitoring')
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Process scheduled reports - runs every hour
+        $schedule->command('reports:process-scheduled')
+            ->hourly()
+            ->name('process-scheduled-reports')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**
