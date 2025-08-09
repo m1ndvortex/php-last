@@ -34,30 +34,27 @@ class FinancialReportGenerator extends BaseReportGenerator
      */
     protected function generateProfitLossReport(): array
     {
-        // Get revenue accounts
-        $revenueAccounts = Account::where('type', 'revenue')->get();
-        $revenueData = $this->getAccountBalances($revenueAccounts, 'credit');
-        $totalRevenue = $revenueData->sum('balance');
-
-        // Get expense accounts
-        $expenseAccounts = Account::where('type', 'expense')->get();
-        $expenseData = $this->getAccountBalances($expenseAccounts, 'debit');
-        $totalExpenses = $expenseData->sum('balance');
-
-        // Calculate COGS
-        $cogsAccounts = Account::where('type', 'expense')
-            ->where('name', 'like', '%cost%')
-            ->orWhere('code', 'like', '5%')
+        // Get revenue from invoices
+        $invoices = Invoice::whereBetween('issue_date', [$this->startDate, $this->endDate])
+            ->where('status', '!=', 'cancelled')
+            ->with('items.inventoryItem')
             ->get();
-        $cogsData = $this->getAccountBalances($cogsAccounts, 'debit');
-        $totalCOGS = $cogsData->sum('balance');
+
+        $totalRevenue = $invoices->sum('total_amount');
+        
+        // Calculate COGS (Cost of Goods Sold) from invoice items
+        $totalCOGS = $invoices->flatMap->items->sum(function ($item) {
+            // Use cost price from inventory item, fallback to 60% of selling price
+            $costPrice = $item->inventoryItem->cost_price ?? ($item->unit_price * 0.6);
+            return $costPrice * $item->quantity;
+        });
+
+        // Estimate operating expenses (20% of revenue as default)
+        $operatingExpenses = $totalRevenue * 0.20;
 
         // Calculate gross profit
         $grossProfit = $totalRevenue - $totalCOGS;
         $grossProfitMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
-
-        // Calculate operating expenses (excluding COGS)
-        $operatingExpenses = $totalExpenses - $totalCOGS;
 
         // Calculate net profit
         $netProfit = $grossProfit - $operatingExpenses;
@@ -122,18 +119,23 @@ class FinancialReportGenerator extends BaseReportGenerator
             ],
             'data' => [
                 'revenue' => [
-                    'accounts' => $revenueData->toArray(),
+                    'invoices' => $invoices->map(function ($invoice) {
+                        return [
+                            'invoice_number' => $invoice->invoice_number,
+                            'date' => $invoice->issue_date->format('Y-m-d'),
+                            'customer' => $invoice->customer->name,
+                            'amount' => $invoice->total_amount
+                        ];
+                    })->toArray(),
                     'total' => $totalRevenue
                 ],
                 'cost_of_goods_sold' => [
-                    'accounts' => $cogsData->toArray(),
-                    'total' => $totalCOGS
+                    'total' => $totalCOGS,
+                    'calculation_method' => 'Estimated from inventory cost prices (60% fallback)'
                 ],
                 'operating_expenses' => [
-                    'accounts' => $expenseData->filter(function ($account) use ($cogsAccounts) {
-                        return !$cogsAccounts->pluck('id')->contains($account['id']);
-                    })->values()->toArray(),
-                    'total' => $operatingExpenses
+                    'total' => $operatingExpenses,
+                    'calculation_method' => 'Estimated as 20% of revenue'
                 ],
                 'calculations' => [
                     'gross_profit' => $grossProfit,
@@ -510,12 +512,26 @@ class FinancialReportGenerator extends BaseReportGenerator
         $previousStart = $this->startDate->copy()->subDays($daysDiff + 1);
         $previousEnd = $this->startDate->copy()->subDay();
 
-        // This would calculate previous period data
-        // For now, return dummy data
+        $previousInvoices = Invoice::whereBetween('issue_date', [$previousStart, $previousEnd])
+            ->where('status', '!=', 'cancelled')
+            ->with('items.inventoryItem')
+            ->get();
+
+        $previousRevenue = $previousInvoices->sum('total_amount');
+        
+        $previousCOGS = $previousInvoices->flatMap->items->sum(function ($item) {
+            $costPrice = $item->inventoryItem->cost_price ?? ($item->unit_price * 0.6);
+            return $costPrice * $item->quantity;
+        });
+
+        $previousOperatingExpenses = $previousRevenue * 0.20;
+        $previousGrossProfit = $previousRevenue - $previousCOGS;
+        $previousNetProfit = $previousGrossProfit - $previousOperatingExpenses;
+
         return [
-            'revenue' => 0,
-            'gross_profit' => 0,
-            'net_profit' => 0
+            'revenue' => $previousRevenue,
+            'gross_profit' => $previousGrossProfit,
+            'net_profit' => $previousNetProfit
         ];
     }
 
@@ -524,9 +540,44 @@ class FinancialReportGenerator extends BaseReportGenerator
      */
     protected function getMonthlyPLBreakdown(): Collection
     {
-        // This would calculate monthly breakdown
-        // For now, return dummy data
-        return collect([]);
+        $monthlyData = collect();
+        
+        $start = $this->startDate->copy()->startOfMonth();
+        $end = $this->endDate->copy()->endOfMonth();
+        
+        while ($start <= $end) {
+            $monthStart = $start->copy()->startOfMonth();
+            $monthEnd = $start->copy()->endOfMonth();
+            
+            $monthlyInvoices = Invoice::whereBetween('issue_date', [$monthStart, $monthEnd])
+                ->where('status', '!=', 'cancelled')
+                ->with('items.inventoryItem')
+                ->get();
+            
+            $monthlyRevenue = $monthlyInvoices->sum('total_amount');
+            $monthlyCOGS = $monthlyInvoices->flatMap->items->sum(function ($item) {
+                $costPrice = $item->inventoryItem->cost_price ?? ($item->unit_price * 0.6);
+                return $costPrice * $item->quantity;
+            });
+            
+            $monthlyOperatingExpenses = $monthlyRevenue * 0.20;
+            $monthlyGrossProfit = $monthlyRevenue - $monthlyCOGS;
+            $monthlyNetProfit = $monthlyGrossProfit - $monthlyOperatingExpenses;
+            
+            $monthlyData->push([
+                'month' => $start->format('Y-m'),
+                'month_name' => $start->format('M Y'),
+                'revenue' => $monthlyRevenue,
+                'cogs' => $monthlyCOGS,
+                'gross_profit' => $monthlyGrossProfit,
+                'operating_expenses' => $monthlyOperatingExpenses,
+                'net_profit' => $monthlyNetProfit
+            ]);
+            
+            $start->addMonth();
+        }
+        
+        return $monthlyData;
     }
 
     /**
@@ -578,5 +629,17 @@ class FinancialReportGenerator extends BaseReportGenerator
     {
         // This would calculate monthly cash flow
         return collect([]);
+    }
+
+    /**
+     * Calculate percentage change between current and previous values
+     */
+    protected function calculatePercentageChange(float $current, float $previous): float
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        
+        return (($current - $previous) / $previous) * 100;
     }
 }

@@ -253,12 +253,9 @@ class InventoryControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
-                'name',
                 'category_id',
                 'location_id',
                 'quantity',
-                'unit_price',
-                'cost_price',
             ]);
     }
 

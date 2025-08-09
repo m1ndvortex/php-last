@@ -94,8 +94,12 @@ abstract class BaseReportGenerator
     /**
      * Format date for display
      */
-    protected function formatDate(Carbon $date): string
+    protected function formatDate(?Carbon $date): ?string
     {
+        if ($date === null) {
+            return null;
+        }
+        
         if ($this->language === 'fa') {
             // Persian date formatting would go here
             return $date->format('Y/m/d');

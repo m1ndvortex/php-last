@@ -152,7 +152,7 @@ watch(() => props.modelValue, initializeComponent);
 const fetchGoldPurityOptions = async () => {
   try {
     const result = await execute(() => 
-      apiService.get("/inventory/gold-purity-options")
+      apiService.get("/api/inventory/gold-purity-options")
     );
     if (result) {
       backendOptions.value = result.standard_purities || [];

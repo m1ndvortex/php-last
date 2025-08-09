@@ -33,7 +33,7 @@
           >
             <option value="">{{ $t("common.all_categories") }}</option>
             <option
-              v-for="category in inventoryStore.categories"
+              v-for="category in inventoryStore.categories || []"
               :key="category.id"
               :value="category.id"
             >
@@ -56,7 +56,7 @@
           >
             <option value="">{{ $t("common.all_locations") }}</option>
             <option
-              v-for="location in inventoryStore.locations"
+              v-for="location in inventoryStore.locations || []"
               :key="location.id"
               :value="location.id"
             >
@@ -200,7 +200,7 @@
 
       <!-- Empty State -->
       <div
-        v-else-if="inventoryStore.items.length === 0"
+        v-else-if="inventoryStore.items?.length === 0"
         class="p-6 text-center"
       >
         <div class="text-gray-500 dark:text-gray-400">
@@ -264,7 +264,7 @@
             class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
           >
             <tr
-              v-for="item in inventoryStore.items"
+              v-for="item in inventoryStore.items || []"
               :key="item.id"
               class="hover:bg-gray-50 dark:hover:bg-gray-700"
             >
@@ -493,23 +493,29 @@ const debouncedApplyFilters = debounce(() => {
   measure('filter-duration', 'filter-start');
 }, 500);
 
-const formatGoldPurity = (purity: number): string => {
+const formatGoldPurity = (purity: number | string | null | undefined): string => {
   if (!purity) return "-";
+  
+  // Convert to number if it's a string
+  const numericPurity = typeof purity === 'string' ? parseFloat(purity) : purity;
+  
+  // Check if conversion resulted in a valid number
+  if (isNaN(numericPurity)) return "-";
   
   if (locale.value === "fa") {
     // Convert to Persian numerals
     const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-    const formattedPurity = purity.toFixed(1).replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
+    const formattedPurity = numericPurity.toFixed(1).replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
     return `${formattedPurity} عیار`;
   }
   
-  return `${purity.toFixed(1)}K`;
+  return `${numericPurity.toFixed(1)}K`;
 };
 
 const fetchGoldPurityOptions = async () => {
   try {
     const result = await execute(() => 
-      apiService.get("/inventory/gold-purity-options")
+      apiService.get("/api/inventory/gold-purity-options")
     );
     if (result) {
       goldPurityRanges.value = result.purity_ranges || [];

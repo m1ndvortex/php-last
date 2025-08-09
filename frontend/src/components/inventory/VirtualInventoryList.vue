@@ -277,7 +277,7 @@
         <Transition name="fade">
           <button
             v-if="scrollTop > 200"
-            @click="scrollToTop"
+            @click="() => scrollToTop()"
             class="fixed bottom-4 right-4 bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 transition-colors z-10"
           >
             <ArrowUpIcon class="h-5 w-5" />
@@ -436,7 +436,7 @@ const loadMoreItems = async () => {
       }
     });
 
-    await inventoryStore.fetchItems(params, true); // Append to existing items
+    await inventoryStore.fetchItems(params); // Load more items
     measure('load-more-duration', 'load-more-start');
   } finally {
     loadingMore.value = false;

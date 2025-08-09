@@ -6,7 +6,6 @@ import type {
   AxiosError,
 } from "axios";
 import type { Customer } from "@/types";
-import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 
 // Create axios instance
@@ -21,13 +20,15 @@ const api: AxiosInstance = axios.create({
   withCredentials: true, // Important for Docker CORS
 });
 
+// CSRF initialization is handled by Laravel's existing session management
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const authStore = useAuthStore();
-    if (authStore.token) {
-      config.headers.Authorization = `Bearer ${authStore.token}`;
+    // Add auth token if available - get directly from localStorage to avoid circular dependency
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     // Add language header
@@ -50,21 +51,24 @@ api.interceptors.request.use(
   },
 );
 
+// Helper function to handle logout without circular dependency
+const handleLogout = () => {
+  localStorage.removeItem("auth_token");
+  router.push("/login");
+};
+
 // Response interceptor
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
   (error: AxiosError) => {
-    const authStore = useAuthStore();
-
     // Handle different error status codes
     if (error.response) {
       switch (error.response.status) {
         case 401:
           // Unauthorized - clear auth and redirect to login
-          authStore.logout();
-          router.push("/login");
+          handleLogout();
           break;
 
         case 403:
@@ -292,21 +296,21 @@ export const apiService = {
   // Inventory
   inventory: {
     getItems: (filters?: Record<string, any>) =>
-      api.get("api/inventory/items", { params: filters }),
+      api.get("api/inventory", { params: filters }),
 
-    getItem: (id: number) => api.get(`api/inventory/items/${id}`),
+    getItem: (id: number) => api.get(`api/inventory/${id}`),
 
     createItem: (data: FormData) =>
-      api.post("api/inventory/items", data, {
+      api.post("api/inventory", data, {
         headers: { "Content-Type": "multipart/form-data" },
       }),
 
     updateItem: (id: number, data: FormData) =>
-      api.put(`api/inventory/items/${id}`, data, {
+      api.put(`api/inventory/${id}`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       }),
 
-    deleteItem: (id: number) => api.delete(`api/inventory/items/${id}`),
+    deleteItem: (id: number) => api.delete(`api/inventory/${id}`),
 
     getMovements: (filters?: Record<string, any>) =>
       api.get("api/inventory/movements", { params: filters }),
@@ -348,58 +352,58 @@ export const apiService = {
 
     getLocations: () => api.get("api/locations"),
 
-    createLocation: (data: any) => api.post("api/inventory/locations", data),
+    createLocation: (data: any) => api.post("api/locations", data),
 
     updateLocation: (id: number, data: any) =>
-      api.put(`api/inventory/locations/${id}`, data),
+      api.put(`api/locations/${id}`, data),
 
-    deleteLocation: (id: number) => api.delete(`api/inventory/locations/${id}`),
+    deleteLocation: (id: number) => api.delete(`api/locations/${id}`),
 
     // Stock Audit
     getAudits: (filters?: Record<string, any>) =>
-      api.get("api/inventory/audits", { params: filters }),
+      api.get("api/stock-audits", { params: filters }),
 
-    getAudit: (id: number) => api.get(`api/inventory/audits/${id}`),
+    getAudit: (id: number) => api.get(`api/stock-audits/${id}`),
 
-    createAudit: (data: any) => api.post("api/inventory/audits", data),
+    createAudit: (data: any) => api.post("api/stock-audits", data),
 
     updateAudit: (id: number, data: any) =>
-      api.put(`api/inventory/audits/${id}`, data),
+      api.put(`api/stock-audits/${id}`, data),
 
-    deleteAudit: (id: number) => api.delete(`api/inventory/audits/${id}`),
+    deleteAudit: (id: number) => api.delete(`api/stock-audits/${id}`),
 
-    startAudit: (id: number) => api.post(`api/inventory/audits/${id}/start`),
+    startAudit: (id: number) => api.post(`api/stock-audits/${id}/start`),
 
     completeAudit: (id: number) =>
-      api.post(`api/inventory/audits/${id}/complete`),
+      api.post(`api/stock-audits/${id}/complete`),
 
     updateAuditItem: (auditId: number, itemId: number, data: any) =>
-      api.put(`api/inventory/audits/${auditId}/items/${itemId}`, data),
+      api.put(`api/stock-audits/${auditId}/items/${itemId}`, data),
 
     // BOM (Bill of Materials)
     getBOMs: (filters?: Record<string, any>) =>
-      api.get("api/inventory/bom", { params: filters }),
+      api.get("api/bom", { params: filters }),
 
-    getBOM: (id: number) => api.get(`api/inventory/bom/${id}`),
+    getBOM: (id: number) => api.get(`api/bom/${id}`),
 
-    createBOM: (data: any) => api.post("api/inventory/bom", data),
+    createBOM: (data: any) => api.post("api/bom", data),
 
     updateBOM: (id: number, data: any) =>
-      api.put(`api/inventory/bom/${id}`, data),
+      api.put(`api/bom/${id}`, data),
 
-    deleteBOM: (id: number) => api.delete(`api/inventory/bom/${id}`),
+    deleteBOM: (id: number) => api.delete(`api/bom/${id}`),
 
     getBOMForItem: (itemId: number) =>
-      api.get(`api/inventory/items/${itemId}/bom`),
+      api.get(`api/inventory/${itemId}/bom`),
 
     // Reports
-    getLowStockItems: () => api.get("api/inventory/reports/low-stock"),
+    getLowStockItems: () => api.get("api/inventory/low-stock"),
 
     getExpiringItems: (days?: number) =>
-      api.get("api/inventory/reports/expiring", { params: { days } }),
+      api.get("api/inventory/expiring", { params: { days } }),
 
     getInventoryValuation: (filters?: Record<string, any>) =>
-      api.get("api/inventory/reports/valuation", { params: filters }),
+      api.get("api/inventory-reports/inventory-analytics", { params: filters }),
   },
 
   // Invoices

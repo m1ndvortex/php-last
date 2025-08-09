@@ -181,11 +181,112 @@
 
     <!-- Report Display -->
     <div v-if="currentReport" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-      <ReportDisplay
-        :report="currentReport"
-        :loading="loading"
-        @export="handleExport"
-      />
+      <!-- Simple Report Display -->
+      <div class="p-6">
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            {{ currentReport.title || 'Sales Report' }}
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {{ currentReport.date_range?.start }} to {{ currentReport.date_range?.end }}
+          </p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div v-if="currentReport.summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div
+            v-for="(item, key) in currentReport.summary"
+            :key="key"
+            class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg"
+          >
+            <p class="text-sm font-medium text-blue-600 dark:text-blue-400">
+              {{ key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
+            </p>
+            <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+              {{ item.formatted || item.value }}
+            </p>
+            <p v-if="item.change !== undefined" class="text-xs text-green-600">
+              {{ item.change > 0 ? '+' : '' }}{{ item.change.toFixed(1) }}% vs previous period
+            </p>
+          </div>
+        </div>
+
+        <!-- Data Tables -->
+        <div v-if="currentReport.data">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Report Data
+          </h3>
+          
+          <!-- Top Customers -->
+          <div v-if="currentReport.data.top_customers" class="mb-6">
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Top Customers</h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Orders</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr v-for="customer in currentReport.data.top_customers" :key="customer.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ customer.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ customer.total.toFixed(2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ customer.count }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top Products -->
+          <div v-if="currentReport.data.top_products" class="mb-6">
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Top Products</h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Quantity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr v-for="product in currentReport.data.top_products" :key="product.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ product.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ product.quantity }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ product.total.toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Daily Sales -->
+          <div v-if="currentReport.data.daily_sales" class="mb-6">
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Daily Sales</h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Orders</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr v-for="day in currentReport.data.daily_sales" :key="day.date">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ day.date }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ day.total.toFixed(2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ day.count }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -227,7 +328,7 @@ import { useNotifications } from '@/composables/useNotifications'
 import ReportDisplay from './ReportDisplay.vue'
 import ScheduleReportModal from './ScheduleReportModal.vue'
 import ExportReportModal from './ExportReportModal.vue'
-import { api } from '@/services/api'
+import api from '@/services/api'
 
 const { t } = useI18n()
 const { showNotification } = useNotifications()
@@ -274,7 +375,7 @@ const filters = ref({
   startDate: '',
   endDate: '',
   language: 'en',
-  additional: {}
+  additional: {} as Record<string, any>
 })
 
 // Computed
@@ -291,7 +392,7 @@ const additionalFilters = computed(() => {
         {
           key: 'customer_id',
           label: 'customer',
-          options: [] // Would be populated from API
+          options: [] as Array<{value: string, label: string}>
         }
       ]
     case 'inventory':
@@ -299,12 +400,12 @@ const additionalFilters = computed(() => {
         {
           key: 'category_id',
           label: 'category',
-          options: []
+          options: [] as Array<{value: string, label: string}>
         },
         {
           key: 'location_id',
           label: 'location',
-          options: []
+          options: [] as Array<{value: string, label: string}>
         }
       ]
     default:
@@ -330,7 +431,7 @@ const updateDateRange = () => {
   }
 }
 
-const getDateRanges = () => {
+const getDateRanges = (): Record<string, {start: string, end: string}> => {
   const today = new Date()
   const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()))
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -368,7 +469,7 @@ const getDateRanges = () => {
 const generateReport = async () => {
   loading.value = true
   try {
-    const response = await api.post('/reports/generate', {
+    const response = await api.post('/api/reports/generate', {
       type: activeReportType.value,
       subtype: filters.value.subtype,
       date_range: {
@@ -381,10 +482,16 @@ const generateReport = async () => {
     })
 
     currentReport.value = response.data.data
-    showNotification(t('reports.report_generated_successfully'), 'success')
+    showNotification({
+      type: 'success',
+      title: t('reports.report_generated_successfully')
+    })
   } catch (error) {
     console.error('Failed to generate report:', error)
-    showNotification(t('reports.failed_to_generate_report'), 'error')
+    showNotification({
+      type: 'error',
+      title: t('reports.failed_to_generate_report')
+    })
   } finally {
     loading.value = false
   }
@@ -395,12 +502,18 @@ const handleExport = (format: string) => {
 }
 
 const handleReportScheduled = () => {
-  showNotification(t('reports.report_scheduled_successfully'), 'success')
+  showNotification({
+    type: 'success',
+    title: t('reports.report_scheduled_successfully')
+  })
   showScheduleModal.value = false
 }
 
 const handleReportExported = () => {
-  showNotification(t('reports.report_exported_successfully'), 'success')
+  showNotification({
+    type: 'success',
+    title: t('reports.report_exported_successfully')
+  })
   showExportModal.value = false
 }
 

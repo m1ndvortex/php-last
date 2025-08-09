@@ -313,14 +313,14 @@
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                {{ $t("inventory.unit_price") }} *
+                {{ $t("inventory.unit_price") }}
               </label>
               <input
                 v-model.number="form.unit_price"
                 type="number"
                 step="0.01"
                 min="0"
-                required
+                :placeholder="$t('inventory.price_on_request')"
                 :class="[
                   'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm',
                   errors.unit_price
@@ -341,14 +341,14 @@
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                {{ $t("inventory.cost_price") }} *
+                {{ $t("inventory.cost_price") }}
               </label>
               <input
                 v-model.number="form.cost_price"
                 type="number"
                 step="0.01"
                 min="0"
-                required
+                :placeholder="$t('inventory.price_on_request')"
                 :class="[
                   'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm',
                   errors.cost_price
@@ -808,9 +808,19 @@ const handleSubmit = async () => {
     // Add form fields
     Object.entries(form).forEach(([key, value]) => {
       if (value !== null && value !== "") {
-        formData.append(key, value.toString());
+        // Handle boolean fields properly
+        if (typeof value === 'boolean') {
+          formData.append(key, value ? '1' : '0');
+        } else {
+          formData.append(key, value.toString());
+        }
       }
     });
+
+    // If no subcategory is selected, use main category as category_id
+    if (!form.category_id && form.main_category_id) {
+      formData.append('category_id', form.main_category_id.toString());
+    }
 
     // Add images
     imageFiles.value.forEach((file, index) => {
@@ -872,10 +882,25 @@ watch(() => props.item, initializeForm, { immediate: true });
 
 // Lifecycle
 onMounted(async () => {
-  // Ensure categories are loaded
-  if (inventoryStore.categories.length === 0) {
-    await inventoryStore.fetchCategories();
+  try {
+    // Ensure categories and locations are loaded
+    const promises = [];
+    
+    if (inventoryStore.categories.length === 0) {
+      promises.push(inventoryStore.fetchCategories());
+    }
+    
+    if (inventoryStore.locations.length === 0) {
+      promises.push(inventoryStore.fetchLocations());
+    }
+    
+    await Promise.all(promises);
+    
+    initializeForm();
+  } catch (error) {
+    console.error('Failed to load form data:', error);
+    // Show user-friendly error message
+    // You can add a toast notification here if available
   }
-  initializeForm();
 });
 </script>

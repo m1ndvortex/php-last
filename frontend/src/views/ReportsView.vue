@@ -1,24 +1,15 @@
 <template>
-  <div class="space-y-6">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-          {{ $t("pages.reports") }}
-        </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-          {{ $t("reports.description") }}
-        </p>
-      </div>
-    </div>
-
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-      <p class="text-gray-500 dark:text-gray-400">
-        {{ $t("common.coming_soon") }}
-      </p>
-    </div>
+  <div class="reports-view">
+    <ReportsInterface />
   </div>
 </template>
 
 <script setup lang="ts">
-// Placeholder for reports view
+import ReportsInterface from '@/components/reports/ReportsInterface.vue'
 </script>
+
+<style scoped>
+.reports-view {
+  @apply min-h-screen bg-gray-50 dark:bg-gray-900;
+}
+</style>

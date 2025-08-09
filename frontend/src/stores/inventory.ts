@@ -56,28 +56,28 @@ export const useInventoryStore = defineStore("inventory", () => {
 
   // Getters
   const activeItems = computed(() =>
-    items.value.filter((item) => item.is_active),
+    items.value?.filter((item) => item.is_active) || [],
   );
 
   const lowStockItems = computed(() =>
-    items.value.filter((item) => item.is_low_stock),
+    items.value?.filter((item) => item.is_low_stock) || [],
   );
 
   const expiringItems = computed(() =>
-    items.value.filter((item) => item.is_expiring),
+    items.value?.filter((item) => item.is_expiring) || [],
   );
 
   const totalInventoryValue = computed(() =>
-    items.value.reduce((total, item) => total + (item.total_value || 0), 0),
+    items.value?.reduce((total, item) => total + (item.total_value || 0), 0) || 0,
   );
 
   const totalInventoryCost = computed(() =>
-    items.value.reduce((total, item) => total + (item.total_cost || 0), 0),
+    items.value?.reduce((total, item) => total + (item.total_cost || 0), 0) || 0,
   );
 
   const itemsByCategory = computed(() => {
     const grouped: Record<string, InventoryItem[]> = {};
-    items.value.forEach((item) => {
+    items.value?.forEach((item) => {
       const categoryName = item.category?.name || "Uncategorized";
       if (!grouped[categoryName]) {
         grouped[categoryName] = [];
@@ -89,7 +89,7 @@ export const useInventoryStore = defineStore("inventory", () => {
 
   const itemsByLocation = computed(() => {
     const grouped: Record<string, InventoryItem[]> = {};
-    items.value.forEach((item) => {
+    items.value?.forEach((item) => {
       const locationName = item.location?.name || "No Location";
       if (!grouped[locationName]) {
         grouped[locationName] = [];
@@ -145,6 +145,10 @@ export const useInventoryStore = defineStore("inventory", () => {
       const response = await apiService.inventory.createItem(itemData);
       if (response.data.success) {
         const newItem = response.data.data;
+        // Ensure items array is initialized before adding new item
+        if (!items.value) {
+          items.value = [];
+        }
         items.value.unshift(newItem);
         return newItem;
       }

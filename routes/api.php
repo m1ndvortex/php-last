@@ -26,7 +26,7 @@ Route::get('/health', function () {
 
 // Authentication routes
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [App\Http\Controllers\Auth\AuthController::class, 'login']);
+    Route::post('/login', [App\Http\Controllers\Auth\AuthController::class, 'login'])->name('login');
     
     Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::post('/logout', [App\Http\Controllers\Auth\AuthController::class, 'logout']);

@@ -62,7 +62,6 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 // Connection timeout settings
                 PDO::ATTR_TIMEOUT => env('DB_TIMEOUT', 60),
-                PDO::MYSQL_ATTR_CONNECT_TIMEOUT => env('DB_CONNECT_TIMEOUT', 10),
                 // Enable persistent connections for connection pooling
                 PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', false),
                 // Set connection charset

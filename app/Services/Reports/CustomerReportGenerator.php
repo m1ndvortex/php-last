@@ -315,7 +315,7 @@ class CustomerReportGenerator extends BaseReportGenerator
                     'email_count' => $customerCommunications->where('type', 'email')->count(),
                     'sms_count' => $customerCommunications->where('type', 'sms')->count(),
                     'whatsapp_count' => $customerCommunications->where('type', 'whatsapp')->count(),
-                    'last_communication' => $this->formatDate($customerCommunications->sortByDesc('created_at')->first()->created_at)
+                    'last_communication' => ($lastComm = $customerCommunications->sortByDesc('created_at')->first()) ? $this->formatDate($lastComm->created_at) : null
                 ];
             })->sortByDesc('total_communications')->values();
 
@@ -523,7 +523,7 @@ class CustomerReportGenerator extends BaseReportGenerator
             ->orderBy('updated_at', 'desc')
             ->first();
 
-        return $lastPaidInvoice ? $this->formatDate($lastPaidInvoice->updated_at) : null;
+        return $lastPaidInvoice && $lastPaidInvoice->updated_at ? $this->formatDate($lastPaidInvoice->updated_at) : null;
     }
 
     /**
