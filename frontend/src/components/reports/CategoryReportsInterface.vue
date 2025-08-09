@@ -431,7 +431,14 @@
                       {{ item.quantity }}
                     </span>
                   </td>
-                  <td class="table-cell">{{ formatCurrency(item.unit_price) }}</td>
+                  <td class="table-cell">
+                    <span v-if="item.unit_price !== null && item.unit_price !== undefined">
+                      {{ formatCurrency(item.unit_price) }}
+                    </span>
+                    <span v-else class="text-gray-500 dark:text-gray-400 italic">
+                      {{ $t("inventory.price_on_request") }}
+                    </span>
+                  </td>
                   <td class="table-cell">{{ formatCurrency(item.total_value) }}</td>
                 </tr>
               </tbody>

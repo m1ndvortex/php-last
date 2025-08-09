@@ -318,7 +318,12 @@
               <td
                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
               >
-                {{ formatCurrency(item.unit_price) }}
+                <span v-if="item.unit_price !== null && item.unit_price !== undefined">
+                  {{ formatCurrency(item.unit_price) }}
+                </span>
+                <span v-else class="text-gray-500 dark:text-gray-400 italic">
+                  {{ $t("inventory.price_on_request") }}
+                </span>
               </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"

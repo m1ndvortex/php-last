@@ -55,6 +55,11 @@ class Invoice extends Model
         'paid_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        // Gold pricing fields
+        'gold_price_per_gram' => 'decimal:2',
+        'labor_percentage' => 'decimal:2',
+        'profit_percentage' => 'decimal:2',
+        'tax_percentage' => 'decimal:2',
     ];
 
     /**

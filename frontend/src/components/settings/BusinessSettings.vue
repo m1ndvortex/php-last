@@ -128,7 +128,7 @@
           {{ $t("settings.business.financial_settings") }}
         </h4>
         
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label for="default_currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ $t("settings.business.default_currency") }}
@@ -146,19 +146,19 @@
           </div>
 
           <div>
-            <label for="default_tax_rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {{ $t("settings.business.default_tax_rate") }}
+            <label for="default_labor_percentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {{ $t("settings.business.default_labor_percentage") }}
             </label>
             <div class="mt-1 relative rounded-md shadow-sm">
               <input
                 type="number"
-                id="default_tax_rate"
-                v-model.number="form.default_tax_rate"
+                id="default_labor_percentage"
+                v-model.number="form.default_labor_percentage"
                 step="0.01"
                 min="0"
-                max="100"
+                max="1000"
                 class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                :placeholder="$t('settings.business.default_tax_rate_placeholder')"
+                :placeholder="$t('settings.business.default_labor_percentage_placeholder')"
               />
               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-gray-500 sm:text-sm">%</span>
@@ -180,6 +180,27 @@
                 max="1000"
                 class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
                 :placeholder="$t('settings.business.default_profit_percentage_placeholder')"
+              />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                <span class="text-gray-500 sm:text-sm">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="default_tax_rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {{ $t("settings.business.default_tax_rate") }}
+            </label>
+            <div class="mt-1 relative rounded-md shadow-sm">
+              <input
+                type="number"
+                id="default_tax_rate"
+                v-model.number="form.default_tax_rate"
+                step="0.01"
+                min="0"
+                max="100"
+                class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                :placeholder="$t('settings.business.default_tax_rate_placeholder')"
               />
               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-gray-500 sm:text-sm">%</span>
@@ -317,6 +338,7 @@ const form = reactive<Partial<BusinessConfiguration>>({
   default_currency: "USD",
   default_language: "en",
   default_tax_rate: 0,
+  default_labor_percentage: 0,
   default_profit_percentage: 0,
   invoice_prefix: "INV",
   invoice_starting_number: 1,

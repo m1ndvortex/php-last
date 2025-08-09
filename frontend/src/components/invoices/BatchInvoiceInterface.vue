@@ -253,7 +253,16 @@ const showBatchDetailsModal = ref(false);
 const selectedOperation = ref<any>(null);
 
 // Real batch operations data
-const batchOperations = ref([]);
+interface BatchOperation {
+  id: string | number;
+  type: string;
+  invoices_count: number;
+  status: string;
+  created_at: string;
+  download_url?: string;
+}
+
+const batchOperations = ref<BatchOperation[]>([]);
 const loading = ref(false);
 
 // Methods

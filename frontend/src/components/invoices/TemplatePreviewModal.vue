@@ -43,7 +43,7 @@
                   {{ $t("invoices.template_preview_placeholder") }}
                 </h3>
                 <p class="mt-1 text-sm text-gray-500">
-                  {{ template?.name }} - {{ template?.layout }}
+                  {{ template?.name }} - {{ template?.template_data?.layout }}
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ export interface BusinessConfiguration {
   default_currency: string;
   default_language: "en" | "fa";
   default_tax_rate: number;
+  default_labor_percentage: number;
   default_profit_percentage: number;
   invoice_prefix: string;
   invoice_starting_number: number;

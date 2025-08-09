@@ -49,6 +49,11 @@ export interface Invoice {
   language: "en" | "fa";
   template_id?: number;
   notes?: string;
+  // Gold pricing fields
+  gold_price_per_gram?: number;
+  labor_percentage?: number;
+  profit_percentage?: number;
+  tax_percentage?: number;
   created_at: string;
   updated_at: string;
   customer?: Customer;

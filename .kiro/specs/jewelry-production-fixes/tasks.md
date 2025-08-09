@@ -13,7 +13,12 @@
   - Verify form submission works without console errors
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-- [ ] 2. Make unit price and cost price optional in inventory items
+- [x] 2. Make unit price and cost price optional in inventory items
+
+
+
+
+
   - Update StoreInventoryItemRequest validation rules to make unit_price and cost_price nullable
   - Modify ItemFormModal.vue to remove required indicators (*) from price fields
   - Update database migration to allow NULL values for unit_price and cost_price columns
@@ -21,7 +26,12 @@
   - Update inventory display to show appropriate text when prices are null
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3. Create GoldPricingService with Persian jewelry formula
+- [x] 3. Create GoldPricingService with Persian jewelry formula
+
+
+
+
+
   - Implement GoldPricingService class with calculateItemPrice method
   - Code the Persian formula: Weight × (Gold Price + Labor Cost + Profit + Tax) = Final Price
   - Add percentage calculations for labor, profit, and tax components
@@ -29,7 +39,12 @@
   - Write unit tests to verify formula calculations are accurate
   - _Requirements: 3.2, 3.3, 3.4, 3.7_
 
-- [ ] 4. Implement dynamic gold pricing in invoice creation
+- [x] 4. Implement dynamic gold pricing in invoice creation
+
+
+
+
+
   - Update InvoiceFormModal.vue to include gold pricing section
   - Add form fields for current gold price per gram and percentage settings
   - Implement real-time price recalculation when values change

@@ -187,7 +187,12 @@
                     <dd
                       class="mt-1 text-lg font-semibold text-green-600 dark:text-green-400"
                     >
-                      {{ formatCurrency(item?.unit_price || 0) }}
+                      <span v-if="item?.unit_price !== null && item?.unit_price !== undefined">
+                        {{ formatCurrency(item.unit_price) }}
+                      </span>
+                      <span v-else class="text-gray-500 dark:text-gray-400 italic text-sm">
+                        {{ $t("inventory.price_on_request") }}
+                      </span>
                     </dd>
                   </div>
                   <div>
@@ -199,7 +204,12 @@
                     <dd
                       class="mt-1 text-lg font-semibold text-gray-900 dark:text-white"
                     >
-                      {{ formatCurrency(item?.cost_price || 0) }}
+                      <span v-if="item?.cost_price !== null && item?.cost_price !== undefined">
+                        {{ formatCurrency(item.cost_price) }}
+                      </span>
+                      <span v-else class="text-gray-500 dark:text-gray-400 italic text-sm">
+                        {{ $t("inventory.price_on_request") }}
+                      </span>
                     </dd>
                   </div>
                   <div>

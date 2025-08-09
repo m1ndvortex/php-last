@@ -6,6 +6,7 @@ use App\Models\InventoryItem;
 use App\Models\Category;
 use App\Models\Location;
 use App\Services\InventoryService;
+use App\Http\Requests\StoreInventoryItemRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
@@ -40,31 +41,9 @@ class InventoryController extends Controller
     /**
      * Store a new inventory item.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreInventoryItemRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'name_persian' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'description_persian' => 'nullable|string',
-            'sku' => 'nullable|string|unique:inventory_items,sku',
-            'category_id' => 'required|exists:categories,id',
-            'location_id' => 'required|exists:locations,id',
-            'quantity' => 'required|numeric|min:0',
-            'unit_price' => 'nullable|numeric|min:0',
-            'cost_price' => 'nullable|numeric|min:0',
-            'gold_purity' => 'nullable|numeric|min:0|max:24',
-            'weight' => 'nullable|numeric|min:0',
-            'serial_number' => 'nullable|string|unique:inventory_items,serial_number',
-            'batch_number' => 'nullable|string',
-            'expiry_date' => 'nullable|date|after:today',
-            'minimum_stock' => 'nullable|numeric|min:0',
-            'maximum_stock' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-            'track_serial' => 'boolean',
-            'track_batch' => 'boolean',
-            'metadata' => 'nullable|array',
-        ]);
+        $validated = $request->validated();
 
         // Get category for name and SKU generation
         $category = Category::find($validated['category_id']);

@@ -664,8 +664,8 @@ const form = reactive({
   main_category_id: "",
   location_id: "",
   quantity: 0,
-  unit_price: 0,
-  cost_price: 0,
+  unit_price: null as number | null, // Make optional for dynamic pricing
+  cost_price: null as number | null, // Make optional for dynamic pricing
   gold_purity: null as number | null,
   weight: null as number | null,
   serial_number: "",

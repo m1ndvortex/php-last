@@ -200,7 +200,7 @@
             class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg"
           >
             <p class="text-sm font-medium text-blue-600 dark:text-blue-400">
-              {{ key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
+              {{ String(key).replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) }}
             </p>
             <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
               {{ item.formatted || item.value }}
@@ -338,7 +338,21 @@ const loading = ref(false)
 const showScheduleModal = ref(false)
 const showExportModal = ref(false)
 const activeReportType = ref('sales')
-const currentReport = ref(null)
+interface ReportData {
+  title?: string;
+  date_range?: {
+    start: string;
+    end: string;
+  };
+  summary?: Record<string, any>;
+  data?: {
+    top_customers?: Array<{ id: number; name: string; total: number; count: number }>;
+    top_products?: Array<{ id: number; name: string; quantity: number; total: number }>;
+    daily_sales?: Array<{ date: string; total: number; orders: number; count: number }>;
+  };
+}
+
+const currentReport = ref<ReportData | null>(null)
 
 // Report types
 const reportTypes = ref([

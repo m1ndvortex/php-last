@@ -67,7 +67,7 @@
               </p>
             </div>
             <div class="text-blue-500 dark:text-blue-400">
-              <i :class="getSummaryIcon(key)" class="text-2xl"></i>
+              <i :class="getSummaryIcon(String(key))" class="text-2xl"></i>
             </div>
           </div>
         </div>
@@ -240,6 +240,9 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (amount: number) => {
+  if (amount === null || amount === undefined) {
+    return t('inventory.price_on_request')
+  }
   return new Intl.NumberFormat(locale.value, {
     style: 'currency',
     currency: locale.value === 'fa' ? 'IRR' : 'USD'
@@ -320,7 +323,7 @@ const getTableColumns = () => {
   if (!Array.isArray(data) || data.length === 0) return []
 
   const firstRow = data[0]
-  const columns = []
+  const columns: any[] = []
 
   // Define column configurations for different report types
   const columnConfigs: Record<string, any> = {
