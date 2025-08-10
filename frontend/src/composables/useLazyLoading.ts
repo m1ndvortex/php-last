@@ -1,75 +1,71 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
 interface LazyLoadOptions {
-  threshold?: number
-  rootMargin?: string
-  once?: boolean
+  threshold?: number;
+  rootMargin?: string;
+  once?: boolean;
 }
 
 export function useLazyLoading(options: LazyLoadOptions = {}) {
-  const {
-    threshold = 0.1,
-    rootMargin = '50px',
-    once = true
-  } = options
+  const { threshold = 0.1, rootMargin = "50px", once = true } = options;
 
-  const isVisible = ref(false)
-  const isLoaded = ref(false)
-  const targetRef = ref<HTMLElement>()
-  let observer: IntersectionObserver | null = null
+  const isVisible = ref(false);
+  const isLoaded = ref(false);
+  const targetRef = ref<HTMLElement>();
+  let observer: IntersectionObserver | null = null;
 
   const load = () => {
     if (!isLoaded.value) {
-      isLoaded.value = true
+      isLoaded.value = true;
     }
-  }
+  };
 
   const startObserving = () => {
-    if (!targetRef.value || !('IntersectionObserver' in window)) {
+    if (!targetRef.value || !("IntersectionObserver" in window)) {
       // Fallback for browsers without IntersectionObserver
-      isVisible.value = true
-      load()
-      return
+      isVisible.value = true;
+      load();
+      return;
     }
 
     observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            isVisible.value = true
-            load()
-            
+            isVisible.value = true;
+            load();
+
             if (once && observer) {
-              observer.unobserve(entry.target)
+              observer.unobserve(entry.target);
             }
           } else if (!once) {
-            isVisible.value = false
+            isVisible.value = false;
           }
-        })
+        });
       },
       {
         threshold,
-        rootMargin
-      }
-    )
+        rootMargin,
+      },
+    );
 
-    observer.observe(targetRef.value)
-  }
+    observer.observe(targetRef.value);
+  };
 
   const stopObserving = () => {
     if (observer && targetRef.value) {
-      observer.unobserve(targetRef.value)
-      observer = null
+      observer.unobserve(targetRef.value);
+      observer = null;
     }
-  }
+  };
 
   onMounted(() => {
-    startObserving()
-  })
+    startObserving();
+  });
 
   onUnmounted(() => {
-    stopObserving()
-  })
+    stopObserving();
+  });
 
   return {
     targetRef,
@@ -77,46 +73,46 @@ export function useLazyLoading(options: LazyLoadOptions = {}) {
     isLoaded,
     load,
     startObserving,
-    stopObserving
-  }
+    stopObserving,
+  };
 }
 
 // Composable for lazy loading images
 export function useLazyImage(src: string, options: LazyLoadOptions = {}) {
-  const { targetRef, isVisible, isLoaded } = useLazyLoading(options)
-  const imageSrc = ref('')
-  const imageError = ref(false)
-  const imageLoading = ref(false)
+  const { targetRef, isVisible, isLoaded } = useLazyLoading(options);
+  const imageSrc = ref("");
+  const imageError = ref(false);
+  const imageLoading = ref(false);
 
   const loadImage = async () => {
-    if (!src || isLoaded.value) return
+    if (!src || isLoaded.value) return;
 
-    imageLoading.value = true
-    imageError.value = false
+    imageLoading.value = true;
+    imageError.value = false;
 
     try {
-      const img = new Image()
+      const img = new Image();
       img.onload = () => {
-        imageSrc.value = src
-        imageLoading.value = false
-      }
+        imageSrc.value = src;
+        imageLoading.value = false;
+      };
       img.onerror = () => {
-        imageError.value = true
-        imageLoading.value = false
-      }
-      img.src = src
+        imageError.value = true;
+        imageLoading.value = false;
+      };
+      img.src = src;
     } catch (error) {
-      imageError.value = true
-      imageLoading.value = false
+      imageError.value = true;
+      imageLoading.value = false;
     }
-  }
+  };
 
   // Load image when visible
   const startImageLoading = () => {
     if (isVisible.value && !isLoaded.value) {
-      loadImage()
+      loadImage();
     }
-  }
+  };
 
   return {
     targetRef,
@@ -125,42 +121,42 @@ export function useLazyImage(src: string, options: LazyLoadOptions = {}) {
     imageLoading,
     isVisible,
     isLoaded,
-    loadImage: startImageLoading
-  }
+    loadImage: startImageLoading,
+  };
 }
 
 // Composable for lazy loading components
 export function useLazyComponent<T>(
   importFn: () => Promise<T>,
-  options: LazyLoadOptions = {}
+  options: LazyLoadOptions = {},
 ) {
-  const { targetRef, isVisible, isLoaded } = useLazyLoading(options)
-  const component = ref<T | null>(null)
-  const componentError = ref(false)
-  const componentLoading = ref(false)
+  const { targetRef, isVisible, isLoaded } = useLazyLoading(options);
+  const component = ref<T | null>(null);
+  const componentError = ref(false);
+  const componentLoading = ref(false);
 
   const loadComponent = async () => {
-    if (isLoaded.value || componentLoading.value) return
+    if (isLoaded.value || componentLoading.value) return;
 
-    componentLoading.value = true
-    componentError.value = false
+    componentLoading.value = true;
+    componentError.value = false;
 
     try {
-      component.value = await importFn()
-      componentLoading.value = false
+      component.value = await importFn();
+      componentLoading.value = false;
     } catch (error) {
-      componentError.value = true
-      componentLoading.value = false
-      console.error('Failed to load component:', error)
+      componentError.value = true;
+      componentLoading.value = false;
+      console.error("Failed to load component:", error);
     }
-  }
+  };
 
   // Load component when visible
   const startComponentLoading = () => {
     if (isVisible.value && !isLoaded.value) {
-      loadComponent()
+      loadComponent();
     }
-  }
+  };
 
   return {
     targetRef,
@@ -169,6 +165,6 @@ export function useLazyComponent<T>(
     componentLoading,
     isVisible,
     isLoaded,
-    loadComponent: startComponentLoading
-  }
+    loadComponent: startComponentLoading,
+  };
 }

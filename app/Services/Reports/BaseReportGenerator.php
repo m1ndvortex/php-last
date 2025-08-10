@@ -77,7 +77,24 @@ abstract class BaseReportGenerator
      */
     protected function trans(string $key, array $replace = []): string
     {
-        return __($key, $replace, $this->language);
+        // Set the app locale temporarily
+        $originalLocale = app()->getLocale();
+        app()->setLocale($this->language);
+        
+        $translation = __($key, $replace);
+        
+        // Restore original locale
+        app()->setLocale($originalLocale);
+        
+        // If translation failed, return a fallback
+        if ($translation === $key) {
+            // Try to get a simple translation without the reports prefix
+            $simpleKey = str_replace('reports.', '', $key);
+            $simpleTranslation = ucwords(str_replace('_', ' ', $simpleKey));
+            return $simpleTranslation;
+        }
+        
+        return $translation;
     }
 
     /**

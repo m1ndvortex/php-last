@@ -36,7 +36,9 @@ export const useSettingsStore = defineStore("settings", () => {
   const securitySettings = computed(() => settings.value?.security || null);
   const backupSettings = computed(() => settings.value?.backup || null);
   const auditSettings = computed(() => settings.value?.audit || null);
-  const notificationSettings = computed(() => settings.value?.notifications || null);
+  const notificationSettings = computed(
+    () => settings.value?.notifications || null,
+  );
 
   // Actions
   const fetchSettings = async () => {
@@ -56,20 +58,30 @@ export const useSettingsStore = defineStore("settings", () => {
     }
   };
 
-  const updateBusinessConfig = async (config: Partial<BusinessConfiguration>) => {
+  const updateBusinessConfig = async (
+    config: Partial<BusinessConfiguration>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put("/api/config/business-info", config);
-      
+      const response = await apiService.put(
+        "/api/config/business-info",
+        config,
+      );
+
       if (settings.value) {
-        settings.value.business = { ...settings.value.business, ...response.data.data };
+        settings.value.business = {
+          ...settings.value.business,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update business configuration";
+      error.value =
+        err.response?.data?.message ||
+        "Failed to update business configuration";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -84,7 +96,9 @@ export const useSettingsStore = defineStore("settings", () => {
       const response = await apiService.get("/api/config/pricing-percentages");
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to fetch default pricing percentages";
+      error.value =
+        err.response?.data?.message ||
+        "Failed to fetch default pricing percentages";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -100,10 +114,15 @@ export const useSettingsStore = defineStore("settings", () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put("/api/config/pricing-percentages", percentages);
+      const response = await apiService.put(
+        "/api/config/pricing-percentages",
+        percentages,
+      );
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update default pricing percentages";
+      error.value =
+        err.response?.data?.message ||
+        "Failed to update default pricing percentages";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -118,7 +137,8 @@ export const useSettingsStore = defineStore("settings", () => {
       const response = await apiService.get("/api/config/all");
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to fetch all configurations";
+      error.value =
+        err.response?.data?.message || "Failed to fetch all configurations";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -131,54 +151,70 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       const response = await apiService.put("/api/settings/theme", theme);
-      
+
       if (settings.value) {
-        settings.value.theme = { ...settings.value.theme, ...response.data.data };
+        settings.value.theme = {
+          ...settings.value.theme,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update theme settings";
+      error.value =
+        err.response?.data?.message || "Failed to update theme settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateLanguageSettings = async (language: Partial<LanguageSettings>) => {
+  const updateLanguageSettings = async (
+    language: Partial<LanguageSettings>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
       const response = await apiService.put("/api/settings/language", language);
-      
+
       if (settings.value) {
-        settings.value.language = { ...settings.value.language, ...response.data.data };
+        settings.value.language = {
+          ...settings.value.language,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update language settings";
+      error.value =
+        err.response?.data?.message || "Failed to update language settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateSecuritySettings = async (security: Partial<SecuritySettings>) => {
+  const updateSecuritySettings = async (
+    security: Partial<SecuritySettings>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
       const response = await apiService.put("/api/settings/security", security);
-      
+
       if (settings.value) {
-        settings.value.security = { ...settings.value.security, ...response.data.data };
+        settings.value.security = {
+          ...settings.value.security,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update security settings";
+      error.value =
+        err.response?.data?.message || "Failed to update security settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -191,14 +227,18 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       const response = await apiService.put("/api/settings/backup", backup);
-      
+
       if (settings.value) {
-        settings.value.backup = { ...settings.value.backup, ...response.data.data };
+        settings.value.backup = {
+          ...settings.value.backup,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update backup settings";
+      error.value =
+        err.response?.data?.message || "Failed to update backup settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -211,34 +251,47 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       const response = await apiService.put("/api/settings/audit", audit);
-      
+
       if (settings.value) {
-        settings.value.audit = { ...settings.value.audit, ...response.data.data };
+        settings.value.audit = {
+          ...settings.value.audit,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update audit settings";
+      error.value =
+        err.response?.data?.message || "Failed to update audit settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateNotificationSettings = async (notifications: Partial<NotificationSettings>) => {
+  const updateNotificationSettings = async (
+    notifications: Partial<NotificationSettings>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put("/api/settings/notifications", notifications);
-      
+      const response = await apiService.put(
+        "/api/settings/notifications",
+        notifications,
+      );
+
       if (settings.value) {
-        settings.value.notifications = { ...settings.value.notifications, ...response.data.data };
+        settings.value.notifications = {
+          ...settings.value.notifications,
+          ...response.data.data,
+        };
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update notification settings";
+      error.value =
+        err.response?.data?.message || "Failed to update notification settings";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -273,7 +326,8 @@ export const useSettingsStore = defineStore("settings", () => {
 
       return { success: true };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to fetch permissions";
+      error.value =
+        err.response?.data?.message || "Failed to fetch permissions";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -303,7 +357,7 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       const response = await apiService.put(`/api/roles/${id}`, roleData);
-      const index = roles.value.findIndex(role => role.id === id);
+      const index = roles.value.findIndex((role) => role.id === id);
       if (index !== -1) {
         roles.value[index] = response.data.data;
       }
@@ -323,7 +377,7 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       await apiService.delete(`/api/roles/${id}`);
-      roles.value = roles.value.filter(role => role.id !== id);
+      roles.value = roles.value.filter((role) => role.id !== id);
 
       return { success: true };
     } catch (err: any) {
@@ -345,44 +399,60 @@ export const useSettingsStore = defineStore("settings", () => {
 
       return { success: true };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to fetch message templates";
+      error.value =
+        err.response?.data?.message || "Failed to fetch message templates";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const createMessageTemplate = async (templateData: Partial<MessageTemplate>) => {
+  const createMessageTemplate = async (
+    templateData: Partial<MessageTemplate>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.post("/api/message-templates", templateData);
+      const response = await apiService.post(
+        "/api/message-templates",
+        templateData,
+      );
       messageTemplates.value.push(response.data.data);
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to create message template";
+      error.value =
+        err.response?.data?.message || "Failed to create message template";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateMessageTemplate = async (id: number, templateData: Partial<MessageTemplate>) => {
+  const updateMessageTemplate = async (
+    id: number,
+    templateData: Partial<MessageTemplate>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put(`/api/message-templates/${id}`, templateData);
-      const index = messageTemplates.value.findIndex(template => template.id === id);
+      const response = await apiService.put(
+        `/api/message-templates/${id}`,
+        templateData,
+      );
+      const index = messageTemplates.value.findIndex(
+        (template) => template.id === id,
+      );
       if (index !== -1) {
         messageTemplates.value[index] = response.data.data;
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update message template";
+      error.value =
+        err.response?.data?.message || "Failed to update message template";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -395,11 +465,14 @@ export const useSettingsStore = defineStore("settings", () => {
       error.value = null;
 
       await apiService.delete(`/api/message-templates/${id}`);
-      messageTemplates.value = messageTemplates.value.filter(template => template.id !== id);
+      messageTemplates.value = messageTemplates.value.filter(
+        (template) => template.id !== id,
+      );
 
       return { success: true };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to delete message template";
+      error.value =
+        err.response?.data?.message || "Failed to delete message template";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -415,7 +488,9 @@ export const useSettingsStore = defineStore("settings", () => {
       const response = await apiService.post("/api/auth/2fa/setup", { method });
       return { success: true, data: response.data.data as TwoFactorSetup };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to setup two-factor authentication";
+      error.value =
+        err.response?.data?.message ||
+        "Failed to setup two-factor authentication";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -430,7 +505,8 @@ export const useSettingsStore = defineStore("settings", () => {
       const response = await apiService.post("/api/auth/2fa/verify", { code });
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to verify two-factor code";
+      error.value =
+        err.response?.data?.message || "Failed to verify two-factor code";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -445,7 +521,9 @@ export const useSettingsStore = defineStore("settings", () => {
       await apiService.post("/api/auth/2fa/disable");
       return { success: true };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to disable two-factor authentication";
+      error.value =
+        err.response?.data?.message ||
+        "Failed to disable two-factor authentication";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -458,7 +536,9 @@ export const useSettingsStore = defineStore("settings", () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.get("/api/audit-logs", { params: filters });
+      const response = await apiService.get("/api/audit-logs", {
+        params: filters,
+      });
       auditLogs.value = response.data.data;
 
       return { success: true };
@@ -470,7 +550,10 @@ export const useSettingsStore = defineStore("settings", () => {
     }
   };
 
-  const exportAuditLogs = async (format: "json" | "csv" | "xml", filters?: Record<string, any>) => {
+  const exportAuditLogs = async (
+    format: "json" | "csv" | "xml",
+    filters?: Record<string, any>,
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
@@ -482,7 +565,8 @@ export const useSettingsStore = defineStore("settings", () => {
 
       return { success: true, data: response.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to export audit logs";
+      error.value =
+        err.response?.data?.message || "Failed to export audit logs";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -500,27 +584,37 @@ export const useSettingsStore = defineStore("settings", () => {
 
       return { success: true };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to fetch login anomalies";
+      error.value =
+        err.response?.data?.message || "Failed to fetch login anomalies";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateAnomalyStatus = async (id: number, status: "approved" | "blocked") => {
+  const updateAnomalyStatus = async (
+    id: number,
+    status: "approved" | "blocked",
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put(`/api/security/login-anomalies/${id}`, { status });
-      const index = loginAnomalies.value.findIndex(anomaly => anomaly.id === id);
+      const response = await apiService.put(
+        `/api/security/login-anomalies/${id}`,
+        { status },
+      );
+      const index = loginAnomalies.value.findIndex(
+        (anomaly) => anomaly.id === id,
+      );
       if (index !== -1) {
         loginAnomalies.value[index] = response.data.data;
       }
 
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to update anomaly status";
+      error.value =
+        err.response?.data?.message || "Failed to update anomaly status";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -551,7 +645,8 @@ export const useSettingsStore = defineStore("settings", () => {
       const response = await apiService.post("/api/backups/test-connection");
       return { success: true, data: response.data.data };
     } catch (err: any) {
-      error.value = err.response?.data?.message || "Failed to test backup connection";
+      error.value =
+        err.response?.data?.message || "Failed to test backup connection";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;

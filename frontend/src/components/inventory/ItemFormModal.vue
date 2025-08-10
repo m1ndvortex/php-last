@@ -56,10 +56,17 @@
                 ]"
                 :placeholder="getNamePlaceholder()"
               />
-              <p v-if="!form.name && selectedSubcategory" class="mt-1 text-xs text-blue-600 dark:text-blue-400">
-                {{ $t("inventory.name_auto_from_category", { 
-                  category: selectedSubcategory.localized_name || selectedSubcategory.name 
-                }) }}
+              <p
+                v-if="!form.name && selectedSubcategory"
+                class="mt-1 text-xs text-blue-600 dark:text-blue-400"
+              >
+                {{
+                  $t("inventory.name_auto_from_category", {
+                    category:
+                      selectedSubcategory.localized_name ||
+                      selectedSubcategory.name,
+                  })
+                }}
               </p>
               <p
                 v-if="errors.name"
@@ -124,13 +131,16 @@
                 @change="onMainCategoryChange"
                 class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               >
-                <option value="">{{ $t("inventory.categories.select_main_category") }}</option>
+                <option value="">
+                  {{ $t("inventory.categories.select_main_category") }}
+                </option>
                 <option
                   v-for="category in mainCategories"
                   :key="category.id"
                   :value="category.id"
                 >
-                  <span v-if="category.image_path">🖼️ </span>{{ category.localized_name || category.name }}
+                  <span v-if="category.image_path">🖼️ </span
+                  >{{ category.localized_name || category.name }}
                 </option>
               </select>
             </div>
@@ -145,22 +155,33 @@
               <select
                 v-model="form.category_id"
                 @change="onSubcategoryChange"
-                :disabled="!form.main_category_id || availableSubcategories.length === 0"
+                :disabled="
+                  !form.main_category_id || availableSubcategories.length === 0
+                "
                 class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">{{ $t("inventory.categories.select_subcategory") }}</option>
+                <option value="">
+                  {{ $t("inventory.categories.select_subcategory") }}
+                </option>
                 <option
                   v-for="subcategory in availableSubcategories"
                   :key="subcategory.id"
                   :value="subcategory.id"
                 >
-                  <span v-if="subcategory.image_path">🖼️ </span>{{ subcategory.localized_name || subcategory.name }}
+                  <span v-if="subcategory.image_path">🖼️ </span
+                  >{{ subcategory.localized_name || subcategory.name }}
                 </option>
               </select>
-              <p v-if="!form.main_category_id" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p
+                v-if="!form.main_category_id"
+                class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+              >
                 {{ $t("inventory.categories.select_main_first") }}
               </p>
-              <p v-else-if="availableSubcategories.length === 0" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p
+                v-else-if="availableSubcategories.length === 0"
+                class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+              >
                 {{ $t("inventory.categories.no_subcategories") }}
               </p>
             </div>
@@ -203,8 +224,12 @@
               >
                 {{ $t("inventory.categories.category_path") }}
               </label>
-              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600">
-                <span class="text-sm text-gray-900 dark:text-white">{{ categoryPath }}</span>
+              <div
+                class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600"
+              >
+                <span class="text-sm text-gray-900 dark:text-white">{{
+                  categoryPath
+                }}</span>
               </div>
             </div>
 
@@ -387,13 +412,25 @@
                 min="0"
                 max="24"
                 class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                :placeholder="selectedCategory?.default_gold_purity ? selectedCategory.default_gold_purity.toString() : '18.000'"
+                :placeholder="
+                  selectedCategory?.default_gold_purity
+                    ? selectedCategory.default_gold_purity.toString()
+                    : '18.000'
+                "
               />
-              <p v-if="selectedCategory?.default_gold_purity" class="mt-1 text-xs text-blue-600 dark:text-blue-400">
-                {{ $t("inventory.categories.default_from_category", { 
-                  purity: formatGoldPurity(selectedCategory.default_gold_purity),
-                  category: selectedCategory.localized_name || selectedCategory.name 
-                }) }}
+              <p
+                v-if="selectedCategory?.default_gold_purity"
+                class="mt-1 text-xs text-blue-600 dark:text-blue-400"
+              >
+                {{
+                  $t("inventory.categories.default_from_category", {
+                    purity: formatGoldPurity(
+                      selectedCategory.default_gold_purity,
+                    ),
+                    category:
+                      selectedCategory.localized_name || selectedCategory.name,
+                  })
+                }}
               </p>
               <p v-else class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {{ $t("inventory.gold_purity_help") }}
@@ -682,25 +719,29 @@ const form = reactive({
 const isEdit = computed(() => props.isEdit && props.item);
 
 // Get main categories (categories without parent)
-const mainCategories = computed(() => 
-  inventoryStore.categories.filter(category => !category.parent_id)
+const mainCategories = computed(() =>
+  inventoryStore.categories.filter((category) => !category.parent_id),
 );
 
 // Get subcategories for selected main category
 const availableSubcategories = computed(() => {
   if (!form.main_category_id) return [];
   return inventoryStore.categories.filter(
-    category => category.parent_id === parseInt(form.main_category_id)
+    (category) => category.parent_id === parseInt(form.main_category_id),
   );
 });
 
 // Get selected category for gold purity auto-population
 const selectedCategory = computed(() => {
   if (form.category_id) {
-    return inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
+    return inventoryStore.categories.find(
+      (cat) => cat.id === parseInt(form.category_id),
+    );
   }
   if (form.main_category_id) {
-    return inventoryStore.categories.find(cat => cat.id === parseInt(form.main_category_id));
+    return inventoryStore.categories.find(
+      (cat) => cat.id === parseInt(form.main_category_id),
+    );
   }
   return null;
 });
@@ -708,7 +749,9 @@ const selectedCategory = computed(() => {
 // Get selected subcategory for name auto-population
 const selectedSubcategory = computed(() => {
   if (form.category_id) {
-    return inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
+    return inventoryStore.categories.find(
+      (cat) => cat.id === parseInt(form.category_id),
+    );
   }
   return null;
 });
@@ -717,14 +760,18 @@ const selectedSubcategory = computed(() => {
 const categoryPath = computed(() => {
   const path = [];
   if (form.main_category_id) {
-    const mainCat = inventoryStore.categories.find(cat => cat.id === parseInt(form.main_category_id));
+    const mainCat = inventoryStore.categories.find(
+      (cat) => cat.id === parseInt(form.main_category_id),
+    );
     if (mainCat) path.push(mainCat.localized_name || mainCat.name);
   }
   if (form.category_id && form.category_id !== form.main_category_id) {
-    const subCat = inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
+    const subCat = inventoryStore.categories.find(
+      (cat) => cat.id === parseInt(form.category_id),
+    );
     if (subCat) path.push(subCat.localized_name || subCat.name);
   }
-  return path.join(' > ');
+  return path.join(" > ");
 });
 
 // Methods
@@ -758,7 +805,9 @@ const removeImage = (index: number) => {
 // Get name placeholder based on selected subcategory
 const getNamePlaceholder = () => {
   if (selectedSubcategory.value) {
-    return selectedSubcategory.value.localized_name || selectedSubcategory.value.name;
+    return (
+      selectedSubcategory.value.localized_name || selectedSubcategory.value.name
+    );
   }
   return "Enter item name";
 };
@@ -767,9 +816,11 @@ const getNamePlaceholder = () => {
 const onMainCategoryChange = () => {
   // Clear subcategory when main category changes
   form.category_id = "";
-  
+
   // Auto-populate gold purity from main category if available
-  const mainCategory = inventoryStore.categories.find(cat => cat.id === parseInt(form.main_category_id));
+  const mainCategory = inventoryStore.categories.find(
+    (cat) => cat.id === parseInt(form.main_category_id),
+  );
   if (mainCategory?.default_gold_purity && !form.gold_purity) {
     form.gold_purity = mainCategory.default_gold_purity;
   }
@@ -777,11 +828,13 @@ const onMainCategoryChange = () => {
 
 const onSubcategoryChange = () => {
   // Auto-populate gold purity from subcategory if available
-  const subcategory = inventoryStore.categories.find(cat => cat.id === parseInt(form.category_id));
+  const subcategory = inventoryStore.categories.find(
+    (cat) => cat.id === parseInt(form.category_id),
+  );
   if (subcategory?.default_gold_purity) {
     form.gold_purity = subcategory.default_gold_purity;
   }
-  
+
   // Auto-populate name fields if they're empty
   if (!form.name && subcategory) {
     form.name = subcategory.name;
@@ -794,7 +847,8 @@ const onSubcategoryChange = () => {
 // Format gold purity for display
 const formatGoldPurity = (purity: number | string): string => {
   // For now, always use English format. Can be enhanced later with i18n
-  const numericPurity = typeof purity === 'string' ? parseFloat(purity) : purity;
+  const numericPurity =
+    typeof purity === "string" ? parseFloat(purity) : purity;
   return `${numericPurity.toFixed(1)}K`;
 };
 
@@ -809,8 +863,8 @@ const handleSubmit = async () => {
     Object.entries(form).forEach(([key, value]) => {
       if (value !== null && value !== "") {
         // Handle boolean fields properly
-        if (typeof value === 'boolean') {
-          formData.append(key, value ? '1' : '0');
+        if (typeof value === "boolean") {
+          formData.append(key, value ? "1" : "0");
         } else {
           formData.append(key, value.toString());
         }
@@ -819,7 +873,7 @@ const handleSubmit = async () => {
 
     // If no subcategory is selected, use main category as category_id
     if (!form.category_id && form.main_category_id) {
-      formData.append('category_id', form.main_category_id.toString());
+      formData.append("category_id", form.main_category_id.toString());
     }
 
     // Add images
@@ -885,20 +939,20 @@ onMounted(async () => {
   try {
     // Ensure categories and locations are loaded
     const promises = [];
-    
+
     if (inventoryStore.categories.length === 0) {
       promises.push(inventoryStore.fetchCategories());
     }
-    
+
     if (inventoryStore.locations.length === 0) {
       promises.push(inventoryStore.fetchLocations());
     }
-    
+
     await Promise.all(promises);
-    
+
     initializeForm();
   } catch (error) {
-    console.error('Failed to load form data:', error);
+    console.error("Failed to load form data:", error);
     // Show user-friendly error message
     // You can add a toast notification here if available
   }

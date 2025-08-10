@@ -43,7 +43,8 @@
               {{ $t("common.coming_soon") }}
             </h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Batch invoice creation feature is not yet implemented. This will allow you to create multiple invoices from templates.
+              Batch invoice creation feature is not yet implemented. This will
+              allow you to create multiple invoices from templates.
             </p>
           </div>
         </div>
@@ -56,7 +57,9 @@
             disabled
             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-400 text-base font-medium text-white cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {{ $t("invoices.create_invoices") }} ({{ $t("common.coming_soon") }})
+            {{ $t("invoices.create_invoices") }} ({{
+              $t("common.coming_soon")
+            }})
           </button>
           <button
             @click="$emit('close')"

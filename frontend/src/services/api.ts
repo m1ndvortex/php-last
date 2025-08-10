@@ -331,11 +331,9 @@ export const apiService = {
         headers: { "Content-Type": "multipart/form-data" },
       }),
 
-    deleteCategory: (id: number) =>
-      api.delete(`api/categories/${id}`),
+    deleteCategory: (id: number) => api.delete(`api/categories/${id}`),
 
-    reorderCategories: (data: any) =>
-      api.post("api/categories/reorder", data),
+    reorderCategories: (data: any) => api.post("api/categories/reorder", data),
 
     getCategoryHierarchy: () => api.get("api/categories/hierarchy"),
 
@@ -347,8 +345,7 @@ export const apiService = {
     removeCategoryImage: (id: number) =>
       api.delete(`api/categories/${id}/image`),
 
-    getGoldPurityOptions: () =>
-      api.get("api/categories/gold-purity-options"),
+    getGoldPurityOptions: () => api.get("api/categories/gold-purity-options"),
 
     getLocations: () => api.get("api/locations"),
 
@@ -374,8 +371,7 @@ export const apiService = {
 
     startAudit: (id: number) => api.post(`api/stock-audits/${id}/start`),
 
-    completeAudit: (id: number) =>
-      api.post(`api/stock-audits/${id}/complete`),
+    completeAudit: (id: number) => api.post(`api/stock-audits/${id}/complete`),
 
     updateAuditItem: (auditId: number, itemId: number, data: any) =>
       api.put(`api/stock-audits/${auditId}/items/${itemId}`, data),
@@ -388,13 +384,11 @@ export const apiService = {
 
     createBOM: (data: any) => api.post("api/bom", data),
 
-    updateBOM: (id: number, data: any) =>
-      api.put(`api/bom/${id}`, data),
+    updateBOM: (id: number, data: any) => api.put(`api/bom/${id}`, data),
 
     deleteBOM: (id: number) => api.delete(`api/bom/${id}`),
 
-    getBOMForItem: (itemId: number) =>
-      api.get(`api/inventory/${itemId}/bom`),
+    getBOMForItem: (itemId: number) => api.get(`api/inventory/${itemId}/bom`),
 
     // Reports
     getLowStockItems: () => api.get("api/inventory/low-stock"),
@@ -492,15 +486,18 @@ export const apiService = {
 
     getScheduled: () => api.get("api/reports/scheduled"),
 
-    deleteScheduled: (id: number) =>
-      api.delete(`api/reports/scheduled/${id}`),
+    deleteScheduled: (id: number) => api.delete(`api/reports/scheduled/${id}`),
   },
 };
 
 // Export direct HTTP methods
-export const get = (url: string, config?: AxiosRequestConfig) => api.get(url, config);
-export const post = (url: string, data?: any, config?: AxiosRequestConfig) => api.post(url, data, config);
-export const put = (url: string, data?: any, config?: AxiosRequestConfig) => api.put(url, data, config);
-export const del = (url: string, config?: AxiosRequestConfig) => api.delete(url, config);
+export const get = (url: string, config?: AxiosRequestConfig) =>
+  api.get(url, config);
+export const post = (url: string, data?: any, config?: AxiosRequestConfig) =>
+  api.post(url, data, config);
+export const put = (url: string, data?: any, config?: AxiosRequestConfig) =>
+  api.put(url, data, config);
+export const del = (url: string, config?: AxiosRequestConfig) =>
+  api.delete(url, config);
 
 export default api;

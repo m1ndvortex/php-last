@@ -197,7 +197,11 @@ export interface LoginAnomaly {
   user_agent: string;
   location?: string;
   risk_score: number;
-  anomaly_type: "unusual_location" | "unusual_time" | "unusual_device" | "multiple_attempts";
+  anomaly_type:
+    | "unusual_location"
+    | "unusual_time"
+    | "unusual_device"
+    | "multiple_attempts";
   status: "pending" | "approved" | "blocked";
   created_at: string;
   user: {

@@ -11,7 +11,10 @@
     </div>
 
     <!-- Summary Cards -->
-    <div v-if="report.summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div
+      v-if="report.summary"
+      class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
+    >
       <div
         v-for="(item, key) in report.summary"
         :key="key"
@@ -23,14 +26,21 @@
         <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
           {{ item.formatted || formatValue(item.value) }}
         </p>
-        <p v-if="item.change !== undefined" :class="getChangeClass(item.change)">
-          {{ item.change > 0 ? '+' : '' }}{{ item.change.toFixed(1) }}% vs previous period
+        <p
+          v-if="item.change !== undefined"
+          :class="getChangeClass(item.change)"
+        >
+          {{ item.change > 0 ? "+" : "" }}{{ item.change.toFixed(1) }}% vs
+          previous period
         </p>
       </div>
     </div>
 
     <!-- Charts -->
-    <div v-if="report.charts" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div
+      v-if="report.charts"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
+    >
       <div
         v-for="(chart, chartKey) in report.charts"
         :key="chartKey"
@@ -39,41 +49,69 @@
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
           {{ chart.title }}
         </h4>
-        <ChartComponent :type="chart.type" :data="chart.datasets || chart.data || []" :title="chart.title" />
+        <!-- Temporarily disabled chart rendering -->
+        <div class="h-64 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded">
+          <div class="text-center">
+            <i :class="getChartIcon(chart.type)" class="text-4xl text-gray-400 mb-2"></i>
+            <p class="text-sm text-gray-500">{{ chart.title }}</p>
+            <p class="text-xs text-gray-400">Chart data available</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Data Tables -->
     <div v-if="report.data" class="space-y-6">
       <!-- Top Customers -->
-      <div v-if="report.data.top_customers && report.data.top_customers.length > 0">
+      <div
+        v-if="report.data.top_customers && report.data.top_customers.length > 0"
+      >
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
-          {{ $t('reports.top_customers') }}
+          {{ $t("reports.top_customers") }}
         </h4>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.customer') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.customer") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.total_sales') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.total_sales") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.orders') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.orders") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="customer in report.data.top_customers" :key="customer.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
+              <tr
+                v-for="customer in report.data.top_customers"
+                :key="customer.id"
+              >
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ customer.name }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatCurrency(customer.total) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ customer.count }}
                 </td>
               </tr>
@@ -83,34 +121,52 @@
       </div>
 
       <!-- Top Products -->
-      <div v-if="report.data.top_products && report.data.top_products.length > 0">
+      <div
+        v-if="report.data.top_products && report.data.top_products.length > 0"
+      >
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
-          {{ $t('reports.top_products') }}
+          {{ $t("reports.top_products") }}
         </h4>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.product') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.product") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.quantity') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.quantity") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.total_sales') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.total_sales") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
               <tr v-for="product in report.data.top_products" :key="product.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ product.name }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ product.quantity }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatCurrency(product.total) }}
                 </td>
               </tr>
@@ -122,32 +178,48 @@
       <!-- Daily Sales -->
       <div v-if="report.data.daily_sales && report.data.daily_sales.length > 0">
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
-          {{ $t('reports.daily_sales') }}
+          {{ $t("reports.daily_sales") }}
         </h4>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.date') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.date") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.total_sales') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.total_sales") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.orders') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.orders") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
               <tr v-for="day in report.data.daily_sales" :key="day.date">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatDate(day.date) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatCurrency(day.total) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ day.count }}
                 </td>
               </tr>
@@ -159,41 +231,63 @@
       <!-- Detailed Sales Data -->
       <div v-if="report.subtype === 'detailed' && report.data.length > 0">
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
-          {{ $t('reports.detailed_sales_data') }}
+          {{ $t("reports.detailed_sales_data") }}
         </h4>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.invoice_number') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.invoice_number") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.date') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.date") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.customer') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.customer") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.amount') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.amount") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                  {{ $t('reports.status') }}
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                >
+                  {{ $t("reports.status") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
               <tr v-for="invoice in report.data" :key="invoice.invoice_number">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ invoice.invoice_number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatDate(invoice.date) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ invoice.customer }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatCurrency(invoice.total_amount) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -211,66 +305,79 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import ChartComponent from '@/components/ui/ChartComponent.vue'
+import { useI18n } from "vue-i18n";
+import ChartComponent from "@/components/ui/ChartComponent.vue";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 interface Props {
-  report: any
+  report: any;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const formatLabel = (key: string | number): string => {
-  return String(key).replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-}
+  return String(key)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (l: string) => l.toUpperCase());
+};
 
 const formatValue = (value: any): string => {
-  if (typeof value === 'number') {
-    return value.toLocaleString()
+  if (typeof value === "number") {
+    return value.toLocaleString();
   }
-  return String(value)
-}
+  return String(value);
+};
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount)
-}
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString()
-}
+  return new Date(dateString).toLocaleDateString();
+};
 
 const formatDateRange = (dateRange: { start: string; end: string }): string => {
-  const start = new Date(dateRange.start).toLocaleDateString()
-  const end = new Date(dateRange.end).toLocaleDateString()
-  return `${start} - ${end}`
-}
+  const start = new Date(dateRange.start).toLocaleDateString();
+  const end = new Date(dateRange.end).toLocaleDateString();
+  return `${start} - ${end}`;
+};
 
 const getChangeClass = (change: number): string => {
-  const baseClass = 'text-xs font-medium'
+  const baseClass = "text-xs font-medium";
   if (change > 0) {
-    return `${baseClass} text-green-600 dark:text-green-400`
+    return `${baseClass} text-green-600 dark:text-green-400`;
   } else if (change < 0) {
-    return `${baseClass} text-red-600 dark:text-red-400`
+    return `${baseClass} text-red-600 dark:text-red-400`;
   }
-  return `${baseClass} text-gray-600 dark:text-gray-400`
-}
+  return `${baseClass} text-gray-600 dark:text-gray-400`;
+};
 
 const getStatusClass = (status: string): string => {
-  const baseClass = 'px-2 py-1 text-xs font-medium rounded-full'
+  const baseClass = "px-2 py-1 text-xs font-medium rounded-full";
   switch (status) {
-    case 'paid':
-      return `${baseClass} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`
-    case 'pending':
-      return `${baseClass} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`
-    case 'overdue':
-      return `${baseClass} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`
+    case "paid":
+      return `${baseClass} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`;
+    case "pending":
+      return `${baseClass} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`;
+    case "overdue":
+      return `${baseClass} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`;
     default:
-      return `${baseClass} bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200`
+      return `${baseClass} bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200`;
   }
-}
+};
+
+const getChartIcon = (type: string): string => {
+  const icons = {
+    bar: 'fas fa-chart-bar',
+    line: 'fas fa-chart-line',
+    pie: 'fas fa-chart-pie',
+    area: 'fas fa-chart-area',
+    doughnut: 'fas fa-chart-pie'
+  };
+  return icons[type] || 'fas fa-chart-bar';
+};
 </script>

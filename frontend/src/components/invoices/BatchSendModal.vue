@@ -43,7 +43,8 @@
               {{ $t("common.coming_soon") }}
             </h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Batch invoice sending feature is not yet implemented. This will allow you to send multiple invoices via email, WhatsApp, or SMS.
+              Batch invoice sending feature is not yet implemented. This will
+              allow you to send multiple invoices via email, WhatsApp, or SMS.
             </p>
           </div>
         </div>

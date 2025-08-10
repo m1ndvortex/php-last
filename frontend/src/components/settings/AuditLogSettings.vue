@@ -28,7 +28,10 @@
               v-model="auditForm.enabled"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label for="audit_enabled" class="ml-2 block text-sm text-gray-900 dark:text-white">
+            <label
+              for="audit_enabled"
+              class="ml-2 block text-sm text-gray-900 dark:text-white"
+            >
               {{ $t("settings.audit.enable_audit_logging") }}
             </label>
           </div>
@@ -37,7 +40,10 @@
         <div v-if="auditForm.enabled" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label for="log_level" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="log_level"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.audit.log_level") }}
               </label>
               <select
@@ -46,8 +52,12 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
               >
                 <option value="basic">{{ $t("settings.audit.basic") }}</option>
-                <option value="detailed">{{ $t("settings.audit.detailed") }}</option>
-                <option value="verbose">{{ $t("settings.audit.verbose") }}</option>
+                <option value="detailed">
+                  {{ $t("settings.audit.detailed") }}
+                </option>
+                <option value="verbose">
+                  {{ $t("settings.audit.verbose") }}
+                </option>
               </select>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {{ $t(`settings.audit.${auditForm.log_level}_description`) }}
@@ -55,7 +65,10 @@
             </div>
 
             <div>
-              <label for="retention_days" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="retention_days"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.audit.retention_days") }}
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
@@ -69,7 +82,9 @@
                   :placeholder="$t('settings.audit.retention_placeholder')"
                 />
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span class="text-gray-500 sm:text-sm">{{ $t("common.days") }}</span>
+                  <span class="text-gray-500 sm:text-sm">{{
+                    $t("common.days")
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -77,7 +92,9 @@
 
           <!-- Log Types -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+            >
               {{ $t("settings.audit.log_types") }}
             </label>
             <div class="space-y-2">
@@ -157,7 +174,10 @@
 
           <!-- Export Format -->
           <div>
-            <label for="export_format" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="export_format"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.audit.export_format") }}
             </label>
             <select
@@ -202,7 +222,10 @@
         <!-- Filters -->
         <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div>
-            <label for="filter_action" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="filter_action"
+              class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.audit.filter_action") }}
             </label>
             <input
@@ -215,7 +238,10 @@
           </div>
 
           <div>
-            <label for="filter_user" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="filter_user"
+              class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.audit.filter_user") }}
             </label>
             <input
@@ -228,7 +254,10 @@
           </div>
 
           <div>
-            <label for="filter_date_from" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="filter_date_from"
+              class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.audit.filter_date_from") }}
             </label>
             <input
@@ -240,7 +269,10 @@
           </div>
 
           <div>
-            <label for="filter_date_to" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="filter_date_to"
+              class="block text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.audit.filter_date_to") }}
             </label>
             <input
@@ -253,55 +285,105 @@
         </div>
 
         <!-- Audit Logs Table -->
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+        <div
+          class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg"
+        >
+          <table
+            class="min-w-full divide-y divide-gray-300 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   {{ $t("settings.audit.timestamp") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   {{ $t("settings.audit.user") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   {{ $t("settings.audit.action") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   {{ $t("settings.audit.ip_address") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   {{ $t("common.actions") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
               <tr v-if="isLoadingLogs">
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td
+                  colspan="5"
+                  class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
                   <div class="flex items-center justify-center">
-                    <svg class="animate-spin h-5 w-5 text-gray-400 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      class="animate-spin h-5 w-5 text-gray-400 mr-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     {{ $t("common.loading") }}
                   </div>
                 </td>
               </tr>
               <tr v-else-if="filteredAuditLogs.length === 0">
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td
+                  colspan="5"
+                  class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
                   {{ $t("settings.audit.no_logs") }}
                 </td>
               </tr>
-              <tr v-else v-for="log in filteredAuditLogs.slice(0, 10)" :key="log.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              <tr
+                v-else
+                v-for="log in filteredAuditLogs.slice(0, 10)"
+                :key="log.id"
+              >
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatDate(log.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ log.user?.name || $t("settings.audit.system") }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ log.action }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
                   {{ log.ip_address }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -326,9 +408,25 @@
           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="isLoading" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             {{ $t("common.saving") }}
           </span>
@@ -351,11 +449,13 @@
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
             {{ $t("settings.audit.log_details") }}
           </h3>
-          
+
           <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.audit.timestamp") }}
                 </label>
                 <p class="text-sm text-gray-900 dark:text-white">
@@ -363,7 +463,9 @@
                 </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.audit.user") }}
                 </label>
                 <p class="text-sm text-gray-900 dark:text-white">
@@ -371,7 +473,9 @@
                 </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.audit.action") }}
                 </label>
                 <p class="text-sm text-gray-900 dark:text-white">
@@ -379,7 +483,9 @@
                 </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.audit.ip_address") }}
                 </label>
                 <p class="text-sm text-gray-900 dark:text-white">
@@ -389,11 +495,16 @@
             </div>
 
             <div v-if="selectedLog.old_values || selectedLog.new_values">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 {{ $t("settings.audit.changes") }}
               </label>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <pre class="text-xs text-gray-900 dark:text-white overflow-auto">{{ formatChanges(selectedLog) }}</pre>
+                <pre
+                  class="text-xs text-gray-900 dark:text-white overflow-auto"
+                  >{{ formatChanges(selectedLog) }}</pre
+                >
               </div>
             </div>
           </div>
@@ -453,26 +564,26 @@ const filteredAuditLogs = computed(() => {
   let logs = settingsStore.auditLogs;
 
   if (logFilters.action) {
-    logs = logs.filter(log => 
-      log.action.toLowerCase().includes(logFilters.action.toLowerCase())
+    logs = logs.filter((log) =>
+      log.action.toLowerCase().includes(logFilters.action.toLowerCase()),
     );
   }
 
   if (logFilters.user) {
-    logs = logs.filter(log => 
-      log.user?.name?.toLowerCase().includes(logFilters.user.toLowerCase())
+    logs = logs.filter((log) =>
+      log.user?.name?.toLowerCase().includes(logFilters.user.toLowerCase()),
     );
   }
 
   if (logFilters.date_from) {
-    logs = logs.filter(log => 
-      new Date(log.created_at) >= new Date(logFilters.date_from)
+    logs = logs.filter(
+      (log) => new Date(log.created_at) >= new Date(logFilters.date_from),
     );
   }
 
   if (logFilters.date_to) {
-    logs = logs.filter(log => 
-      new Date(log.created_at) <= new Date(logFilters.date_to)
+    logs = logs.filter(
+      (log) => new Date(log.created_at) <= new Date(logFilters.date_to),
     );
   }
 
@@ -487,7 +598,7 @@ watch(
       Object.assign(auditForm, settings);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Watch for filter changes
@@ -497,7 +608,7 @@ watch(
     // Debounce the filter application
     // In a real implementation, you might want to add debouncing here
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Methods
@@ -507,15 +618,15 @@ const formatDate = (dateString: string) => {
 
 const formatChanges = (log: AuditLogEntry) => {
   const changes: any = {};
-  
+
   if (log.old_values) {
     changes.old = log.old_values;
   }
-  
+
   if (log.new_values) {
     changes.new = log.new_values;
   }
-  
+
   return JSON.stringify(changes, null, 2);
 };
 
@@ -541,23 +652,27 @@ const refreshAuditLogs = async () => {
 const exportAuditLogs = async () => {
   try {
     isExportingLogs.value = true;
-    
-    const result = await settingsStore.exportAuditLogs(auditForm.export_format || "json", logFilters);
-    
+
+    const result = await settingsStore.exportAuditLogs(
+      auditForm.export_format || "json",
+      logFilters,
+    );
+
     if (result.success) {
       // Create download link
-      const blob = new Blob([result.data], { 
-        type: auditForm.export_format === "csv" ? "text/csv" : "application/json" 
+      const blob = new Blob([result.data], {
+        type:
+          auditForm.export_format === "csv" ? "text/csv" : "application/json",
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `audit-logs-${new Date().toISOString().split('T')[0]}.${auditForm.export_format}`;
+      link.download = `audit-logs-${new Date().toISOString().split("T")[0]}.${auditForm.export_format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       showNotification({
         type: "success",
         title: "Export successful",
@@ -584,9 +699,9 @@ const exportAuditLogs = async () => {
 const saveAuditSettings = async () => {
   try {
     isLoading.value = true;
-    
+
     const result = await settingsStore.updateAuditSettings(auditForm);
-    
+
     if (result.success) {
       showNotification({
         type: "success",

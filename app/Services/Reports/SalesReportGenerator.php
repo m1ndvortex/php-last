@@ -146,6 +146,11 @@ class SalesReportGenerator extends BaseReportGenerator
             ];
         });
 
+        // Calculate totals
+        $totalAmount = $invoices->sum('total_amount');
+        $subtotal = $invoices->sum('subtotal');
+        $taxAmount = $invoices->sum('tax_amount');
+
         return [
             'id' => $this->reportId,
             'title' => $this->trans('reports.detailed_sales_report'),
@@ -157,17 +162,29 @@ class SalesReportGenerator extends BaseReportGenerator
             ],
             'language' => $this->language,
             'generated_at' => now()->toISOString(),
-            'summary' => $this->generateSummary($invoices, [
-                'total_amount' => ['label' => $this->trans('reports.total_sales'), 'format' => 'currency'],
-                'subtotal' => ['label' => $this->trans('reports.subtotal'), 'format' => 'currency'],
-                'tax_amount' => ['label' => $this->trans('reports.tax_amount'), 'format' => 'currency']
-            ]),
+            'summary' => [
+                'total_amount' => [
+                    'value' => $totalAmount,
+                    'formatted' => $this->formatCurrency($totalAmount),
+                    'label' => $this->trans('reports.total_sales')
+                ],
+                'subtotal' => [
+                    'value' => $subtotal,
+                    'formatted' => $this->formatCurrency($subtotal),
+                    'label' => $this->trans('reports.subtotal')
+                ],
+                'tax_amount' => [
+                    'value' => $taxAmount,
+                    'formatted' => $this->formatCurrency($taxAmount),
+                    'label' => $this->trans('reports.tax_amount')
+                ]
+            ],
             'data' => $detailedData->toArray(),
             'totals' => [
                 'count' => $invoices->count(),
-                'subtotal' => $invoices->sum('subtotal'),
-                'tax_amount' => $invoices->sum('tax_amount'),
-                'total_amount' => $invoices->sum('total_amount')
+                'subtotal' => $subtotal,
+                'tax_amount' => $taxAmount,
+                'total_amount' => $totalAmount
             ]
         ];
     }
@@ -415,12 +432,17 @@ class SalesReportGenerator extends BaseReportGenerator
         return $items->groupBy('inventory_item_id')
             ->map(function ($productItems) {
                 $item = $productItems->first();
+                $inventoryItem = $item->inventoryItem;
+                
                 return [
                     'id' => $item->inventory_item_id,
-                    'name' => $item->inventoryItem->name ?? $item->description,
-                    'quantity' => $productItems->sum('quantity'),
+                    'name' => $inventoryItem ? $inventoryItem->name : ($item->description ?? 'Unknown Product'),
+                    'quantity' => round($productItems->sum('quantity'), 2),
                     'total' => $productItems->sum('total_price')
                 ];
+            })
+            ->filter(function ($product) {
+                return $product['name'] !== 'Unknown Product' || $product['total'] > 0;
             })
             ->sortByDesc('total')
             ->take(10)

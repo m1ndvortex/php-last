@@ -43,10 +43,15 @@ export function useNotifications() {
     appStore.clearNotifications();
   };
 
-  const showNotification = (notification: { type: "success" | "error" | "warning" | "info"; title: string; message?: string; duration?: number }) => {
+  const showNotification = (notification: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message?: string;
+    duration?: number;
+  }) => {
     appStore.addNotification({
       ...notification,
-      message: notification.message || ''
+      message: notification.message || "",
     });
   };
 

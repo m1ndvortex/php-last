@@ -294,8 +294,11 @@ export function useNumberFormatter() {
    */
   const formatGoldPurity = (purity: number | string): string => {
     if (!purity) return "";
-    
-    const numValue = typeof purity === "string" ? parseFloat(toEnglishNumerals(purity)) : purity;
+
+    const numValue =
+      typeof purity === "string"
+        ? parseFloat(toEnglishNumerals(purity))
+        : purity;
     if (isNaN(numValue)) return "";
 
     if (locale.value === "fa") {
@@ -309,12 +312,16 @@ export function useNumberFormatter() {
   /**
    * Format gold purity with terminology
    */
-  const formatGoldPurityWithLabel = (purity: number | string, label?: string): string => {
+  const formatGoldPurityWithLabel = (
+    purity: number | string,
+    label?: string,
+  ): string => {
     if (!purity) return "";
-    
+
     const formattedPurity = formatGoldPurity(purity);
-    const terminology = label || (locale.value === "fa" ? "عیار طلا" : "Gold Purity");
-    
+    const terminology =
+      label || (locale.value === "fa" ? "عیار طلا" : "Gold Purity");
+
     if (locale.value === "fa") {
       return `${terminology}: ${formattedPurity}`;
     }
@@ -334,9 +341,12 @@ export function useNumberFormatter() {
       { value: 24, label: locale.value === "fa" ? "طلای ۲۴ عیار" : "24K Gold" },
     ];
 
-    return options.map(option => ({
+    return options.map((option) => ({
       ...option,
-      displayValue: locale.value === "fa" ? toPersianNumerals(option.value.toString()) : option.value.toString()
+      displayValue:
+        locale.value === "fa"
+          ? toPersianNumerals(option.value.toString())
+          : option.value.toString(),
     }));
   };
 
@@ -350,19 +360,27 @@ export function useNumberFormatter() {
 
     // Format numeric fields
     if (formatted.sort_order) {
-      formatted.sort_order_display = toPersianNumerals(formatted.sort_order.toString());
+      formatted.sort_order_display = toPersianNumerals(
+        formatted.sort_order.toString(),
+      );
     }
 
     if (formatted.item_count) {
-      formatted.item_count_display = toPersianNumerals(formatted.item_count.toString());
+      formatted.item_count_display = toPersianNumerals(
+        formatted.item_count.toString(),
+      );
     }
 
     if (formatted.subcategory_count) {
-      formatted.subcategory_count_display = toPersianNumerals(formatted.subcategory_count.toString());
+      formatted.subcategory_count_display = toPersianNumerals(
+        formatted.subcategory_count.toString(),
+      );
     }
 
     if (formatted.default_gold_purity) {
-      formatted.gold_purity_display = formatGoldPurity(formatted.default_gold_purity);
+      formatted.gold_purity_display = formatGoldPurity(
+        formatted.default_gold_purity,
+      );
     }
 
     return formatted;

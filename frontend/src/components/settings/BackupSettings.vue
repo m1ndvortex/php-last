@@ -28,7 +28,10 @@
               v-model="backupForm.auto_backup_enabled"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label for="auto_backup_enabled" class="ml-2 block text-sm text-gray-900 dark:text-white">
+            <label
+              for="auto_backup_enabled"
+              class="ml-2 block text-sm text-gray-900 dark:text-white"
+            >
               {{ $t("settings.backup.enable_auto_backup") }}
             </label>
           </div>
@@ -37,7 +40,10 @@
         <div v-if="backupForm.auto_backup_enabled" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>
-              <label for="backup_frequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="backup_frequency"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.backup.backup_frequency") }}
               </label>
               <select
@@ -46,13 +52,20 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
               >
                 <option value="daily">{{ $t("settings.backup.daily") }}</option>
-                <option value="weekly">{{ $t("settings.backup.weekly") }}</option>
-                <option value="monthly">{{ $t("settings.backup.monthly") }}</option>
+                <option value="weekly">
+                  {{ $t("settings.backup.weekly") }}
+                </option>
+                <option value="monthly">
+                  {{ $t("settings.backup.monthly") }}
+                </option>
               </select>
             </div>
 
             <div>
-              <label for="backup_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="backup_time"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.backup.backup_time") }}
               </label>
               <input
@@ -64,7 +77,10 @@
             </div>
 
             <div>
-              <label for="backup_retention" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="backup_retention"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.backup.backup_retention") }}
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
@@ -78,7 +94,9 @@
                   :placeholder="$t('settings.backup.retention_placeholder')"
                 />
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span class="text-gray-500 sm:text-sm">{{ $t("common.days") }}</span>
+                  <span class="text-gray-500 sm:text-sm">{{
+                    $t("common.days")
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -91,7 +109,7 @@
         <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
           {{ $t("settings.backup.backup_location") }}
         </h4>
-        
+
         <div class="space-y-4">
           <div class="space-y-2">
             <label class="flex items-center">
@@ -126,9 +144,15 @@
           </div>
 
           <!-- Cloud Provider Settings -->
-          <div v-if="backupForm.backup_location === 'cloud'" class="ml-6 space-y-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+          <div
+            v-if="backupForm.backup_location === 'cloud'"
+            class="ml-6 space-y-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4"
+          >
             <div>
-              <label for="cloud_provider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="cloud_provider"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.backup.cloud_provider") }}
               </label>
               <select
@@ -146,7 +170,10 @@
             <div v-if="backupForm.cloud_provider === 'aws'" class="space-y-4">
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label for="aws_access_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label
+                    for="aws_access_key"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     {{ $t("settings.backup.aws_access_key") }}
                   </label>
                   <input
@@ -154,12 +181,17 @@
                     id="aws_access_key"
                     v-model="cloudCredentials.aws_access_key_id"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                    :placeholder="$t('settings.backup.aws_access_key_placeholder')"
+                    :placeholder="
+                      $t('settings.backup.aws_access_key_placeholder')
+                    "
                   />
                 </div>
 
                 <div>
-                  <label for="aws_secret_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label
+                    for="aws_secret_key"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     {{ $t("settings.backup.aws_secret_key") }}
                   </label>
                   <input
@@ -167,12 +199,17 @@
                     id="aws_secret_key"
                     v-model="cloudCredentials.aws_secret_access_key"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                    :placeholder="$t('settings.backup.aws_secret_key_placeholder')"
+                    :placeholder="
+                      $t('settings.backup.aws_secret_key_placeholder')
+                    "
                   />
                 </div>
 
                 <div>
-                  <label for="aws_region" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label
+                    for="aws_region"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     {{ $t("settings.backup.aws_region") }}
                   </label>
                   <input
@@ -185,7 +222,10 @@
                 </div>
 
                 <div>
-                  <label for="aws_bucket" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label
+                    for="aws_bucket"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     {{ $t("settings.backup.aws_bucket") }}
                   </label>
                   <input
@@ -206,9 +246,25 @@
               class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span v-if="isTestingConnection" class="flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 {{ $t("settings.backup.testing_connection") }}
               </span>
@@ -223,7 +279,7 @@
         <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
           {{ $t("settings.backup.backup_options") }}
         </h4>
-        
+
         <div class="space-y-4">
           <label class="flex items-center">
             <input
@@ -260,7 +316,9 @@
 
           <!-- Exclude Tables -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               {{ $t("settings.backup.exclude_tables") }}
             </label>
             <div class="space-y-2">
@@ -302,9 +360,25 @@
             class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="isCreatingBackup" class="flex items-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               {{ $t("settings.backup.creating_backup") }}
             </span>
@@ -321,9 +395,25 @@
           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="isLoading" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             {{ $t("common.saving") }}
           </span>
@@ -387,16 +477,16 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Methods
 const testConnection = async () => {
   try {
     isTestingConnection.value = true;
-    
+
     const result = await settingsStore.testBackupConnection();
-    
+
     if (result.success) {
       showNotification({
         type: "success",
@@ -424,9 +514,9 @@ const testConnection = async () => {
 const createManualBackup = async () => {
   try {
     isCreatingBackup.value = true;
-    
+
     const result = await settingsStore.createBackup();
-    
+
     if (result.success) {
       showNotification({
         type: "success",
@@ -454,14 +544,15 @@ const createManualBackup = async () => {
 const saveBackupSettings = async () => {
   try {
     isLoading.value = true;
-    
+
     const settingsData = {
       ...backupForm,
-      cloud_credentials: backupForm.backup_location === "cloud" ? cloudCredentials : undefined,
+      cloud_credentials:
+        backupForm.backup_location === "cloud" ? cloudCredentials : undefined,
     };
-    
+
     const result = await settingsStore.updateBackupSettings(settingsData);
-    
+
     if (result.success) {
       showNotification({
         type: "success",

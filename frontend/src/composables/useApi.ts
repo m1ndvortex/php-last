@@ -61,19 +61,27 @@ export function useApi<T = any>() {
 
   // Direct HTTP methods
   const get = async (url: string, config?: any) => {
-    return execute(() => import('@/services/api').then(api => api.get(url, config)));
+    return execute(() =>
+      import("@/services/api").then((api) => api.get(url, config)),
+    );
   };
 
   const post = async (url: string, data?: any, config?: any) => {
-    return execute(() => import('@/services/api').then(api => api.post(url, data, config)));
+    return execute(() =>
+      import("@/services/api").then((api) => api.post(url, data, config)),
+    );
   };
 
   const put = async (url: string, data?: any, config?: any) => {
-    return execute(() => import('@/services/api').then(api => api.put(url, data, config)));
+    return execute(() =>
+      import("@/services/api").then((api) => api.put(url, data, config)),
+    );
   };
 
   const del = async (url: string, config?: any) => {
-    return execute(() => import('@/services/api').then(api => api.del(url, config)));
+    return execute(() =>
+      import("@/services/api").then((api) => api.del(url, config)),
+    );
   };
 
   return {

@@ -132,7 +132,11 @@
           <div
             class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3"
           >
-            <span>{{ $t(`invoices.layout_${template.template_data?.layout || 'standard'}`) }}</span>
+            <span>{{
+              $t(
+                `invoices.layout_${template.template_data?.layout || "standard"}`,
+              )
+            }}</span>
             <span>{{ formatDate(template.created_at) }}</span>
           </div>
 

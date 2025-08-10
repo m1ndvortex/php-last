@@ -3,62 +3,65 @@
     :class="[
       'animate-pulse bg-gray-200 dark:bg-gray-700 rounded',
       sizeClasses,
-      customClass
+      customClass,
     ]"
     :style="customStyle"
   />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 interface Props {
-  width?: string | number
-  height?: string | number
-  variant?: 'text' | 'circular' | 'rectangular' | 'card'
-  lines?: number
-  class?: string
+  width?: string | number;
+  height?: string | number;
+  variant?: "text" | "circular" | "rectangular" | "card";
+  lines?: number;
+  class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  variant: 'rectangular',
+  variant: "rectangular",
   lines: 1,
-  class: ''
-})
+  class: "",
+});
 
 const sizeClasses = computed(() => {
   switch (props.variant) {
-    case 'text':
-      return 'h-4'
-    case 'circular':
-      return 'rounded-full w-10 h-10'
-    case 'card':
-      return 'h-32'
+    case "text":
+      return "h-4";
+    case "circular":
+      return "rounded-full w-10 h-10";
+    case "card":
+      return "h-32";
     default:
-      return 'h-6'
+      return "h-6";
   }
-})
+});
 
 const customStyle = computed(() => {
-  const style: Record<string, string> = {}
-  
-  if (props.width) {
-    style.width = typeof props.width === 'number' ? `${props.width}px` : props.width
-  }
-  
-  if (props.height) {
-    style.height = typeof props.height === 'number' ? `${props.height}px` : props.height
-  }
-  
-  return style
-})
+  const style: Record<string, string> = {};
 
-const customClass = computed(() => props.class)
+  if (props.width) {
+    style.width =
+      typeof props.width === "number" ? `${props.width}px` : props.width;
+  }
+
+  if (props.height) {
+    style.height =
+      typeof props.height === "number" ? `${props.height}px` : props.height;
+  }
+
+  return style;
+});
+
+const customClass = computed(() => props.class);
 </script>
 
 <style scoped>
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

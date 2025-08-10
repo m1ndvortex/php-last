@@ -13,7 +13,10 @@
       <!-- Business Information -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <label for="business_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_name"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_name") }}
           </label>
           <input
@@ -26,7 +29,10 @@
         </div>
 
         <div>
-          <label for="business_name_persian" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_name_persian"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_name_persian") }}
           </label>
           <input
@@ -34,13 +40,18 @@
             id="business_name_persian"
             v-model="form.business_name_persian"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-            :placeholder="$t('settings.business.business_name_persian_placeholder')"
+            :placeholder="
+              $t('settings.business.business_name_persian_placeholder')
+            "
             dir="rtl"
           />
         </div>
 
         <div>
-          <label for="business_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_email"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_email") }}
           </label>
           <input
@@ -53,7 +64,10 @@
         </div>
 
         <div>
-          <label for="business_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_phone"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_phone") }}
           </label>
           <input
@@ -66,7 +80,10 @@
         </div>
 
         <div>
-          <label for="business_website" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_website"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_website") }}
           </label>
           <input
@@ -79,7 +96,10 @@
         </div>
 
         <div>
-          <label for="tax_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="tax_number"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.tax_number") }}
           </label>
           <input
@@ -95,7 +115,10 @@
       <!-- Address -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <label for="business_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_address"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_address") }}
           </label>
           <textarea
@@ -108,7 +131,10 @@
         </div>
 
         <div>
-          <label for="business_address_persian" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="business_address_persian"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ $t("settings.business.business_address_persian") }}
           </label>
           <textarea
@@ -116,7 +142,9 @@
             v-model="form.business_address_persian"
             rows="3"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-            :placeholder="$t('settings.business.business_address_persian_placeholder')"
+            :placeholder="
+              $t('settings.business.business_address_persian_placeholder')
+            "
             dir="rtl"
           ></textarea>
         </div>
@@ -127,10 +155,13 @@
         <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
           {{ $t("settings.business.financial_settings") }}
         </h4>
-        
+
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <label for="default_currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="default_currency"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.default_currency") }}
             </label>
             <select
@@ -146,7 +177,10 @@
           </div>
 
           <div>
-            <label for="default_labor_percentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="default_labor_percentage"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.default_labor_percentage") }}
             </label>
             <div class="mt-1 relative rounded-md shadow-sm">
@@ -158,7 +192,9 @@
                 min="0"
                 max="1000"
                 class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                :placeholder="$t('settings.business.default_labor_percentage_placeholder')"
+                :placeholder="
+                  $t('settings.business.default_labor_percentage_placeholder')
+                "
               />
               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-gray-500 sm:text-sm">%</span>
@@ -167,7 +203,10 @@
           </div>
 
           <div>
-            <label for="default_profit_percentage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="default_profit_percentage"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.default_profit_percentage") }}
             </label>
             <div class="mt-1 relative rounded-md shadow-sm">
@@ -179,7 +218,9 @@
                 min="0"
                 max="1000"
                 class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                :placeholder="$t('settings.business.default_profit_percentage_placeholder')"
+                :placeholder="
+                  $t('settings.business.default_profit_percentage_placeholder')
+                "
               />
               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-gray-500 sm:text-sm">%</span>
@@ -188,7 +229,10 @@
           </div>
 
           <div>
-            <label for="default_tax_rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="default_tax_rate"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.default_tax_rate") }}
             </label>
             <div class="mt-1 relative rounded-md shadow-sm">
@@ -200,7 +244,9 @@
                 min="0"
                 max="100"
                 class="block w-full rounded-md border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                :placeholder="$t('settings.business.default_tax_rate_placeholder')"
+                :placeholder="
+                  $t('settings.business.default_tax_rate_placeholder')
+                "
               />
               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-gray-500 sm:text-sm">%</span>
@@ -215,10 +261,13 @@
         <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
           {{ $t("settings.business.invoice_settings") }}
         </h4>
-        
+
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label for="invoice_prefix" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="invoice_prefix"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.invoice_prefix") }}
             </label>
             <input
@@ -231,7 +280,10 @@
           </div>
 
           <div>
-            <label for="invoice_starting_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="invoice_starting_number"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.business.invoice_starting_number") }}
             </label>
             <input
@@ -240,7 +292,9 @@
               v-model.number="form.invoice_starting_number"
               min="1"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              :placeholder="$t('settings.business.invoice_starting_number_placeholder')"
+              :placeholder="
+                $t('settings.business.invoice_starting_number_placeholder')
+              "
             />
           </div>
         </div>
@@ -251,7 +305,7 @@
         <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
           {{ $t("settings.business.logo") }}
         </h4>
-        
+
         <div class="flex items-center space-x-6">
           <div class="shrink-0">
             <img
@@ -297,9 +351,25 @@
           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="isLoading" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             {{ $t("common.saving") }}
           </span>
@@ -357,17 +427,17 @@ watch(
       Object.assign(form, config);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const handleLogoUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  
+
   if (!file) return;
 
   // Validate file type
-  if (!file.type.startsWith('image/')) {
+  if (!file.type.startsWith("image/")) {
     showNotification({
       type: "error",
       title: "Invalid file type",
@@ -388,17 +458,17 @@ const handleLogoUpload = async (event: Event) => {
 
   try {
     isLoading.value = true;
-    
+
     const formData = new FormData();
-    formData.append('logo', file);
-    
+    formData.append("logo", file);
+
     // Upload logo (this would be implemented in the API service)
     // const response = await apiService.post('/api/settings/business/logo', formData);
     // form.logo_path = response.data.data.logo_path;
-    
+
     // For now, create a preview URL
     form.logo_path = URL.createObjectURL(file);
-    
+
     showNotification({
       type: "success",
       title: "Logo uploaded",
@@ -418,7 +488,7 @@ const handleLogoUpload = async (event: Event) => {
 const saveBusinessConfig = async () => {
   try {
     isLoading.value = true;
-    
+
     // Save business configuration
     const businessResult = await settingsStore.updateBusinessConfig({
       business_name: form.business_name,
@@ -432,16 +502,16 @@ const saveBusinessConfig = async () => {
       default_currency: form.default_currency,
       invoice_prefix: form.invoice_prefix,
       invoice_starting_number: form.invoice_starting_number,
-      logo_path: form.logo_path
+      logo_path: form.logo_path,
     });
 
     // Save pricing percentages separately
     const pricingResult = await settingsStore.updateDefaultPricingPercentages({
       labor_percentage: form.default_labor_percentage || 0,
       profit_percentage: form.default_profit_percentage || 0,
-      tax_percentage: form.default_tax_rate || 0
+      tax_percentage: form.default_tax_rate || 0,
     });
-    
+
     if (businessResult.success && pricingResult.success) {
       showNotification({
         type: "success",
@@ -452,7 +522,10 @@ const saveBusinessConfig = async () => {
       showNotification({
         type: "error",
         title: "Save failed",
-        message: businessResult.error || pricingResult.error || "Failed to save business configuration",
+        message:
+          businessResult.error ||
+          pricingResult.error ||
+          "Failed to save business configuration",
       });
     }
   } catch (error) {
@@ -470,7 +543,7 @@ onMounted(async () => {
   if (!settingsStore.businessConfig) {
     await settingsStore.fetchSettings();
   }
-  
+
   // Load pricing percentages
   try {
     const pricingResult = await settingsStore.getDefaultPricingPercentages();
@@ -480,7 +553,7 @@ onMounted(async () => {
       form.default_tax_rate = pricingResult.data.tax_percentage;
     }
   } catch (error) {
-    console.error('Failed to load pricing percentages:', error);
+    console.error("Failed to load pricing percentages:", error);
   }
 });
 </script>

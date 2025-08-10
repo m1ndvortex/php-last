@@ -5,7 +5,9 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Search -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             {{ $t("common.search") }}
           </label>
           <input
@@ -19,7 +21,9 @@
 
         <!-- Category Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             {{ $t("inventory.category") }}
           </label>
           <select
@@ -40,7 +44,9 @@
 
         <!-- Location Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             {{ $t("inventory.location") }}
           </label>
           <select
@@ -61,7 +67,9 @@
 
         <!-- Status Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             {{ $t("common.status") }}
           </label>
           <select
@@ -124,10 +132,17 @@
       </div>
 
       <!-- Loading State -->
-      <TableSkeleton v-if="inventoryStore.loading.items" :rows="10" :columns="9" />
+      <TableSkeleton
+        v-if="inventoryStore.loading.items"
+        :rows="10"
+        :columns="9"
+      />
 
       <!-- Empty State -->
-      <div v-else-if="inventoryStore.items.length === 0" class="p-6 text-center">
+      <div
+        v-else-if="inventoryStore.items.length === 0"
+        class="p-6 text-center"
+      >
         <div class="text-gray-500 dark:text-gray-400">
           {{ $t("inventory.no_items_found") }}
         </div>
@@ -136,8 +151,12 @@
       <!-- Virtual Scrolling Container -->
       <div v-else class="relative">
         <!-- Table Header (Fixed) -->
-        <div class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-          <div class="grid grid-cols-9 gap-4 px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <div
+          class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
+        >
+          <div
+            class="grid grid-cols-9 gap-4 px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+          >
             <div>{{ $t("inventory.item") }}</div>
             <div>{{ $t("inventory.sku") }}</div>
             <div>{{ $t("inventory.category") }}</div>
@@ -173,32 +192,44 @@
                 <!-- Item Info -->
                 <div class="flex items-center min-w-0">
                   <div class="flex-shrink-0 h-8 w-8 mr-3">
-                    <div class="h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <div
+                      class="h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center"
+                    >
                       <CubeIcon class="h-5 w-5 text-gray-400" />
                     </div>
                   </div>
                   <div class="min-w-0">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <div
+                      class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    >
                       {{ item.localized_name || item.name }}
                     </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <div
+                      class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    >
                       {{ item.localized_description || item.description }}
                     </div>
                   </div>
                 </div>
 
                 <!-- SKU -->
-                <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                <div
+                  class="flex items-center text-sm text-gray-900 dark:text-white"
+                >
                   {{ item.sku }}
                 </div>
 
                 <!-- Category -->
-                <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                <div
+                  class="flex items-center text-sm text-gray-900 dark:text-white"
+                >
                   {{ item.category?.name || "-" }}
                 </div>
 
                 <!-- Location -->
-                <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                <div
+                  class="flex items-center text-sm text-gray-900 dark:text-white"
+                >
                   {{ item.location?.name || "-" }}
                 </div>
 
@@ -207,18 +238,25 @@
                   <div class="text-sm text-gray-900 dark:text-white">
                     {{ formatNumber(item.quantity) }}
                   </div>
-                  <div v-if="item.is_low_stock" class="ml-2 text-xs text-red-600 dark:text-red-400">
+                  <div
+                    v-if="item.is_low_stock"
+                    class="ml-2 text-xs text-red-600 dark:text-red-400"
+                  >
                     {{ $t("inventory.low_stock") }}
                   </div>
                 </div>
 
                 <!-- Unit Price -->
-                <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                <div
+                  class="flex items-center text-sm text-gray-900 dark:text-white"
+                >
                   {{ formatCurrency(item.unit_price) }}
                 </div>
 
                 <!-- Gold Purity -->
-                <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                <div
+                  class="flex items-center text-sm text-gray-900 dark:text-white"
+                >
                   <span v-if="item.gold_purity">
                     {{ formatGoldPurity(item.gold_purity) }}
                   </span>
@@ -236,7 +274,11 @@
                           : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
                       ]"
                     >
-                      {{ item.is_active ? $t("common.active") : $t("common.inactive") }}
+                      {{
+                        item.is_active
+                          ? $t("common.active")
+                          : $t("common.inactive")
+                      }}
                     </span>
                     <span
                       v-if="item.is_expiring"
@@ -286,7 +328,10 @@
       </div>
 
       <!-- Load More Button (for infinite scroll fallback) -->
-      <div v-if="hasMoreItems && !inventoryStore.loading.items" class="p-4 text-center border-t border-gray-200 dark:border-gray-700">
+      <div
+        v-if="hasMoreItems && !inventoryStore.loading.items"
+        class="p-4 text-center border-t border-gray-200 dark:border-gray-700"
+      >
         <button
           @click="loadMoreItems"
           :disabled="loadingMore"
@@ -340,7 +385,7 @@ defineEmits<{
 const { locale } = useI18n();
 const inventoryStore = useInventoryStore();
 const { formatNumber, formatCurrency } = useNumberFormatter();
-const { mark, measure } = usePerformanceMonitoring('VirtualInventoryList');
+const { mark, measure } = usePerformanceMonitoring("VirtualInventoryList");
 
 // Virtual scrolling configuration
 const itemHeight = 80; // Height of each row in pixels
@@ -372,31 +417,35 @@ const loadingMore = ref(false);
 
 // Computed
 const hasMoreItems = computed(() => {
-  return inventoryStore.pagination.current_page < inventoryStore.pagination.last_page;
+  return (
+    inventoryStore.pagination.current_page < inventoryStore.pagination.last_page
+  );
 });
 
 // Methods
 const debouncedSearch = debounce(() => {
-  mark('search-start');
+  mark("search-start");
   applyFilters();
-  measure('search-duration', 'search-start');
+  measure("search-duration", "search-start");
 }, 300);
 
 const formatGoldPurity = (purity: number): string => {
   if (!purity) return "-";
-  
+
   if (locale.value === "fa") {
     const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-    const formattedPurity = purity.toFixed(1).replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
+    const formattedPurity = purity
+      .toFixed(1)
+      .replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
     return `${formattedPurity} عیار`;
   }
-  
+
   return `${purity.toFixed(1)}K`;
 };
 
 const applyFilters = async () => {
-  mark('filter-start');
-  
+  mark("filter-start");
+
   const params: Record<string, any> = {
     search: searchQuery.value,
     ...filters.value,
@@ -412,15 +461,15 @@ const applyFilters = async () => {
   });
 
   await inventoryStore.fetchItems(params);
-  measure('filter-duration', 'filter-start');
+  measure("filter-duration", "filter-start");
 };
 
 const loadMoreItems = async () => {
   if (loadingMore.value || !hasMoreItems.value) return;
-  
+
   loadingMore.value = true;
-  mark('load-more-start');
-  
+  mark("load-more-start");
+
   try {
     const params: Record<string, any> = {
       search: searchQuery.value,
@@ -437,7 +486,7 @@ const loadMoreItems = async () => {
     });
 
     await inventoryStore.fetchItems(params); // Load more items
-    measure('load-more-duration', 'load-more-start');
+    measure("load-more-duration", "load-more-start");
   } finally {
     loadingMore.value = false;
   }
@@ -445,9 +494,9 @@ const loadMoreItems = async () => {
 
 // Lifecycle
 onMounted(() => {
-  mark('component-mount');
+  mark("component-mount");
   applyFilters();
-  measure('initial-load', 'component-mount');
+  measure("initial-load", "component-mount");
 });
 </script>
 

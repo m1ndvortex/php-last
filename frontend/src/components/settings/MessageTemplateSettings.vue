@@ -28,7 +28,7 @@
             activeTemplateType === type
               ? 'border-blue-500 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
-            'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm capitalize'
+            'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm capitalize',
           ]"
         >
           {{ $t(`settings.templates.types.${type}`) }}
@@ -53,7 +53,9 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                <dt
+                  class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate"
+                >
                   {{ template.name }}
                 </dt>
                 <dd class="text-lg font-medium text-gray-900 dark:text-white">
@@ -74,10 +76,14 @@
                   template.is_active
                     ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
                     : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
                 ]"
               >
-                {{ template.is_active ? $t("common.active") : $t("common.inactive") }}
+                {{
+                  template.is_active
+                    ? $t("common.active")
+                    : $t("common.inactive")
+                }}
               </span>
             </div>
             <div class="flex flex-wrap gap-1 mb-3">
@@ -120,13 +126,20 @@
       >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {{ showCreateTemplateModal ? $t("settings.templates.create_template") : $t("settings.templates.edit_template") }}
+            {{
+              showCreateTemplateModal
+                ? $t("settings.templates.create_template")
+                : $t("settings.templates.edit_template")
+            }}
           </h3>
-          
+
           <form @submit.prevent="saveTemplate" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label for="template_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  for="template_name"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.templates.template_name") }}
                 </label>
                 <input
@@ -135,12 +148,17 @@
                   v-model="templateForm.name"
                   required
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                  :placeholder="$t('settings.templates.template_name_placeholder')"
+                  :placeholder="
+                    $t('settings.templates.template_name_placeholder')
+                  "
                 />
               </div>
 
               <div>
-                <label for="template_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  for="template_type"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ $t("settings.templates.template_type") }}
                 </label>
                 <select
@@ -149,15 +167,24 @@
                   required
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
                 >
-                  <option value="email">{{ $t("settings.templates.types.email") }}</option>
-                  <option value="sms">{{ $t("settings.templates.types.sms") }}</option>
-                  <option value="whatsapp">{{ $t("settings.templates.types.whatsapp") }}</option>
+                  <option value="email">
+                    {{ $t("settings.templates.types.email") }}
+                  </option>
+                  <option value="sms">
+                    {{ $t("settings.templates.types.sms") }}
+                  </option>
+                  <option value="whatsapp">
+                    {{ $t("settings.templates.types.whatsapp") }}
+                  </option>
                 </select>
               </div>
             </div>
 
             <div v-if="templateForm.type === 'email'">
-              <label for="template_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="template_subject"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.templates.subject") }}
               </label>
               <input
@@ -171,7 +198,9 @@
 
             <!-- Language Tabs for Content -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 {{ $t("settings.templates.content") }}
               </label>
               <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
@@ -183,7 +212,7 @@
                       activeContentLanguage === 'en'
                         ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
-                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm',
                     ]"
                   >
                     English
@@ -195,7 +224,7 @@
                       activeContentLanguage === 'fa'
                         ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
-                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm',
                     ]"
                   >
                     فارسی
@@ -218,7 +247,9 @@
                   v-model="templateForm.content_persian"
                   rows="8"
                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                  :placeholder="$t('settings.templates.content_persian_placeholder')"
+                  :placeholder="
+                    $t('settings.templates.content_persian_placeholder')
+                  "
                   dir="rtl"
                 ></textarea>
               </div>
@@ -226,7 +257,9 @@
 
             <!-- Available Variables -->
             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <h4
+                class="text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
                 {{ $t("settings.templates.available_variables") }}
               </h4>
               <div class="flex flex-wrap gap-2">
@@ -252,7 +285,10 @@
                 v-model="templateForm.is_active"
                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label for="template_active" class="ml-2 block text-sm text-gray-900 dark:text-white">
+              <label
+                for="template_active"
+                class="ml-2 block text-sm text-gray-900 dark:text-white"
+              >
                 {{ $t("settings.templates.is_active") }}
               </label>
             </div>
@@ -282,7 +318,11 @@
     <ConfirmationModal
       v-if="showDeleteModal"
       :title="$t('settings.templates.delete_template')"
-      :message="$t('settings.templates.delete_confirmation', { template: templateToDelete?.name })"
+      :message="
+        $t('settings.templates.delete_confirmation', {
+          template: templateToDelete?.name,
+        })
+      "
       :confirm-text="$t('common.delete')"
       :cancel-text="$t('common.cancel')"
       @confirm="confirmDeleteTemplate"
@@ -345,7 +385,7 @@ const availableVariables = [
 // Computed
 const filteredTemplates = computed(() => {
   return settingsStore.messageTemplates.filter(
-    template => template.type === activeTemplateType.value
+    (template) => template.type === activeTemplateType.value,
   );
 });
 
@@ -384,8 +424,10 @@ const confirmDeleteTemplate = async () => {
 
   try {
     isLoading.value = true;
-    const result = await settingsStore.deleteMessageTemplate(templateToDelete.value.id);
-    
+    const result = await settingsStore.deleteMessageTemplate(
+      templateToDelete.value.id,
+    );
+
     if (result.success) {
       showNotification({
         type: "success",
@@ -414,30 +456,37 @@ const confirmDeleteTemplate = async () => {
 
 const insertVariable = (variable: string) => {
   const textarea = document.querySelector(
-    activeContentLanguage.value === 'en' 
-      ? 'textarea[v-model="templateForm.content"]' 
-      : 'textarea[v-model="templateForm.content_persian"]'
+    activeContentLanguage.value === "en"
+      ? 'textarea[v-model="templateForm.content"]'
+      : 'textarea[v-model="templateForm.content_persian"]',
   ) as HTMLTextAreaElement;
-  
+
   if (textarea) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const currentContent = activeContentLanguage.value === 'en' 
-      ? templateForm.content 
-      : templateForm.content_persian;
-    
-    const newContent = currentContent.substring(0, start) + variable + currentContent.substring(end);
-    
-    if (activeContentLanguage.value === 'en') {
+    const currentContent =
+      activeContentLanguage.value === "en"
+        ? templateForm.content
+        : templateForm.content_persian;
+
+    const newContent =
+      currentContent.substring(0, start) +
+      variable +
+      currentContent.substring(end);
+
+    if (activeContentLanguage.value === "en") {
       templateForm.content = newContent;
     } else {
       templateForm.content_persian = newContent;
     }
-    
+
     // Set cursor position after the inserted variable
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(start + variable.length, start + variable.length);
+      textarea.setSelectionRange(
+        start + variable.length,
+        start + variable.length,
+      );
     }, 0);
   }
 };
@@ -445,7 +494,7 @@ const insertVariable = (variable: string) => {
 const saveTemplate = async () => {
   try {
     isLoading.value = true;
-    
+
     const templateData = {
       name: templateForm.name,
       type: templateForm.type,
@@ -453,23 +502,30 @@ const saveTemplate = async () => {
       content: templateForm.content,
       content_persian: templateForm.content_persian || undefined,
       is_active: templateForm.is_active,
-      variables: availableVariables.filter(variable => 
-        templateForm.content.includes(variable) || 
-        (templateForm.content_persian && templateForm.content_persian.includes(variable))
+      variables: availableVariables.filter(
+        (variable) =>
+          templateForm.content.includes(variable) ||
+          (templateForm.content_persian &&
+            templateForm.content_persian.includes(variable)),
       ),
     };
 
     let result;
     if (showEditTemplateModal.value && editingTemplate.value) {
-      result = await settingsStore.updateMessageTemplate(editingTemplate.value.id, templateData);
+      result = await settingsStore.updateMessageTemplate(
+        editingTemplate.value.id,
+        templateData,
+      );
     } else {
       result = await settingsStore.createMessageTemplate(templateData);
     }
-    
+
     if (result.success) {
       showNotification({
         type: "success",
-        title: showEditTemplateModal.value ? "Template updated" : "Template created",
+        title: showEditTemplateModal.value
+          ? "Template updated"
+          : "Template created",
         message: `Message template has been ${showEditTemplateModal.value ? "updated" : "created"} successfully`,
       });
       closeModals();
@@ -496,7 +552,7 @@ const closeModals = () => {
   showEditTemplateModal.value = false;
   editingTemplate.value = null;
   activeContentLanguage.value = "en";
-  
+
   // Reset form
   templateForm.name = "";
   templateForm.type = "email";

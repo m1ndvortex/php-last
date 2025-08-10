@@ -356,7 +356,8 @@ const emit = defineEmits<Emits>();
 
 const inventoryStore = useInventoryStore();
 const { t } = useI18n();
-const { isRTL, getLocalizedCategoryName, formatGoldPurityDisplay } = useLocale();
+const { isRTL, getLocalizedCategoryName, formatGoldPurityDisplay } =
+  useLocale();
 const { formatGoldPurity, toPersianNumerals } = useNumberFormatter();
 
 // State

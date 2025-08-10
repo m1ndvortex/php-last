@@ -23,7 +23,7 @@
               activeTab === tab.id
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
-              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2'
+              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2',
             ]"
           >
             <component :is="tab.icon" class="h-5 w-5" />
@@ -35,22 +35,22 @@
       <div class="p-6">
         <!-- Business Configuration -->
         <BusinessSettings v-if="activeTab === 'business'" />
-        
+
         <!-- Role and Permission Management -->
         <RolePermissionSettings v-else-if="activeTab === 'roles'" />
-        
+
         <!-- Message Templates -->
         <MessageTemplateSettings v-else-if="activeTab === 'templates'" />
-        
+
         <!-- Theme and Language -->
         <ThemeLanguageSettings v-else-if="activeTab === 'appearance'" />
-        
+
         <!-- Security Settings -->
         <SecuritySettings v-else-if="activeTab === 'security'" />
-        
+
         <!-- Backup Settings -->
         <BackupSettings v-else-if="activeTab === 'backup'" />
-        
+
         <!-- Audit Log Configuration -->
         <AuditLogSettings v-else-if="activeTab === 'audit'" />
       </div>

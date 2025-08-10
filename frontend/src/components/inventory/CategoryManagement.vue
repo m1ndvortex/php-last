@@ -13,7 +13,7 @@
       <div class="mt-4 sm:mt-0 sm:flex-none space-x-3 flex items-center">
         <!-- Language indicator -->
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          {{ currentLanguage === 'fa' ? 'فارسی' : 'English' }}
+          {{ currentLanguage === "fa" ? "فارسی" : "English" }}
         </div>
         <button
           @click="showCreateModal = true"

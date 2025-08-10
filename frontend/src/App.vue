@@ -2,7 +2,7 @@
   <RTLProvider>
     <div id="app" :class="{ dark: isDarkMode }">
       <router-view />
-      
+
       <!-- PWA Components -->
       <OfflineIndicator />
       <InstallPrompt ref="installPrompt" />

@@ -266,56 +266,71 @@ export const useInvoicesStore = defineStore("invoices", () => {
       const response = await apiService.invoices.getTemplates();
       if (response.data.success) {
         // Handle both paginated and direct array responses
-        const templatesData = response.data.data?.data || response.data.data || [];
+        const templatesData =
+          response.data.data?.data || response.data.data || [];
         templates.value = Array.isArray(templatesData) ? templatesData : [];
-        console.log("Templates fetched successfully:", templates.value.length, "templates");
+        console.log(
+          "Templates fetched successfully:",
+          templates.value.length,
+          "templates",
+        );
       } else {
-        console.warn("Templates fetch returned unsuccessful response:", response.data);
+        console.warn(
+          "Templates fetch returned unsuccessful response:",
+          response.data,
+        );
         templates.value = [];
       }
     } catch (error: any) {
       console.error("Failed to fetch templates via apiService:", error);
-      
+
       // Fallback: Try direct fetch with authentication headers
       try {
         console.log("Attempting fallback fetch for templates...");
-        const authToken = localStorage.getItem('auth_token');
+        const authToken = localStorage.getItem("auth_token");
         if (authToken) {
-          const fallbackResponse = await fetch('/api/invoice-templates', {
-            method: 'GET',
+          const fallbackResponse = await fetch("/api/invoice-templates", {
+            method: "GET",
             headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authToken}`,
-              'X-Requested-With': 'XMLHttpRequest'
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+              "X-Requested-With": "XMLHttpRequest",
             },
-            credentials: 'include'
+            credentials: "include",
           });
-          
+
           const fallbackData = await fallbackResponse.json();
           if (fallbackData.success && fallbackData.data) {
             // Handle paginated response structure
-            const templatesData = fallbackData.data.data || fallbackData.data || [];
+            const templatesData =
+              fallbackData.data.data || fallbackData.data || [];
             templates.value = Array.isArray(templatesData) ? templatesData : [];
-            console.log("Successfully fetched templates via fallback method:", templates.value.length, "templates");
+            console.log(
+              "Successfully fetched templates via fallback method:",
+              templates.value.length,
+              "templates",
+            );
             return;
           }
         }
       } catch (fallbackError) {
         console.error("Fallback fetch also failed:", fallbackError);
       }
-      
+
       // Ensure templates.value remains an array even on error
       if (!Array.isArray(templates.value)) {
         templates.value = [];
       }
-      
+
       // Don't throw authentication errors to prevent breaking the UI
       if (error.response?.status === 401) {
-        console.warn("Authentication error when fetching templates - user may need to re-login");
+        console.warn(
+          "Authentication error when fetching templates - user may need to re-login",
+        );
         return; // Don't throw, just return
       }
-      
+
       // Don't throw the error to prevent breaking the UI
       console.warn("Templates fetch failed, but continuing with empty array");
     } finally {

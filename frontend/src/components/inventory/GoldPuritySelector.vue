@@ -69,7 +69,8 @@ const emit = defineEmits<Emits>();
 const { t, locale } = useI18n();
 const { execute } = useApi();
 const { isRTL, formatGoldPurity } = useLocale();
-const { getGoldPurityOptions, toPersianNumerals, formatNumber } = useNumberFormatter();
+const { getGoldPurityOptions, toPersianNumerals, formatNumber } =
+  useNumberFormatter();
 
 // State
 const selectedStandard = ref("");
@@ -151,8 +152,8 @@ watch(() => props.modelValue, initializeComponent);
 // Methods
 const fetchGoldPurityOptions = async () => {
   try {
-    const result = await execute(() => 
-      apiService.get("/api/inventory/gold-purity-options")
+    const result = await execute(() =>
+      apiService.get("/api/inventory/gold-purity-options"),
     );
     if (result) {
       backendOptions.value = result.standard_purities || [];

@@ -2,13 +2,15 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0"
+      >
         <div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ $t('accounting.financial_reports') }}
+            {{ $t("accounting.financial_reports") }}
           </h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ $t('accounting.financial_reports_description') }}
+            {{ $t("accounting.financial_reports_description") }}
           </p>
         </div>
       </div>
@@ -24,11 +26,14 @@
           'cursor-pointer rounded-lg border-2 p-6 transition-colors',
           selectedReportType === report.type
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
-            : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+            : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600',
         ]"
       >
         <div class="flex items-center">
-          <component :is="report.icon" class="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <component
+            :is="report.icon"
+            class="h-8 w-8 text-blue-600 dark:text-blue-400"
+          />
           <div class="ml-4">
             <h4 class="text-lg font-medium text-gray-900 dark:text-white">
               {{ $t(report.title) }}
@@ -42,16 +47,21 @@
     </div>
 
     <!-- Report Parameters -->
-    <div v-if="selectedReportType" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div
+      v-if="selectedReportType"
+      class="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
+    >
       <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-        {{ $t('accounting.report_parameters') }}
+        {{ $t("accounting.report_parameters") }}
       </h4>
-      
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <!-- Date Range for Period Reports -->
         <div v-if="isPeriodReport">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('common.date_from') }}
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {{ $t("common.date_from") }}
           </label>
           <input
             v-model="reportParams.start_date"
@@ -60,8 +70,10 @@
           />
         </div>
         <div v-if="isPeriodReport">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('common.date_to') }}
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {{ $t("common.date_to") }}
           </label>
           <input
             v-model="reportParams.end_date"
@@ -69,11 +81,13 @@
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
           />
         </div>
-        
+
         <!-- As of Date for Point-in-Time Reports -->
         <div v-if="!isPeriodReport">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('accounting.as_of_date') }}
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {{ $t("accounting.as_of_date") }}
           </label>
           <input
             v-model="reportParams.as_of_date"
@@ -84,8 +98,10 @@
 
         <!-- Currency -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('accounting.currency') }}
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {{ $t("accounting.currency") }}
           </label>
           <select
             v-model="reportParams.currency"
@@ -106,14 +122,19 @@
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
           <DocumentChartBarIcon class="w-4 h-4 mr-2" />
-          <span v-if="accountingStore.loading">{{ $t('common.generating') }}...</span>
-          <span v-else>{{ $t('accounting.generate_report') }}</span>
+          <span v-if="accountingStore.loading"
+            >{{ $t("common.generating") }}...</span
+          >
+          <span v-else>{{ $t("accounting.generate_report") }}</span>
         </button>
       </div>
     </div>
 
     <!-- Report Display -->
-    <div v-if="accountingStore.currentReport" class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div
+      v-if="accountingStore.currentReport"
+      class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden"
+    >
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <h4 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -124,13 +145,13 @@
               @click="exportReport('pdf')"
               class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
             >
-              {{ $t('common.export_pdf') }}
+              {{ $t("common.export_pdf") }}
             </button>
             <button
               @click="exportReport('excel')"
               class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
             >
-              {{ $t('common.export_excel') }}
+              {{ $t("common.export_excel") }}
             </button>
           </div>
         </div>
@@ -167,122 +188,126 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { 
+import { ref, computed, onMounted } from "vue";
+import {
   DocumentChartBarIcon,
   ScaleIcon,
   BanknotesIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon
-} from '@heroicons/vue/24/outline'
-import { useAccountingStore } from '@/stores/accounting'
-import { useLocale } from '@/composables/useLocale'
-import TrialBalanceReport from './reports/TrialBalanceReport.vue'
-import BalanceSheetReport from './reports/BalanceSheetReport.vue'
-import IncomeStatementReport from './reports/IncomeStatementReport.vue'
-import CashFlowReport from './reports/CashFlowReport.vue'
+  ArrowTrendingUpIcon,
+} from "@heroicons/vue/24/outline";
+import { useAccountingStore } from "@/stores/accounting";
+import { useLocale } from "@/composables/useLocale";
+import TrialBalanceReport from "./reports/TrialBalanceReport.vue";
+import BalanceSheetReport from "./reports/BalanceSheetReport.vue";
+import IncomeStatementReport from "./reports/IncomeStatementReport.vue";
+import CashFlowReport from "./reports/CashFlowReport.vue";
 
-const accountingStore = useAccountingStore()
-const { formatDate } = useLocale()
+const accountingStore = useAccountingStore();
+const { formatDate } = useLocale();
 
-const selectedReportType = ref<string>('')
+const selectedReportType = ref<string>("");
 const reportParams = ref({
-  start_date: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0], // Start of year
-  end_date: new Date().toISOString().split('T')[0], // Today
-  as_of_date: new Date().toISOString().split('T')[0], // Today
-  currency: 'USD'
-})
+  start_date: new Date(new Date().getFullYear(), 0, 1)
+    .toISOString()
+    .split("T")[0], // Start of year
+  end_date: new Date().toISOString().split("T")[0], // Today
+  as_of_date: new Date().toISOString().split("T")[0], // Today
+  currency: "USD",
+});
 
 const reportTypes = [
   {
-    type: 'trial_balance',
-    title: 'accounting.trial_balance',
-    description: 'accounting.trial_balance_description',
+    type: "trial_balance",
+    title: "accounting.trial_balance",
+    description: "accounting.trial_balance_description",
     icon: ScaleIcon,
-    isPeriod: false
+    isPeriod: false,
   },
   {
-    type: 'balance_sheet',
-    title: 'accounting.balance_sheet',
-    description: 'accounting.balance_sheet_description',
+    type: "balance_sheet",
+    title: "accounting.balance_sheet",
+    description: "accounting.balance_sheet_description",
     icon: BanknotesIcon,
-    isPeriod: false
+    isPeriod: false,
   },
   {
-    type: 'income_statement',
-    title: 'accounting.income_statement',
-    description: 'accounting.income_statement_description',
+    type: "income_statement",
+    title: "accounting.income_statement",
+    description: "accounting.income_statement_description",
     icon: CurrencyDollarIcon,
-    isPeriod: true
+    isPeriod: true,
   },
   {
-    type: 'cash_flow',
-    title: 'accounting.cash_flow_statement',
-    description: 'accounting.cash_flow_description',
+    type: "cash_flow",
+    title: "accounting.cash_flow_statement",
+    description: "accounting.cash_flow_description",
     icon: ArrowTrendingUpIcon,
-    isPeriod: true
-  }
-]
+    isPeriod: true,
+  },
+];
 
 const isPeriodReport = computed(() => {
-  const reportType = reportTypes.find(r => r.type === selectedReportType.value)
-  return reportType?.isPeriod || false
-})
+  const reportType = reportTypes.find(
+    (r) => r.type === selectedReportType.value,
+  );
+  return reportType?.isPeriod || false;
+});
 
 const selectReport = (type: string) => {
-  selectedReportType.value = type
-}
+  selectedReportType.value = type;
+};
 
 const generateReport = async () => {
-  if (!selectedReportType.value) return
+  if (!selectedReportType.value) return;
 
   const params = isPeriodReport.value
     ? {
         start_date: reportParams.value.start_date,
         end_date: reportParams.value.end_date,
-        currency: reportParams.value.currency
+        currency: reportParams.value.currency,
       }
     : {
         as_of_date: reportParams.value.as_of_date,
-        currency: reportParams.value.currency
-      }
+        currency: reportParams.value.currency,
+      };
 
   try {
-    await accountingStore.generateReport(selectedReportType.value, params)
+    await accountingStore.generateReport(selectedReportType.value, params);
   } catch (error) {
-    console.error('Failed to generate report:', error)
+    console.error("Failed to generate report:", error);
   }
-}
+};
 
 const getReportPeriodText = () => {
-  if (!accountingStore.currentReport) return ''
+  if (!accountingStore.currentReport) return "";
 
   if (accountingStore.currentReport.period) {
-    return `${formatDate(accountingStore.currentReport.period.start_date)} - ${formatDate(accountingStore.currentReport.period.end_date)}`
+    return `${formatDate(accountingStore.currentReport.period.start_date)} - ${formatDate(accountingStore.currentReport.period.end_date)}`;
   } else if (accountingStore.currentReport.as_of_date) {
-    return `As of ${formatDate(accountingStore.currentReport.as_of_date)}`
+    return `As of ${formatDate(accountingStore.currentReport.as_of_date)}`;
   }
 
-  return ''
-}
+  return "";
+};
 
-const exportReport = async (format: 'pdf' | 'excel') => {
-  if (!accountingStore.currentReport) return
+const exportReport = async (format: "pdf" | "excel") => {
+  if (!accountingStore.currentReport) return;
 
   try {
     // This would call an API endpoint to export the report
-    console.log(`Exporting ${accountingStore.currentReport.type} as ${format}`)
+    console.log(`Exporting ${accountingStore.currentReport.type} as ${format}`);
     // await api.post(`/accounting/reports/${accountingStore.currentReport.type}/export`, {
     //   format,
     //   ...reportParams.value
     // })
   } catch (error) {
-    console.error('Failed to export report:', error)
+    console.error("Failed to export report:", error);
   }
-}
+};
 
 onMounted(() => {
   // Select trial balance by default
-  selectedReportType.value = 'trial_balance'
-})
+  selectedReportType.value = "trial_balance";
+});
 </script>

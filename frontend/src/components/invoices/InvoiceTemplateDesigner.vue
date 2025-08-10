@@ -772,11 +772,11 @@ const initializeForm = () => {
   if (props.template) {
     const templateData = props.template.template_data || {};
     const fields = templateData.fields || {};
-    
+
     templateForm.value = {
       name: props.template.name,
       language: props.template.language,
-      layout: templateData.layout || 'standard',
+      layout: templateData.layout || "standard",
       fields: {
         logo: fields.logo ?? true,
         qr_code: fields.qr_code ?? true,

@@ -7,7 +7,7 @@ const AppLayout = () => import("@/components/layout/AppLayout.vue");
 // Preload critical routes for better UX
 const preloadRoute = (routeImport: () => Promise<any>) => {
   // Preload on idle or after a short delay
-  if ('requestIdleCallback' in window) {
+  if ("requestIdleCallback" in window) {
     requestIdleCallback(() => routeImport());
   } else {
     setTimeout(() => routeImport(), 100);

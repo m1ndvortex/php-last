@@ -177,7 +177,9 @@
             </div>
 
             <!-- Gold Pricing Section -->
-            <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div
+              class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-6"
+            >
               <div class="flex items-center justify-between mb-4">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
                   {{ $t("invoices.gold_pricing") }}
@@ -194,7 +196,9 @@
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Current Gold Price -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.current_gold_price_per_gram") }} *
                   </label>
                   <div class="relative">
@@ -209,18 +213,27 @@
                       :class="{ 'border-red-500': errors.gold_price_per_gram }"
                       :placeholder="$t('invoices.enter_gold_price')"
                     />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span class="text-gray-500 text-sm">{{ $t("common.currency_per_gram") }}</span>
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
+                      <span class="text-gray-500 text-sm">{{
+                        $t("common.currency_per_gram")
+                      }}</span>
                     </div>
                   </div>
-                  <p v-if="errors.gold_price_per_gram" class="mt-1 text-sm text-red-600">
+                  <p
+                    v-if="errors.gold_price_per_gram"
+                    class="mt-1 text-sm text-red-600"
+                  >
                     {{ errors.gold_price_per_gram[0] }}
                   </p>
                 </div>
 
                 <!-- Labor Percentage -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.labor_cost_percentage") }}
                   </label>
                   <div class="relative">
@@ -231,20 +244,27 @@
                       min="0"
                       @input="recalculateAllPrices"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-8"
-                      :placeholder="defaultSettings.defaultLaborPercentage.toString()"
+                      :placeholder="
+                        defaultSettings.defaultLaborPercentage.toString()
+                      "
                     />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
                       <span class="text-gray-500 text-sm">%</span>
                     </div>
                   </div>
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ $t("invoices.default") }}: {{ defaultSettings.defaultLaborPercentage }}%
+                    {{ $t("invoices.default") }}:
+                    {{ defaultSettings.defaultLaborPercentage }}%
                   </p>
                 </div>
 
                 <!-- Profit Percentage -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.profit_percentage") }}
                   </label>
                   <div class="relative">
@@ -255,20 +275,27 @@
                       min="0"
                       @input="recalculateAllPrices"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-8"
-                      :placeholder="defaultSettings.defaultProfitPercentage.toString()"
+                      :placeholder="
+                        defaultSettings.defaultProfitPercentage.toString()
+                      "
                     />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
                       <span class="text-gray-500 text-sm">%</span>
                     </div>
                   </div>
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ $t("invoices.default") }}: {{ defaultSettings.defaultProfitPercentage }}%
+                    {{ $t("invoices.default") }}:
+                    {{ defaultSettings.defaultProfitPercentage }}%
                   </p>
                 </div>
 
                 <!-- Tax Percentage -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     {{ $t("invoices.tax_percentage") }}
                   </label>
                   <div class="relative">
@@ -279,14 +306,19 @@
                       min="0"
                       @input="recalculateAllPrices"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-8"
-                      :placeholder="defaultSettings.defaultTaxPercentage.toString()"
+                      :placeholder="
+                        defaultSettings.defaultTaxPercentage.toString()
+                      "
                     />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
                       <span class="text-gray-500 text-sm">%</span>
                     </div>
                   </div>
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ $t("invoices.default") }}: {{ defaultSettings.defaultTaxPercentage }}%
+                    {{ $t("invoices.default") }}:
+                    {{ defaultSettings.defaultTaxPercentage }}%
                   </p>
                 </div>
               </div>
@@ -364,7 +396,9 @@
                           <select
                             v-model="item.inventory_item_id"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                            @change="selectInventoryItem(index, item.inventory_item_id)"
+                            @change="
+                              selectInventoryItem(index, item.inventory_item_id)
+                            "
                           >
                             <option value="">
                               {{ $t("invoices.select_item") }}
@@ -412,7 +446,9 @@
                               step="0.1"
                               min="0"
                               max="24"
-                              :placeholder="$t('invoices.gold_purity_placeholder')"
+                              :placeholder="
+                                $t('invoices.gold_purity_placeholder')
+                              "
                               class="w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                               @input="recalculateItemPrice(index)"
                             />
@@ -431,26 +467,51 @@
                         />
                       </td>
                       <td class="px-4 py-2">
-                        <div v-if="item.priceBreakdown" class="text-xs space-y-1">
+                        <div
+                          v-if="item.priceBreakdown"
+                          class="text-xs space-y-1"
+                        >
                           <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.base_gold") }}:</span>
-                            <span class="font-medium">{{ formatCurrency(item.priceBreakdown.baseGoldCost) }}</span>
+                            <span class="text-gray-600 dark:text-gray-400"
+                              >{{ $t("invoices.base_gold") }}:</span
+                            >
+                            <span class="font-medium">{{
+                              formatCurrency(item.priceBreakdown.baseGoldCost)
+                            }}</span>
                           </div>
                           <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.labor") }}:</span>
-                            <span class="font-medium">{{ formatCurrency(item.priceBreakdown.laborCost) }}</span>
+                            <span class="text-gray-600 dark:text-gray-400"
+                              >{{ $t("invoices.labor") }}:</span
+                            >
+                            <span class="font-medium">{{
+                              formatCurrency(item.priceBreakdown.laborCost)
+                            }}</span>
                           </div>
                           <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.profit") }}:</span>
-                            <span class="font-medium">{{ formatCurrency(item.priceBreakdown.profit) }}</span>
+                            <span class="text-gray-600 dark:text-gray-400"
+                              >{{ $t("invoices.profit") }}:</span
+                            >
+                            <span class="font-medium">{{
+                              formatCurrency(item.priceBreakdown.profit)
+                            }}</span>
                           </div>
                           <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.tax") }}:</span>
-                            <span class="font-medium">{{ formatCurrency(item.priceBreakdown.tax) }}</span>
+                            <span class="text-gray-600 dark:text-gray-400"
+                              >{{ $t("invoices.tax") }}:</span
+                            >
+                            <span class="font-medium">{{
+                              formatCurrency(item.priceBreakdown.tax)
+                            }}</span>
                           </div>
-                          <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1">
-                            <span class="text-gray-600 dark:text-gray-400">{{ $t("invoices.unit_price") }}:</span>
-                            <span class="font-bold">{{ formatCurrency(item.priceBreakdown.unitPrice) }}</span>
+                          <div
+                            class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1"
+                          >
+                            <span class="text-gray-600 dark:text-gray-400"
+                              >{{ $t("invoices.unit_price") }}:</span
+                            >
+                            <span class="font-bold">{{
+                              formatCurrency(item.priceBreakdown.unitPrice)
+                            }}</span>
                           </div>
                         </div>
                         <div v-else class="text-xs text-gray-400">
@@ -458,7 +519,9 @@
                         </div>
                       </td>
                       <td class="px-4 py-2">
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                        <span
+                          class="text-sm font-bold text-gray-900 dark:text-white"
+                        >
                           {{ formatCurrency(item.total_price || 0) }}
                         </span>
                       </td>
@@ -639,11 +702,11 @@ const invoicesStore = useInvoicesStore();
 const customersStore = useCustomersStore();
 // const inventoryStore = useInventoryStore();
 const { formatCurrency } = useNumberFormatter();
-const { 
-  defaultSettings, 
-  calculateItemPrice, 
+const {
+  defaultSettings,
+  calculateItemPrice,
   loadDefaultSettings,
-  formatCurrency: formatGoldCurrency 
+  formatCurrency: formatGoldCurrency,
 } = useGoldPricing();
 
 // State
@@ -664,8 +727,8 @@ const form = ref({
   total_amount: 0,
   status: "draft" as "draft" | "sent" | "paid" | "overdue" | "cancelled",
   notes: "",
-  items: [] as (InvoiceItem & { 
-    weight?: number; 
+  items: [] as (InvoiceItem & {
+    weight?: number;
     priceBreakdown?: PriceBreakdown;
   })[],
   // Gold pricing fields
@@ -753,15 +816,22 @@ const selectInventoryItem = (
       form.value.items[index].name = inventoryItem.name || "";
       form.value.items[index].description = inventoryItem.description || "";
       form.value.items[index].unit_price = inventoryItem.unit_price || 0;
-      form.value.items[index].gold_purity = inventoryItem.gold_purity || undefined;
+      form.value.items[index].gold_purity =
+        inventoryItem.gold_purity || undefined;
       form.value.items[index].weight = inventoryItem.weight || undefined;
-      form.value.items[index].serial_number = inventoryItem.serial_number || undefined;
-      form.value.items[index].category_id = inventoryItem.category_id || undefined;
-      form.value.items[index].main_category_id = inventoryItem.main_category_id || undefined;
-      form.value.items[index].category_path = inventoryItem.category_path || undefined;
-      form.value.items[index].main_category_name = inventoryItem.main_category?.name || undefined;
-      form.value.items[index].category_name = inventoryItem.category?.name || undefined;
-      
+      form.value.items[index].serial_number =
+        inventoryItem.serial_number || undefined;
+      form.value.items[index].category_id =
+        inventoryItem.category_id || undefined;
+      form.value.items[index].main_category_id =
+        inventoryItem.main_category_id || undefined;
+      form.value.items[index].category_path =
+        inventoryItem.category_path || undefined;
+      form.value.items[index].main_category_name =
+        inventoryItem.main_category?.name || undefined;
+      form.value.items[index].category_name =
+        inventoryItem.category?.name || undefined;
+
       // Use dynamic pricing if weight is available, otherwise use static price
       if (inventoryItem.weight && goldPricing.value.pricePerGram) {
         recalculateItemPrice(index);
@@ -785,15 +855,17 @@ const updateTotals = () => {
 
 // Gold pricing methods
 const resetToDefaults = () => {
-  goldPricing.value.laborPercentage = defaultSettings.value.defaultLaborPercentage;
-  goldPricing.value.profitPercentage = defaultSettings.value.defaultProfitPercentage;
+  goldPricing.value.laborPercentage =
+    defaultSettings.value.defaultLaborPercentage;
+  goldPricing.value.profitPercentage =
+    defaultSettings.value.defaultProfitPercentage;
   goldPricing.value.taxPercentage = defaultSettings.value.defaultTaxPercentage;
   recalculateAllPrices();
 };
 
 const recalculateItemPrice = (index: number) => {
   const item = form.value.items[index];
-  
+
   // Only calculate if we have weight and gold price
   if (!item.weight || !goldPricing.value.pricePerGram) {
     item.priceBreakdown = undefined;
@@ -807,23 +879,28 @@ const recalculateItemPrice = (index: number) => {
     const pricing = calculateItemPrice({
       weight: item.weight,
       goldPricePerGram: goldPricing.value.pricePerGram,
-      laborPercentage: goldPricing.value.laborPercentage || defaultSettings.value.defaultLaborPercentage,
-      profitPercentage: goldPricing.value.profitPercentage || defaultSettings.value.defaultProfitPercentage,
-      taxPercentage: goldPricing.value.taxPercentage || defaultSettings.value.defaultTaxPercentage,
-      quantity: item.quantity || 1
+      laborPercentage:
+        goldPricing.value.laborPercentage ||
+        defaultSettings.value.defaultLaborPercentage,
+      profitPercentage:
+        goldPricing.value.profitPercentage ||
+        defaultSettings.value.defaultProfitPercentage,
+      taxPercentage:
+        goldPricing.value.taxPercentage ||
+        defaultSettings.value.defaultTaxPercentage,
+      quantity: item.quantity || 1,
     });
 
     item.priceBreakdown = pricing;
     item.unit_price = pricing.unitPrice;
     item.total_price = pricing.totalPrice;
-    
   } catch (error) {
-    console.error('Error calculating item price:', error);
+    console.error("Error calculating item price:", error);
     item.priceBreakdown = undefined;
     item.unit_price = 0;
     item.total_price = 0;
   }
-  
+
   updateTotals();
 };
 
@@ -834,7 +911,7 @@ const recalculateAllPrices = () => {
 };
 
 const formatGoldPurity = (purity: number | undefined): string => {
-  if (!purity) return '';
+  if (!purity) return "";
   return `${purity.toFixed(1)}K`;
 };
 
@@ -851,9 +928,15 @@ const handleSubmit = async () => {
         : undefined,
       // Include gold pricing parameters
       gold_price_per_gram: goldPricing.value.pricePerGram,
-      labor_percentage: goldPricing.value.laborPercentage || defaultSettings.value.defaultLaborPercentage,
-      profit_percentage: goldPricing.value.profitPercentage || defaultSettings.value.defaultProfitPercentage,
-      tax_percentage: goldPricing.value.taxPercentage || defaultSettings.value.defaultTaxPercentage,
+      labor_percentage:
+        goldPricing.value.laborPercentage ||
+        defaultSettings.value.defaultLaborPercentage,
+      profit_percentage:
+        goldPricing.value.profitPercentage ||
+        defaultSettings.value.defaultProfitPercentage,
+      tax_percentage:
+        goldPricing.value.taxPercentage ||
+        defaultSettings.value.defaultTaxPercentage,
     };
 
     let savedInvoice;
@@ -883,7 +966,7 @@ const handleSubmit = async () => {
 const initializeForm = async () => {
   // Load default settings first
   await loadDefaultSettings();
-  
+
   if (props.isEdit && props.invoice) {
     form.value = {
       customer_id: props.invoice.customer_id?.toString() || "",
@@ -909,18 +992,24 @@ const initializeForm = async () => {
       profit_percentage: props.invoice.profit_percentage || 0,
       tax_percentage: props.invoice.tax_percentage || 0,
     };
-    
+
     // Set gold pricing reactive data
     goldPricing.value = {
       pricePerGram: props.invoice.gold_price_per_gram || 0,
-      laborPercentage: props.invoice.labor_percentage || defaultSettings.value.defaultLaborPercentage,
-      profitPercentage: props.invoice.profit_percentage || defaultSettings.value.defaultProfitPercentage,
-      taxPercentage: props.invoice.tax_percentage || defaultSettings.value.defaultTaxPercentage,
+      laborPercentage:
+        props.invoice.labor_percentage ||
+        defaultSettings.value.defaultLaborPercentage,
+      profitPercentage:
+        props.invoice.profit_percentage ||
+        defaultSettings.value.defaultProfitPercentage,
+      taxPercentage:
+        props.invoice.tax_percentage ||
+        defaultSettings.value.defaultTaxPercentage,
     };
   } else {
     // Generate next invoice number
     generateInvoiceNumber();
-    
+
     // Set default gold pricing values
     goldPricing.value = {
       pricePerGram: 0,

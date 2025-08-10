@@ -1,10 +1,10 @@
-import { vi } from 'vitest';
-import { config } from '@vue/test-utils';
-import { createI18n } from 'vue-i18n';
-import { createPinia } from 'pinia';
+import { vi } from "vitest";
+import { config } from "@vue/test-utils";
+import { createI18n } from "vue-i18n";
+import { createPinia } from "pinia";
 
 // Mock API service
-vi.mock('@/services/api', () => ({
+vi.mock("@/services/api", () => ({
   apiService: {
     get: vi.fn(),
     post: vi.fn(),
@@ -23,11 +23,11 @@ vi.mock('@/services/api', () => ({
           success: true,
           data: {
             standard_purities: [
-              { value: 10, label: '10K Gold' },
-              { value: 14, label: '14K Gold' },
-              { value: 18, label: '18K Gold' },
-              { value: 22, label: '22K Gold' },
-              { value: 24, label: '24K Gold' },
+              { value: 10, label: "10K Gold" },
+              { value: 14, label: "14K Gold" },
+              { value: 18, label: "18K Gold" },
+              { value: 22, label: "22K Gold" },
+              { value: 24, label: "24K Gold" },
             ],
           },
         },
@@ -40,7 +40,7 @@ vi.mock('@/services/api', () => ({
 }));
 
 // Mock composables
-vi.mock('@/composables/useApi', () => ({
+vi.mock("@/composables/useApi", () => ({
   useApi: () => ({
     execute: vi.fn().mockResolvedValue(null),
     loading: false,
@@ -48,21 +48,21 @@ vi.mock('@/composables/useApi', () => ({
   }),
 }));
 
-vi.mock('@/composables/useLocale', () => ({
+vi.mock("@/composables/useLocale", () => ({
   useLocale: () => ({
     isRTL: false,
     formatGoldPurity: vi.fn((value: number) => `${value}K Gold`),
   }),
 }));
 
-vi.mock('@/composables/useNumberFormatter', () => ({
+vi.mock("@/composables/useNumberFormatter", () => ({
   useNumberFormatter: () => ({
     getGoldPurityOptions: vi.fn(() => [
-      { value: 10, label: '10K Gold' },
-      { value: 14, label: '14K Gold' },
-      { value: 18, label: '18K Gold' },
-      { value: 22, label: '22K Gold' },
-      { value: 24, label: '24K Gold' },
+      { value: 10, label: "10K Gold" },
+      { value: 14, label: "14K Gold" },
+      { value: 18, label: "18K Gold" },
+      { value: 22, label: "22K Gold" },
+      { value: 24, label: "24K Gold" },
     ]),
     toPersianNumerals: vi.fn((value: string) => value),
     formatNumber: vi.fn((value: number) => value.toString()),
@@ -72,20 +72,20 @@ vi.mock('@/composables/useNumberFormatter', () => ({
 // Create i18n instance for tests
 const i18n = createI18n({
   legacy: false,
-  locale: 'en',
+  locale: "en",
   messages: {
     en: {
       inventory: {
         categories: {
-          select_parent: 'Select parent category',
-          gold_purity_placeholder: 'Select gold purity',
-          no_categories_found: 'No categories found',
-          description: 'Get started by creating your first category',
+          select_parent: "Select parent category",
+          gold_purity_placeholder: "Select gold purity",
+          no_categories_found: "No categories found",
+          description: "Get started by creating your first category",
         },
-        gold_purity_help: 'Select the gold purity for this item',
+        gold_purity_help: "Select the gold purity for this item",
       },
       common: {
-        custom: 'Custom',
+        custom: "Custom",
       },
     },
   },

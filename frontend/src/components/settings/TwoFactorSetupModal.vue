@@ -1,5 +1,8 @@
 <template>
-  <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="$emit('close')">
+  <div
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="$emit('close')"
+  >
     <div
       class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
@@ -14,9 +17,11 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ $t("settings.security.choose_2fa_method") }}
           </p>
-          
+
           <div class="space-y-2">
-            <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+            <label
+              class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
               <input
                 type="radio"
                 value="sms"
@@ -33,7 +38,9 @@
               </div>
             </label>
 
-            <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+            <label
+              class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
               <input
                 type="radio"
                 value="totp"
@@ -71,9 +78,16 @@
         </div>
 
         <!-- Step 2: TOTP Setup -->
-        <div v-else-if="(method === 'totp' || selectedMethod === 'totp') && currentStep <= 2" class="space-y-4">
+        <div
+          v-else-if="
+            (method === 'totp' || selectedMethod === 'totp') && currentStep <= 2
+          "
+          class="space-y-4"
+        >
           <div v-if="!twoFactorSetup" class="text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"
+            ></div>
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
               {{ $t("settings.security.generating_qr") }}
             </p>
@@ -84,21 +98,29 @@
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 {{ $t("settings.security.scan_qr_code") }}
               </p>
-              
+
               <!-- QR Code would be displayed here -->
               <div class="bg-white p-4 rounded-lg inline-block">
-                <div class="w-48 h-48 bg-gray-200 flex items-center justify-center">
+                <div
+                  class="w-48 h-48 bg-gray-200 flex items-center justify-center"
+                >
                   <span class="text-gray-500">QR Code</span>
                 </div>
               </div>
 
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                {{ $t("settings.security.manual_entry") }}: <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ twoFactorSetup.secret }}</code>
+                {{ $t("settings.security.manual_entry") }}:
+                <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{
+                  twoFactorSetup.secret
+                }}</code>
               </p>
             </div>
 
             <div>
-              <label for="totp_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="totp_code"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.security.enter_verification_code") }}
               </label>
               <input
@@ -112,8 +134,13 @@
             </div>
 
             <!-- Backup Codes -->
-            <div v-if="twoFactorSetup.backup_codes" class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
-              <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+            <div
+              v-if="twoFactorSetup.backup_codes"
+              class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg"
+            >
+              <h4
+                class="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2"
+              >
                 {{ $t("settings.security.backup_codes") }}
               </h4>
               <p class="text-xs text-yellow-700 dark:text-yellow-300 mb-3">
@@ -142,7 +169,9 @@
             <button
               type="button"
               @click="verifyTwoFactor"
-              :disabled="!verificationCode || verificationCode.length !== 6 || isLoading"
+              :disabled="
+                !verificationCode || verificationCode.length !== 6 || isLoading
+              "
               class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span v-if="isLoading">{{ $t("common.verifying") }}</span>
@@ -152,13 +181,21 @@
         </div>
 
         <!-- Step 2: SMS Setup -->
-        <div v-else-if="(method === 'sms' || selectedMethod === 'sms') && currentStep <= 2" class="space-y-4">
+        <div
+          v-else-if="
+            (method === 'sms' || selectedMethod === 'sms') && currentStep <= 2
+          "
+          class="space-y-4"
+        >
           <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ $t("settings.security.sms_setup_desc") }}
           </p>
 
           <div>
-            <label for="phone_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="phone_number"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.security.phone_number") }}
             </label>
             <input
@@ -176,12 +213,19 @@
             :disabled="!phoneNumber || isLoading"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span v-if="isLoading">{{ $t("settings.security.sending_code") }}</span>
-            <span v-else>{{ $t("settings.security.send_verification_code") }}</span>
+            <span v-if="isLoading">{{
+              $t("settings.security.sending_code")
+            }}</span>
+            <span v-else>{{
+              $t("settings.security.send_verification_code")
+            }}</span>
           </button>
 
           <div v-if="smsSent">
-            <label for="sms_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              for="sms_code"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {{ $t("settings.security.enter_sms_code") }}
             </label>
             <input
@@ -206,7 +250,9 @@
               v-if="smsSent"
               type="button"
               @click="verifyTwoFactor"
-              :disabled="!verificationCode || verificationCode.length !== 6 || isLoading"
+              :disabled="
+                !verificationCode || verificationCode.length !== 6 || isLoading
+              "
               class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span v-if="isLoading">{{ $t("common.verifying") }}</span>
@@ -243,7 +289,9 @@ const { showNotification } = useNotifications();
 // State
 const isLoading = ref(false);
 const currentStep = ref(1);
-const selectedMethod = ref<"sms" | "totp">(props.method === "both" ? "sms" : props.method);
+const selectedMethod = ref<"sms" | "totp">(
+  props.method === "both" ? "sms" : props.method,
+);
 const twoFactorSetup = ref<TwoFactorSetup | null>(null);
 const verificationCode = ref("");
 const phoneNumber = ref("");
@@ -252,7 +300,7 @@ const smsSent = ref(false);
 // Methods
 const proceedToSetup = async () => {
   currentStep.value = 2;
-  
+
   if (selectedMethod.value === "totp") {
     await setupTOTP();
   }
@@ -261,9 +309,9 @@ const proceedToSetup = async () => {
 const setupTOTP = async () => {
   try {
     isLoading.value = true;
-    
+
     const result = await settingsStore.setupTwoFactor("totp");
-    
+
     if (result.success) {
       twoFactorSetup.value = result.data as TwoFactorSetup;
     } else {
@@ -287,9 +335,9 @@ const setupTOTP = async () => {
 const sendSmsCode = async () => {
   try {
     isLoading.value = true;
-    
+
     const result = await settingsStore.setupTwoFactor("sms");
-    
+
     if (result.success) {
       smsSent.value = true;
       showNotification({
@@ -318,9 +366,9 @@ const sendSmsCode = async () => {
 const verifyTwoFactor = async () => {
   try {
     isLoading.value = true;
-    
+
     const result = await settingsStore.verifyTwoFactor(verificationCode.value);
-    
+
     if (result.success) {
       showNotification({
         type: "success",

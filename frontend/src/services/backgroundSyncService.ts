@@ -1,8 +1,8 @@
-import { offlineService } from './offlineService';
+import { offlineService } from "./offlineService";
 
 interface SyncOperation {
   id: string;
-  type: 'critical' | 'normal' | 'low';
+  type: "critical" | "normal" | "low";
   operation: string;
   data: any;
   retries: number;
@@ -21,13 +21,16 @@ class BackgroundSyncService {
 
   private async initializeBackgroundSync() {
     // Register background sync if supported
-    if ('serviceWorker' in navigator && 'sync' in (window as any).ServiceWorkerRegistration.prototype) {
+    if (
+      "serviceWorker" in navigator &&
+      "sync" in (window as any).ServiceWorkerRegistration.prototype
+    ) {
       try {
         const registration = await navigator.serviceWorker.ready;
-        await (registration as any).sync.register('background-sync');
-        console.log('Background sync registered');
+        await (registration as any).sync.register("background-sync");
+        console.log("Background sync registered");
       } catch (error) {
-        console.error('Background sync registration failed:', error);
+        console.error("Background sync registration failed:", error);
         this.fallbackToPeriodicSync();
       }
     } else {
@@ -35,7 +38,7 @@ class BackgroundSyncService {
     }
 
     // Listen for online events
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.processSyncQueue();
     });
   }
@@ -52,22 +55,26 @@ class BackgroundSyncService {
   // Add critical operation to sync queue
   async addCriticalOperation(operation: string, data: any): Promise<string> {
     const id = `critical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const syncOp: SyncOperation = {
       id,
-      type: 'critical',
+      type: "critical",
       operation,
       data,
       retries: 0,
       maxRetries: 5,
-      nextRetry: Date.now()
+      nextRetry: Date.now(),
     };
 
     this.syncQueue.push(syncOp);
-    
+
     // Store in IndexedDB for persistence
-    await offlineService.addPendingSync('POST', this.getOperationEndpoint(operation), data);
-    
+    await offlineService.addPendingSync(
+      "POST",
+      this.getOperationEndpoint(operation),
+      data,
+    );
+
     // Try immediate sync if online
     if (navigator.onLine) {
       this.processSyncQueue();
@@ -79,36 +86,40 @@ class BackgroundSyncService {
   // Add normal operation to sync queue
   async addNormalOperation(operation: string, data: any): Promise<string> {
     const id = `normal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const syncOp: SyncOperation = {
       id,
-      type: 'normal',
+      type: "normal",
       operation,
       data,
       retries: 0,
       maxRetries: 3,
-      nextRetry: Date.now()
+      nextRetry: Date.now(),
     };
 
     this.syncQueue.push(syncOp);
-    await offlineService.addPendingSync('POST', this.getOperationEndpoint(operation), data);
-    
+    await offlineService.addPendingSync(
+      "POST",
+      this.getOperationEndpoint(operation),
+      data,
+    );
+
     return id;
   }
 
   // Process sync queue
   private async processSyncQueue() {
     if (this.isProcessing || !navigator.onLine) return;
-    
+
     this.isProcessing = true;
-    
+
     try {
       // Sort by priority (critical first) and retry time
       const sortedQueue = this.syncQueue
-        .filter(op => Date.now() >= op.nextRetry)
+        .filter((op) => Date.now() >= op.nextRetry)
         .sort((a, b) => {
-          if (a.type === 'critical' && b.type !== 'critical') return -1;
-          if (a.type !== 'critical' && b.type === 'critical') return 1;
+          if (a.type === "critical" && b.type !== "critical") return -1;
+          if (a.type !== "critical" && b.type === "critical") return 1;
           return a.nextRetry - b.nextRetry;
         });
 
@@ -129,15 +140,15 @@ class BackgroundSyncService {
   // Execute individual operation
   private async executeOperation(operation: SyncOperation): Promise<void> {
     const endpoint = this.getOperationEndpoint(operation.operation);
-    
+
     const response = await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
       },
-      body: JSON.stringify(operation.data)
+      body: JSON.stringify(operation.data),
     });
 
     if (!response.ok) {
@@ -151,14 +162,17 @@ class BackgroundSyncService {
   // Handle operation failure
   private async handleOperationFailure(operation: SyncOperation) {
     operation.retries++;
-    
+
     if (operation.retries >= operation.maxRetries) {
       // Max retries reached, remove from queue
       this.removeFromQueue(operation.id);
       this.notifyOperationFailure(operation);
     } else {
       // Schedule retry with exponential backoff
-      const backoffDelay = Math.min(1000 * Math.pow(2, operation.retries), 300000); // Max 5 minutes
+      const backoffDelay = Math.min(
+        1000 * Math.pow(2, operation.retries),
+        300000,
+      ); // Max 5 minutes
       operation.nextRetry = Date.now() + backoffDelay;
     }
   }
@@ -166,47 +180,55 @@ class BackgroundSyncService {
   // Get endpoint for operation type
   private getOperationEndpoint(operation: string): string {
     const endpoints: Record<string, string> = {
-      'save-invoice': '/api/invoices',
-      'save-customer': '/api/customers',
-      'save-inventory': '/api/inventory/items',
-      'save-transaction': '/api/accounting/transactions',
-      'send-communication': '/api/communications',
-      'backup-data': '/api/backup',
-      'sync-offline-data': '/api/sync/offline-data'
+      "save-invoice": "/api/invoices",
+      "save-customer": "/api/customers",
+      "save-inventory": "/api/inventory/items",
+      "save-transaction": "/api/accounting/transactions",
+      "send-communication": "/api/communications",
+      "backup-data": "/api/backup",
+      "sync-offline-data": "/api/sync/offline-data",
     };
-    
-    return endpoints[operation] || '/api/sync/generic';
+
+    return endpoints[operation] || "/api/sync/generic";
   }
 
   // Remove operation from queue
   private removeFromQueue(operationId: string) {
-    this.syncQueue = this.syncQueue.filter(op => op.id !== operationId);
+    this.syncQueue = this.syncQueue.filter((op) => op.id !== operationId);
   }
 
   // Notify operation success
   private notifyOperationSuccess(operation: SyncOperation) {
     // Dispatch custom event for UI updates
-    window.dispatchEvent(new CustomEvent('sync-operation-success', {
-      detail: { operation: operation.operation, id: operation.id }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("sync-operation-success", {
+        detail: { operation: operation.operation, id: operation.id },
+      }),
+    );
   }
 
   // Notify operation failure
   private notifyOperationFailure(operation: SyncOperation) {
     // Dispatch custom event for UI updates
-    window.dispatchEvent(new CustomEvent('sync-operation-failure', {
-      detail: { operation: operation.operation, id: operation.id, error: 'Max retries exceeded' }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("sync-operation-failure", {
+        detail: {
+          operation: operation.operation,
+          id: operation.id,
+          error: "Max retries exceeded",
+        },
+      }),
+    );
   }
 
   // Get queue status
   getQueueStatus() {
     return {
       total: this.syncQueue.length,
-      critical: this.syncQueue.filter(op => op.type === 'critical').length,
-      normal: this.syncQueue.filter(op => op.type === 'normal').length,
-      low: this.syncQueue.filter(op => op.type === 'low').length,
-      failed: this.syncQueue.filter(op => op.retries >= op.maxRetries).length
+      critical: this.syncQueue.filter((op) => op.type === "critical").length,
+      normal: this.syncQueue.filter((op) => op.type === "normal").length,
+      low: this.syncQueue.filter((op) => op.type === "low").length,
+      failed: this.syncQueue.filter((op) => op.retries >= op.maxRetries).length,
     };
   }
 
@@ -219,7 +241,7 @@ class BackgroundSyncService {
 
   // Clear failed operations
   clearFailedOperations() {
-    this.syncQueue = this.syncQueue.filter(op => op.retries < op.maxRetries);
+    this.syncQueue = this.syncQueue.filter((op) => op.retries < op.maxRetries);
   }
 
   // Destroy service

@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import ReportsInterface from '@/components/reports/ReportsInterface.vue'
+import ReportsInterface from "@/components/reports/ReportsInterface.vue";
 </script>
 
 <style scoped>

@@ -22,7 +22,9 @@
         </thead>
 
         <!-- Table Body -->
-        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody
+          class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+        >
           <tr
             v-for="row in rows"
             :key="`row-${row}`"
@@ -41,13 +43,20 @@
                   <SkeletonLoader width="80px" height="12px" />
                 </div>
               </div>
-              <div v-else-if="col === columns" class="flex justify-end space-x-2">
+              <div
+                v-else-if="col === columns"
+                class="flex justify-end space-x-2"
+              >
                 <!-- Action buttons -->
                 <SkeletonLoader width="24px" height="24px" />
                 <SkeletonLoader width="24px" height="24px" />
                 <SkeletonLoader width="24px" height="24px" />
               </div>
-              <SkeletonLoader v-else :width="getColumnWidth(col)" height="16px" />
+              <SkeletonLoader
+                v-else
+                :width="getColumnWidth(col)"
+                height="16px"
+              />
             </td>
           </tr>
         </tbody>
@@ -68,21 +77,21 @@
 </template>
 
 <script setup lang="ts">
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from "./SkeletonLoader.vue";
 
 interface Props {
-  rows?: number
-  columns?: number
+  rows?: number;
+  columns?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rows: 5,
-  columns: 6
-})
+  columns: 6,
+});
 
 const getColumnWidth = (col: number): string => {
   // Vary column widths for more realistic skeleton
-  const widths = ['100px', '80px', '120px', '90px', '110px', '70px']
-  return widths[(col - 1) % widths.length]
-}
+  const widths = ["100px", "80px", "120px", "90px", "110px", "70px"];
+  return widths[(col - 1) % widths.length];
+};
 </script>

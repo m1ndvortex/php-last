@@ -34,7 +34,8 @@
                   {{ role.description }}
                 </div>
                 <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  {{ role.permissions.length }} {{ $t("settings.roles.permissions") }}
+                  {{ role.permissions.length }}
+                  {{ $t("settings.roles.permissions") }}
                 </div>
               </div>
             </div>
@@ -76,12 +77,19 @@
       >
         <div class="mt-3">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {{ showCreateRoleModal ? $t("settings.roles.create_role") : $t("settings.roles.edit_role") }}
+            {{
+              showCreateRoleModal
+                ? $t("settings.roles.create_role")
+                : $t("settings.roles.edit_role")
+            }}
           </h3>
-          
+
           <form @submit.prevent="saveRole" class="space-y-4">
             <div>
-              <label for="role_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="role_name"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.roles.role_name") }}
               </label>
               <input
@@ -95,7 +103,10 @@
             </div>
 
             <div>
-              <label for="role_display_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="role_display_name"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.roles.display_name") }}
               </label>
               <input
@@ -109,7 +120,10 @@
             </div>
 
             <div>
-              <label for="role_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="role_description"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ $t("settings.roles.description") }}
               </label>
               <textarea
@@ -123,13 +137,21 @@
 
             <!-- Permissions -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+              >
                 {{ $t("settings.roles.permissions") }}
               </label>
               <div class="space-y-4">
-                <div v-for="module in permissionModules" :key="module" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div
+                  v-for="module in permissionModules"
+                  :key="module"
+                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                >
                   <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                    <h4
+                      class="text-sm font-medium text-gray-900 dark:text-white capitalize"
+                    >
                       {{ module }}
                     </h4>
                     <button
@@ -137,7 +159,11 @@
                       @click="toggleModulePermissions(module)"
                       class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
                     >
-                      {{ isModuleFullySelected(module) ? $t("common.deselect_all") : $t("common.select_all") }}
+                      {{
+                        isModuleFullySelected(module)
+                          ? $t("common.deselect_all")
+                          : $t("common.select_all")
+                      }}
                     </button>
                   </div>
                   <div class="grid grid-cols-2 gap-2">
@@ -152,7 +178,9 @@
                         v-model="roleForm.permission_ids"
                         class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                       />
-                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      <span
+                        class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                      >
                         {{ permission.display_name }}
                       </span>
                     </label>
@@ -186,7 +214,11 @@
     <ConfirmationModal
       v-if="showDeleteModal"
       :title="$t('settings.roles.delete_role')"
-      :message="$t('settings.roles.delete_confirmation', { role: roleToDelete?.display_name })"
+      :message="
+        $t('settings.roles.delete_confirmation', {
+          role: roleToDelete?.display_name,
+        })
+      "
       :confirm-text="$t('common.delete')"
       :cancel-text="$t('common.cancel')"
       @confirm="confirmDeleteRole"
@@ -223,17 +255,17 @@ const roleForm = reactive({
 
 // Computed
 const permissionModules = computed(() => {
-  const modules = new Set(settingsStore.permissions.map(p => p.module));
+  const modules = new Set(settingsStore.permissions.map((p) => p.module));
   return Array.from(modules);
 });
 
 const getModulePermissions = (module: string) => {
-  return settingsStore.permissions.filter(p => p.module === module);
+  return settingsStore.permissions.filter((p) => p.module === module);
 };
 
 const isModuleFullySelected = (module: string) => {
   const modulePermissions = getModulePermissions(module);
-  return modulePermissions.every(p => roleForm.permission_ids.includes(p.id));
+  return modulePermissions.every((p) => roleForm.permission_ids.includes(p.id));
 };
 
 // Methods
@@ -242,7 +274,7 @@ const editRole = (role: Role) => {
   roleForm.name = role.name;
   roleForm.display_name = role.display_name;
   roleForm.description = role.description || "";
-  roleForm.permission_ids = role.permissions.map(p => p.id);
+  roleForm.permission_ids = role.permissions.map((p) => p.id);
   showEditRoleModal.value = true;
 };
 
@@ -257,7 +289,7 @@ const confirmDeleteRole = async () => {
   try {
     isLoading.value = true;
     const result = await settingsStore.deleteRole(roleToDelete.value.id);
-    
+
     if (result.success) {
       showNotification({
         type: "success",
@@ -287,17 +319,17 @@ const confirmDeleteRole = async () => {
 const toggleModulePermissions = (module: string) => {
   const modulePermissions = getModulePermissions(module);
   const isFullySelected = isModuleFullySelected(module);
-  
+
   if (isFullySelected) {
     // Remove all module permissions
     roleForm.permission_ids = roleForm.permission_ids.filter(
-      id => !modulePermissions.some(p => p.id === id)
+      (id) => !modulePermissions.some((p) => p.id === id),
     );
   } else {
     // Add all module permissions
     const newPermissions = modulePermissions
-      .filter(p => !roleForm.permission_ids.includes(p.id))
-      .map(p => p.id);
+      .filter((p) => !roleForm.permission_ids.includes(p.id))
+      .map((p) => p.id);
     roleForm.permission_ids.push(...newPermissions);
   }
 };
@@ -305,7 +337,7 @@ const toggleModulePermissions = (module: string) => {
 const saveRole = async () => {
   try {
     isLoading.value = true;
-    
+
     const roleData = {
       name: roleForm.name,
       display_name: roleForm.display_name,
@@ -319,7 +351,7 @@ const saveRole = async () => {
     } else {
       result = await settingsStore.createRole(roleData);
     }
-    
+
     if (result.success) {
       showNotification({
         type: "success",
@@ -349,7 +381,7 @@ const closeModals = () => {
   showCreateRoleModal.value = false;
   showEditRoleModal.value = false;
   editingRole.value = null;
-  
+
   // Reset form
   roleForm.name = "";
   roleForm.display_name = "";

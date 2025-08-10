@@ -1,10 +1,10 @@
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { offlineService } from '@/services/offlineService';
+import { ref, reactive, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { offlineService } from "@/services/offlineService";
 
 interface SyncStatus {
   isVisible: boolean;
-  type: 'syncing' | 'success' | 'error' | 'pending' | null;
+  type: "syncing" | "success" | "error" | "pending" | null;
   message: string;
   progress: { current: number; total: number } | null;
 }
@@ -21,22 +21,22 @@ export function usePWA() {
   const syncStatus = reactive<SyncStatus>({
     isVisible: false,
     type: null,
-    message: '',
-    progress: null
+    message: "",
+    progress: null,
   });
   const storageInfo = reactive<StorageInfo>({
     used: 0,
     quota: 0,
-    percentage: 0
+    percentage: 0,
   });
 
   const needRefresh = ref(false);
   const offlineReady = ref(false);
-  
+
   const updateServiceWorker = () => {
     // Implementation for updating service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(registration => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistration().then((registration) => {
         if (registration) {
           registration.update();
         }
@@ -52,17 +52,21 @@ export function usePWA() {
 
   const handleOffline = () => {
     isOnline.value = false;
-    showSyncStatus('error', t('sync.offline'), null);
+    showSyncStatus("error", t("sync.offline"), null);
   };
 
   // Show sync status with auto-hide
-  const showSyncStatus = (type: SyncStatus['type'], message: string, progress: SyncStatus['progress'] = null) => {
+  const showSyncStatus = (
+    type: SyncStatus["type"],
+    message: string,
+    progress: SyncStatus["progress"] = null,
+  ) => {
     syncStatus.isVisible = true;
     syncStatus.type = type;
     syncStatus.message = message;
     syncStatus.progress = progress;
 
-    if (type === 'success') {
+    if (type === "success") {
       setTimeout(() => {
         syncStatus.isVisible = false;
       }, 3000);
@@ -70,19 +74,22 @@ export function usePWA() {
   };
 
   // Submit form offline
-  const submitFormOffline = async (formType: string, formData: any): Promise<string> => {
+  const submitFormOffline = async (
+    formType: string,
+    formData: any,
+  ): Promise<string> => {
     try {
       const id = await offlineService.storeOfflineForm(formType, formData);
-      showSyncStatus('pending', t('sync.queued'), null);
-      
+      showSyncStatus("pending", t("sync.queued"), null);
+
       // Try to sync immediately if online
       if (isOnline.value) {
         setTimeout(() => syncPendingOperations(), 1000);
       }
-      
+
       return id;
     } catch (error) {
-      console.error('Error storing offline form:', error);
+      console.error("Error storing offline form:", error);
       throw error;
     }
   };
@@ -92,11 +99,12 @@ export function usePWA() {
     if (!isOnline.value) return;
 
     try {
-      showSyncStatus('syncing', t('sync.syncing'), null);
+      showSyncStatus("syncing", t("sync.syncing"), null);
 
       const pendingSync = await offlineService.getPendingSync();
       const offlineForms = await offlineService.getOfflineForms();
-      const totalOperations = pendingSync.length + offlineForms.filter(f => !f.synced).length;
+      const totalOperations =
+        pendingSync.length + offlineForms.filter((f) => !f.synced).length;
 
       if (totalOperations === 0) {
         syncStatus.isVisible = false;
@@ -111,22 +119,25 @@ export function usePWA() {
           const response = await fetch(operation.url, {
             method: operation.method,
             headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "X-Requested-With": "XMLHttpRequest",
             },
-            body: operation.data ? JSON.stringify(operation.data) : undefined
+            body: operation.data ? JSON.stringify(operation.data) : undefined,
           });
 
           if (response.ok) {
             await offlineService.removePendingSync(operation.id);
             completed++;
-            showSyncStatus('syncing', t('sync.syncing'), { current: completed, total: totalOperations });
+            showSyncStatus("syncing", t("sync.syncing"), {
+              current: completed,
+              total: totalOperations,
+            });
           } else {
             throw new Error(`HTTP ${response.status}`);
           }
         } catch (error) {
-          console.error('Sync operation failed:', error);
+          console.error("Sync operation failed:", error);
           // Increment retry count or remove after max retries
           if (operation.retries >= 3) {
             await offlineService.removePendingSync(operation.id);
@@ -135,47 +146,50 @@ export function usePWA() {
       }
 
       // Sync offline forms
-      for (const form of offlineForms.filter(f => !f.synced)) {
+      for (const form of offlineForms.filter((f) => !f.synced)) {
         try {
           const endpoint = getFormEndpoint(form.type);
           const response = await fetch(endpoint, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "X-Requested-With": "XMLHttpRequest",
             },
-            body: JSON.stringify(form.data)
+            body: JSON.stringify(form.data),
           });
 
           if (response.ok) {
             await offlineService.markFormSynced(form.id);
             completed++;
-            showSyncStatus('syncing', t('sync.syncing'), { current: completed, total: totalOperations });
+            showSyncStatus("syncing", t("sync.syncing"), {
+              current: completed,
+              total: totalOperations,
+            });
           } else {
             throw new Error(`HTTP ${response.status}`);
           }
         } catch (error) {
-          console.error('Form sync failed:', error);
+          console.error("Form sync failed:", error);
         }
       }
 
-      showSyncStatus('success', t('sync.completed'), null);
+      showSyncStatus("success", t("sync.completed"), null);
     } catch (error) {
-      console.error('Sync failed:', error);
-      showSyncStatus('error', t('sync.failed'), null);
+      console.error("Sync failed:", error);
+      showSyncStatus("error", t("sync.failed"), null);
     }
   };
 
   // Get form endpoint based on type
   const getFormEndpoint = (formType: string): string => {
     const endpoints: Record<string, string> = {
-      'customer': '/api/customers',
-      'invoice': '/api/invoices',
-      'inventory': '/api/inventory/items',
-      'transaction': '/api/accounting/transactions'
+      customer: "/api/customers",
+      invoice: "/api/invoices",
+      inventory: "/api/inventory/items",
+      transaction: "/api/accounting/transactions",
     };
-    return endpoints[formType] || '/api/forms';
+    return endpoints[formType] || "/api/forms";
   };
 
   // Retry sync operation
@@ -190,10 +204,10 @@ export function usePWA() {
     try {
       await offlineService.clearOldCache();
       await updateStorageInfo();
-      showSyncStatus('success', t('storage.cleared'), null);
+      showSyncStatus("success", t("storage.cleared"), null);
     } catch (error) {
-      console.error('Error clearing old data:', error);
-      showSyncStatus('error', t('storage.clearError'), null);
+      console.error("Error clearing old data:", error);
+      showSyncStatus("error", t("storage.clearError"), null);
     }
   };
 
@@ -203,7 +217,7 @@ export function usePWA() {
       const info = await offlineService.getStorageInfo();
       Object.assign(storageInfo, info);
     } catch (error) {
-      console.error('Error getting storage info:', error);
+      console.error("Error getting storage info:", error);
     }
   };
 
@@ -212,7 +226,7 @@ export function usePWA() {
     try {
       await offlineService.cacheData(type as any, id, data);
     } catch (error) {
-      console.error('Error caching data:', error);
+      console.error("Error caching data:", error);
     }
   };
 
@@ -221,7 +235,7 @@ export function usePWA() {
     try {
       return await offlineService.getCachedData(type as any, id);
     } catch (error) {
-      console.error('Error getting cached data:', error);
+      console.error("Error getting cached data:", error);
       return [];
     }
   };
@@ -230,7 +244,7 @@ export function usePWA() {
   const initializePWA = async () => {
     await offlineService.init();
     await updateStorageInfo();
-    
+
     // Sync on startup if online
     if (isOnline.value) {
       setTimeout(() => syncPendingOperations(), 2000);
@@ -242,14 +256,14 @@ export function usePWA() {
 
   // Setup event listeners
   onMounted(() => {
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     initializePWA();
   });
 
   onUnmounted(() => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
   });
 
   return {
@@ -264,6 +278,6 @@ export function usePWA() {
     retrySyncOperation,
     clearOldData,
     cacheApiResponse,
-    getCachedData
+    getCachedData,
   };
 }

@@ -49,7 +49,7 @@ export function useLocale() {
   // Category-specific localization methods
   const getLocalizedCategoryName = (category: any): string => {
     if (!category) return "";
-    
+
     if (locale.value === "fa" && category.name_persian) {
       return category.name_persian;
     }
@@ -58,7 +58,7 @@ export function useLocale() {
 
   const getLocalizedCategoryDescription = (category: any): string => {
     if (!category) return "";
-    
+
     if (locale.value === "fa" && category.description_persian) {
       return category.description_persian;
     }
@@ -67,7 +67,7 @@ export function useLocale() {
 
   const formatGoldPurity = (purity: number): string => {
     if (!purity) return "";
-    
+
     if (locale.value === "fa") {
       // Format with Persian numerals and terminology
       const persianPurity = formatNumber(purity);
@@ -78,10 +78,10 @@ export function useLocale() {
 
   const formatGoldPurityDisplay = (purity: number): string => {
     if (!purity) return "";
-    
+
     const formattedPurity = formatGoldPurity(purity);
     const terminology = t("inventory.categories.gold_purity_terminology");
-    
+
     if (locale.value === "fa") {
       return `${terminology}: ${formattedPurity}`;
     }
@@ -90,22 +90,22 @@ export function useLocale() {
 
   const getCategoryPath = (category: any, categories: any[] = []): string => {
     if (!category) return "";
-    
+
     const path: string[] = [];
     let current = category;
-    
+
     while (current) {
       path.unshift(getLocalizedCategoryName(current));
-      current = categories.find(c => c.id === current.parent_id);
+      current = categories.find((c) => c.id === current.parent_id);
     }
-    
+
     const separator = locale.value === "fa" ? " ← " : " → ";
     return path.join(separator);
   };
 
   const formatPersianNumerals = (text: string): string => {
     if (locale.value !== "fa") return text;
-    
+
     const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
     return text.replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
   };

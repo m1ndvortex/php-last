@@ -366,16 +366,16 @@ import { ref, computed, onMounted } from "vue";
 // import { useI18n } from "vue-i18n";
 // Simple debounce implementation
 const debounce = (func: Function, wait: number) => {
-  let timeout: NodeJS.Timeout
+  let timeout: NodeJS.Timeout;
   return function executedFunction(...args: any[]) {
     const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 import {
   PlusIcon,
   EyeIcon,

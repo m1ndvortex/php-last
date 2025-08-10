@@ -167,7 +167,11 @@
             @click="showAdvancedFilters = !showAdvancedFilters"
             class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
-            {{ showAdvancedFilters ? $t("common.hide_filters") : $t("common.show_filters") }}
+            {{
+              showAdvancedFilters
+                ? $t("common.hide_filters")
+                : $t("common.show_filters")
+            }}
           </button>
         </div>
       </div>
@@ -534,16 +538,16 @@
 import { ref, computed, onMounted, watch } from "vue";
 // Simple debounce implementation
 const debounce = (func: Function, wait: number) => {
-  let timeout: NodeJS.Timeout
+  let timeout: NodeJS.Timeout;
   return function executedFunction(...args: any[]) {
     const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 import {
   EyeIcon,
   PencilIcon,
@@ -628,7 +632,8 @@ const availableSubcategories = computed(() => {
     return inventoryStore.categories.filter((cat: Category) => cat.parent_id);
   }
   return inventoryStore.categories.filter(
-    (cat: Category) => cat.parent_id === parseInt(localFilters.value.main_category_id)
+    (cat: Category) =>
+      cat.parent_id === parseInt(localFilters.value.main_category_id),
   );
 });
 
@@ -769,7 +774,7 @@ const handleClickOutside = (event: Event) => {
 // Lifecycle
 onMounted(async () => {
   document.addEventListener("click", handleClickOutside);
-  
+
   // Load categories for filtering
   try {
     await inventoryStore.fetchCategories();

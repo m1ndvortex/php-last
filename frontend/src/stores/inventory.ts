@@ -55,24 +55,30 @@ export const useInventoryStore = defineStore("inventory", () => {
   });
 
   // Getters
-  const activeItems = computed(() =>
-    items.value?.filter((item) => item.is_active) || [],
+  const activeItems = computed(
+    () => items.value?.filter((item) => item.is_active) || [],
   );
 
-  const lowStockItems = computed(() =>
-    items.value?.filter((item) => item.is_low_stock) || [],
+  const lowStockItems = computed(
+    () => items.value?.filter((item) => item.is_low_stock) || [],
   );
 
-  const expiringItems = computed(() =>
-    items.value?.filter((item) => item.is_expiring) || [],
+  const expiringItems = computed(
+    () => items.value?.filter((item) => item.is_expiring) || [],
   );
 
-  const totalInventoryValue = computed(() =>
-    items.value?.reduce((total, item) => total + (item.total_value || 0), 0) || 0,
+  const totalInventoryValue = computed(
+    () =>
+      items.value?.reduce(
+        (total, item) => total + (item.total_value || 0),
+        0,
+      ) || 0,
   );
 
-  const totalInventoryCost = computed(() =>
-    items.value?.reduce((total, item) => total + (item.total_cost || 0), 0) || 0,
+  const totalInventoryCost = computed(
+    () =>
+      items.value?.reduce((total, item) => total + (item.total_cost || 0), 0) ||
+      0,
   );
 
   const itemsByCategory = computed(() => {

@@ -57,9 +57,26 @@
             :disabled="loading"
             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
           >
-            <svg v-if="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              v-if="loading"
+              class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             {{ loading ? $t("common.loading") : $t("invoices.generate_pdfs") }}
           </button>
@@ -96,12 +113,14 @@ const handleGenerate = async () => {
   if (selectedInvoices.value.length === 0) {
     // For now, use all available invoices if none selected
     // In a real implementation, you'd have a selection interface
-    selectedInvoices.value = invoicesStore.invoices.map(inv => inv.id);
+    selectedInvoices.value = invoicesStore.invoices.map((inv) => inv.id);
   }
 
   loading.value = true;
   try {
-    const result = await invoicesStore.generateBatchInvoices(selectedInvoices.value);
+    const result = await invoicesStore.generateBatchInvoices(
+      selectedInvoices.value,
+    );
     emit("generated", result);
   } catch (error) {
     console.error("Failed to generate batch PDFs:", error);

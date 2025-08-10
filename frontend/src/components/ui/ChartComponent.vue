@@ -3,11 +3,7 @@
     <div v-if="type === 'bar'" class="bar-chart">
       <div class="chart-title">{{ title }}</div>
       <div class="bars">
-        <div
-          v-for="(item, index) in data"
-          :key="index"
-          class="bar-item"
-        >
+        <div v-for="(item, index) in data" :key="index" class="bar-item">
           <div
             class="bar"
             :style="{ height: `${(item.value / maxValue) * 100}%` }"
@@ -44,22 +40,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 interface ChartData {
-  label: string
-  value: number
+  label: string;
+  value: number;
 }
 
 const props = defineProps<{
-  type: 'bar' | 'line' | 'pie' | 'area'
-  title?: string
-  data: ChartData[]
-}>()
+  type: "bar" | "line" | "pie" | "area";
+  title?: string;
+  data: ChartData[];
+}>();
 
 const maxValue = computed(() => {
-  return Math.max(...props.data.map(item => item.value))
-})
+  return Math.max(...props.data.map((item) => item.value));
+});
 </script>
 
 <style scoped>

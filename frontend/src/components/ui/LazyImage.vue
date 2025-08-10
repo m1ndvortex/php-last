@@ -1,10 +1,7 @@
 <template>
   <div
     ref="targetRef"
-    :class="[
-      'relative overflow-hidden',
-      containerClass
-    ]"
+    :class="['relative overflow-hidden', containerClass]"
     :style="containerStyle"
   >
     <!-- Loading Placeholder -->
@@ -13,12 +10,18 @@
       class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800"
     >
       <div v-if="imageLoading" class="flex flex-col items-center space-y-2">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $t('common.loading') }}...</span>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+        ></div>
+        <span class="text-xs text-gray-500 dark:text-gray-400"
+          >{{ $t("common.loading") }}...</span
+        >
       </div>
       <div v-else class="flex flex-col items-center space-y-2">
         <PhotoIcon class="h-8 w-8 text-gray-400" />
-        <span class="text-xs text-gray-500 dark:text-gray-400">{{ placeholder || $t('common.image') }}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{
+          placeholder || $t("common.image")
+        }}</span>
       </div>
     </div>
 
@@ -29,13 +32,15 @@
     >
       <div class="flex flex-col items-center space-y-2">
         <ExclamationTriangleIcon class="h-8 w-8 text-red-400" />
-        <span class="text-xs text-red-500 dark:text-red-400">{{ $t('common.image_error') }}</span>
+        <span class="text-xs text-red-500 dark:text-red-400">{{
+          $t("common.image_error")
+        }}</span>
         <button
           v-if="allowRetry"
           @click="retryLoad"
           class="text-xs text-primary-600 hover:text-primary-700 underline"
         >
-          {{ $t('common.retry') }}
+          {{ $t("common.retry") }}
         </button>
       </div>
     </div>
@@ -48,7 +53,7 @@
         :alt="alt"
         :class="[
           'w-full h-full object-cover transition-opacity duration-300',
-          imageClass
+          imageClass,
         ]"
         @load="handleImageLoad"
         @error="handleImageError"
@@ -63,37 +68,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { PhotoIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
-import { useLazyImage } from '@/composables/useLazyLoading'
+import { ref, computed, watch, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { PhotoIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import { useLazyImage } from "@/composables/useLazyLoading";
 
 interface Props {
-  src: string
-  alt?: string
-  placeholder?: string
-  width?: string | number
-  height?: string | number
-  containerClass?: string
-  imageClass?: string
-  allowRetry?: boolean
-  eager?: boolean
-  threshold?: number
-  rootMargin?: string
+  src: string;
+  alt?: string;
+  placeholder?: string;
+  width?: string | number;
+  height?: string | number;
+  containerClass?: string;
+  imageClass?: string;
+  allowRetry?: boolean;
+  eager?: boolean;
+  threshold?: number;
+  rootMargin?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  alt: '',
-  placeholder: '',
-  containerClass: '',
-  imageClass: '',
+  alt: "",
+  placeholder: "",
+  containerClass: "",
+  imageClass: "",
   allowRetry: true,
   eager: false,
   threshold: 0.1,
-  rootMargin: '50px'
-})
+  rootMargin: "50px",
+});
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 // Lazy loading setup
 const {
@@ -103,66 +108,71 @@ const {
   imageLoading,
   isVisible,
   isLoaded,
-  loadImage
+  loadImage,
 } = useLazyImage(props.src, {
   threshold: props.threshold,
   rootMargin: props.rootMargin,
-  once: true
-})
+  once: true,
+});
 
 // Computed styles
 const containerStyle = computed(() => {
-  const style: Record<string, string> = {}
-  
+  const style: Record<string, string> = {};
+
   if (props.width) {
-    style.width = typeof props.width === 'number' ? `${props.width}px` : props.width
+    style.width =
+      typeof props.width === "number" ? `${props.width}px` : props.width;
   }
-  
+
   if (props.height) {
-    style.height = typeof props.height === 'number' ? `${props.height}px` : props.height
+    style.height =
+      typeof props.height === "number" ? `${props.height}px` : props.height;
   }
-  
-  return style
-})
+
+  return style;
+});
 
 // Methods
 const handleImageLoad = () => {
   // Image loaded successfully
-}
+};
 
 const handleImageError = () => {
   // Image failed to load
-}
+};
 
 const retryLoad = () => {
-  imageError.value = false
-  loadImage()
-}
+  imageError.value = false;
+  loadImage();
+};
 
 // Watch for visibility changes to trigger loading
 watch(isVisible, (visible) => {
   if (visible && !isLoaded.value && !props.eager) {
-    loadImage()
+    loadImage();
   }
-})
+});
 
 // Watch for src changes
-watch(() => props.src, (newSrc) => {
-  if (newSrc && newSrc !== imageSrc.value) {
-    imageError.value = false
-    isLoaded.value = false
-    if (isVisible.value || props.eager) {
-      loadImage()
+watch(
+  () => props.src,
+  (newSrc) => {
+    if (newSrc && newSrc !== imageSrc.value) {
+      imageError.value = false;
+      isLoaded.value = false;
+      if (isVisible.value || props.eager) {
+        loadImage();
+      }
     }
-  }
-})
+  },
+);
 
 // Load immediately if eager
 onMounted(() => {
   if (props.eager) {
-    loadImage()
+    loadImage();
   }
-})
+});
 </script>
 
 <style scoped>

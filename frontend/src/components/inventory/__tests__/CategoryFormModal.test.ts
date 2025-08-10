@@ -94,10 +94,18 @@ describe("CategoryFormModal", () => {
     expect(wrapper.find('input[name="name_persian"]').exists()).toBe(true);
     expect(wrapper.find('input[name="code"]').exists()).toBe(true);
     expect(wrapper.find('textarea[name="description"]').exists()).toBe(true);
-    expect(wrapper.find('textarea[name="description_persian"]').exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "CategorySelector" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "GoldPuritySelector" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "CategoryImageUpload" }).exists()).toBe(true);
+    expect(wrapper.find('textarea[name="description_persian"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.findComponent({ name: "CategorySelector" }).exists()).toBe(
+      true,
+    );
+    expect(wrapper.findComponent({ name: "GoldPuritySelector" }).exists()).toBe(
+      true,
+    );
+    expect(
+      wrapper.findComponent({ name: "CategoryImageUpload" }).exists(),
+    ).toBe(true);
   });
 
   it("validates required fields", async () => {
@@ -135,14 +143,20 @@ describe("CategoryFormModal", () => {
       },
     });
 
-    expect(wrapper.find('input[name="name"]').element.value).toBe("Test Category");
-    expect(wrapper.find('input[name="name_persian"]').element.value).toBe("دسته تست");
+    expect(wrapper.find('input[name="name"]').element.value).toBe(
+      "Test Category",
+    );
+    expect(wrapper.find('input[name="name_persian"]').element.value).toBe(
+      "دسته تست",
+    );
     expect(wrapper.find('input[name="code"]').element.value).toBe("TEST");
   });
 
   it("handles form submission for create", async () => {
     const mockApiPost = vi.fn().mockResolvedValue({ data: { id: 1 } });
-    vi.mocked(require("../../../services/api").default.post).mockImplementation(mockApiPost);
+    vi.mocked(require("../../../services/api").default.post).mockImplementation(
+      mockApiPost,
+    );
 
     const wrapper = mount(CategoryFormModal, {
       props: {
@@ -158,13 +172,18 @@ describe("CategoryFormModal", () => {
     // Submit form
     await wrapper.find("form").trigger("submit");
 
-    expect(mockApiPost).toHaveBeenCalledWith("/api/categories", expect.any(Object));
+    expect(mockApiPost).toHaveBeenCalledWith(
+      "/api/categories",
+      expect.any(Object),
+    );
     expect(wrapper.emitted("saved")).toBeTruthy();
   });
 
   it("handles form submission for update", async () => {
     const mockApiPut = vi.fn().mockResolvedValue({ data: { id: 1 } });
-    vi.mocked(require("../../../services/api").default.put).mockImplementation(mockApiPut);
+    vi.mocked(require("../../../services/api").default.put).mockImplementation(
+      mockApiPut,
+    );
 
     const mockCategory = {
       id: 1,
@@ -181,13 +200,18 @@ describe("CategoryFormModal", () => {
 
     await wrapper.find("form").trigger("submit");
 
-    expect(mockApiPut).toHaveBeenCalledWith("/api/categories/1", expect.any(Object));
+    expect(mockApiPut).toHaveBeenCalledWith(
+      "/api/categories/1",
+      expect.any(Object),
+    );
     expect(wrapper.emitted("saved")).toBeTruthy();
   });
 
   it("handles API errors gracefully", async () => {
     const mockApiPost = vi.fn().mockRejectedValue(new Error("API Error"));
-    vi.mocked(require("../../../services/api").default.post).mockImplementation(mockApiPost);
+    vi.mocked(require("../../../services/api").default.post).mockImplementation(
+      mockApiPost,
+    );
 
     const wrapper = mount(CategoryFormModal, {
       props: {
@@ -265,7 +289,9 @@ describe("CategoryFormModal", () => {
       },
     });
 
-    const goldPuritySelector = wrapper.findComponent({ name: "GoldPuritySelector" });
+    const goldPuritySelector = wrapper.findComponent({
+      name: "GoldPuritySelector",
+    });
     await goldPuritySelector.vm.$emit("update:modelValue", 25); // Invalid value
 
     expect(wrapper.find(".error-message").text()).toContain("gold_purity");
@@ -287,8 +313,12 @@ describe("CategoryFormModal", () => {
       },
     });
 
-    expect(wrapper.find('input[name="name_persian"]').attributes("dir")).toBe("rtl");
-    expect(wrapper.find('textarea[name="description_persian"]').attributes("dir")).toBe("rtl");
+    expect(wrapper.find('input[name="name_persian"]').attributes("dir")).toBe(
+      "rtl",
+    );
+    expect(
+      wrapper.find('textarea[name="description_persian"]').attributes("dir"),
+    ).toBe("rtl");
   });
 
   it("handles keyboard shortcuts", async () => {
@@ -342,7 +372,9 @@ describe("CategoryFormModal", () => {
       category: { id: 1, name: "Edit Category", code: "EDIT" },
     });
 
-    expect(wrapper.find('input[name="name"]').element.value).toBe("Edit Category");
+    expect(wrapper.find('input[name="name"]').element.value).toBe(
+      "Edit Category",
+    );
   });
 
   it("validates category code uniqueness", async () => {
@@ -356,7 +388,9 @@ describe("CategoryFormModal", () => {
         },
       },
     });
-    vi.mocked(require("../../../services/api").default.post).mockImplementation(mockApiPost);
+    vi.mocked(require("../../../services/api").default.post).mockImplementation(
+      mockApiPost,
+    );
 
     const wrapper = mount(CategoryFormModal, {
       props: {
@@ -368,6 +402,8 @@ describe("CategoryFormModal", () => {
     await wrapper.find('input[name="code"]').setValue("EXISTING");
     await wrapper.find("form").trigger("submit");
 
-    expect(wrapper.find(".error-message").text()).toContain("already been taken");
+    expect(wrapper.find(".error-message").text()).toContain(
+      "already been taken",
+    );
   });
 });

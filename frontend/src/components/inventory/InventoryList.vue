@@ -196,7 +196,11 @@
       </div>
 
       <!-- Loading State -->
-      <TableSkeleton v-if="inventoryStore.loading.items" :rows="10" :columns="9" />
+      <TableSkeleton
+        v-if="inventoryStore.loading.items"
+        :rows="10"
+        :columns="9"
+      />
 
       <!-- Empty State -->
       <div
@@ -318,7 +322,11 @@
               <td
                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
               >
-                <span v-if="item.unit_price !== null && item.unit_price !== undefined">
+                <span
+                  v-if="
+                    item.unit_price !== null && item.unit_price !== undefined
+                  "
+                >
                   {{ formatCurrency(item.unit_price) }}
                 </span>
                 <span v-else class="text-gray-500 dark:text-gray-400 italic">
@@ -471,7 +479,7 @@ const { locale } = useI18n();
 const inventoryStore = useInventoryStore();
 const { formatNumber, formatCurrency } = useNumberFormatter();
 const { execute } = useApi();
-const { mark, measure } = usePerformanceMonitoring('InventoryList');
+const { mark, measure } = usePerformanceMonitoring("InventoryList");
 
 // State
 const searchQuery = ref("");
@@ -483,44 +491,51 @@ const filters = ref({
   gold_purity_min: null as number | null,
   gold_purity_max: null as number | null,
 });
-const goldPurityRanges = ref<Array<{ label: string; min: number; max: number }>>([]);
+const goldPurityRanges = ref<
+  Array<{ label: string; min: number; max: number }>
+>([]);
 
 // Methods
 const debouncedSearch = debounce(() => {
-  mark('search-start');
+  mark("search-start");
   applyFilters();
-  measure('search-duration', 'search-start');
+  measure("search-duration", "search-start");
 }, 300);
 
 const debouncedApplyFilters = debounce(() => {
-  mark('filter-start');
+  mark("filter-start");
   applyFilters();
-  measure('filter-duration', 'filter-start');
+  measure("filter-duration", "filter-start");
 }, 500);
 
-const formatGoldPurity = (purity: number | string | null | undefined): string => {
+const formatGoldPurity = (
+  purity: number | string | null | undefined,
+): string => {
   if (!purity) return "-";
-  
+
   // Convert to number if it's a string
-  const numericPurity = typeof purity === 'string' ? parseFloat(purity) : purity;
-  
+  const numericPurity =
+    typeof purity === "string" ? parseFloat(purity) : purity;
+
   // Check if conversion resulted in a valid number
   if (isNaN(numericPurity)) return "-";
-  
+
   if (locale.value === "fa") {
     // Convert to Persian numerals
     const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-    const formattedPurity = numericPurity.toFixed(1).replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
+    const formattedPurity = numericPurity
+      .toFixed(1)
+      .replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
     return `${formattedPurity} عیار`;
   }
-  
+
   return `${numericPurity.toFixed(1)}K`;
 };
 
 const fetchGoldPurityOptions = async () => {
   try {
-    const result = await execute(() => 
-      apiService.get("/api/inventory/gold-purity-options")
+    const result = await execute(() =>
+      apiService.get("/api/inventory/gold-purity-options"),
     );
     if (result) {
       goldPurityRanges.value = result.purity_ranges || [];
