@@ -463,6 +463,38 @@ export const apiService = {
     deleteRecurringInvoice: (id: number) =>
       api.delete(`api/recurring-invoices/${id}`),
   },
+
+  // Reports
+  reports: {
+    getTypes: () => api.get("api/reports/types"),
+
+    generate: (data: {
+      type: string;
+      subtype: string;
+      date_range: { start: string; end: string };
+      filters?: Record<string, any>;
+      language?: string;
+      format?: string;
+    }) => api.post("api/reports/generate", data),
+
+    export: (data: { report_id: string; format: string }) =>
+      api.post("api/reports/export", data),
+
+    schedule: (data: {
+      name: string;
+      type: string;
+      subtype: string;
+      frequency: string;
+      delivery_method: string;
+      email_recipients?: string[];
+      filters?: Record<string, any>;
+    }) => api.post("api/reports/schedule", data),
+
+    getScheduled: () => api.get("api/reports/scheduled"),
+
+    deleteScheduled: (id: number) =>
+      api.delete(`api/reports/scheduled/${id}`),
+  },
 };
 
 // Export direct HTTP methods

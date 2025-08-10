@@ -89,4 +89,31 @@ class BusinessConfiguration extends Model
             ]
         );
     }
+
+    /**
+     * Get default pricing percentages for gold pricing calculations
+     */
+    public static function getDefaultPricingPercentages(): array
+    {
+        return [
+            'labor_percentage' => static::getValue('default_labor_percentage', 10.0),
+            'profit_percentage' => static::getValue('default_profit_percentage', 15.0),
+            'tax_percentage' => static::getValue('default_tax_percentage', 9.0)
+        ];
+    }
+
+    /**
+     * Get all business configuration as key-value pairs
+     */
+    public static function getAllConfigurations(): array
+    {
+        $configurations = static::all();
+        $result = [];
+        
+        foreach ($configurations as $config) {
+            $result[$config->key] = $config->is_encrypted ? $config->decrypted_value : $config->value;
+        }
+        
+        return $result;
+    }
 }

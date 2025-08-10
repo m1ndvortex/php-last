@@ -419,9 +419,30 @@ const saveBusinessConfig = async () => {
   try {
     isLoading.value = true;
     
-    const result = await settingsStore.updateBusinessConfig(form);
+    // Save business configuration
+    const businessResult = await settingsStore.updateBusinessConfig({
+      business_name: form.business_name,
+      business_name_persian: form.business_name_persian,
+      business_address: form.business_address,
+      business_address_persian: form.business_address_persian,
+      business_phone: form.business_phone,
+      business_email: form.business_email,
+      business_website: form.business_website,
+      tax_number: form.tax_number,
+      default_currency: form.default_currency,
+      invoice_prefix: form.invoice_prefix,
+      invoice_starting_number: form.invoice_starting_number,
+      logo_path: form.logo_path
+    });
+
+    // Save pricing percentages separately
+    const pricingResult = await settingsStore.updateDefaultPricingPercentages({
+      labor_percentage: form.default_labor_percentage || 0,
+      profit_percentage: form.default_profit_percentage || 0,
+      tax_percentage: form.default_tax_rate || 0
+    });
     
-    if (result.success) {
+    if (businessResult.success && pricingResult.success) {
       showNotification({
         type: "success",
         title: "Settings saved",
@@ -431,7 +452,7 @@ const saveBusinessConfig = async () => {
       showNotification({
         type: "error",
         title: "Save failed",
-        message: result.error || "Failed to save business configuration",
+        message: businessResult.error || pricingResult.error || "Failed to save business configuration",
       });
     }
   } catch (error) {
@@ -445,9 +466,21 @@ const saveBusinessConfig = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!settingsStore.businessConfig) {
-    settingsStore.fetchSettings();
+    await settingsStore.fetchSettings();
+  }
+  
+  // Load pricing percentages
+  try {
+    const pricingResult = await settingsStore.getDefaultPricingPercentages();
+    if (pricingResult.success) {
+      form.default_labor_percentage = pricingResult.data.labor_percentage;
+      form.default_profit_percentage = pricingResult.data.profit_percentage;
+      form.default_tax_rate = pricingResult.data.tax_percentage;
+    }
+  } catch (error) {
+    console.error('Failed to load pricing percentages:', error);
   }
 });
 </script>

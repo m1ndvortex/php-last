@@ -61,7 +61,7 @@ export const useSettingsStore = defineStore("settings", () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await apiService.put("/api/settings/business", config);
+      const response = await apiService.put("/api/config/business-info", config);
       
       if (settings.value) {
         settings.value.business = { ...settings.value.business, ...response.data.data };
@@ -70,6 +70,55 @@ export const useSettingsStore = defineStore("settings", () => {
       return { success: true, data: response.data.data };
     } catch (err: any) {
       error.value = err.response?.data?.message || "Failed to update business configuration";
+      return { success: false, error: error.value };
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const getDefaultPricingPercentages = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await apiService.get("/api/config/pricing-percentages");
+      return { success: true, data: response.data.data };
+    } catch (err: any) {
+      error.value = err.response?.data?.message || "Failed to fetch default pricing percentages";
+      return { success: false, error: error.value };
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateDefaultPricingPercentages = async (percentages: {
+    labor_percentage: number;
+    profit_percentage: number;
+    tax_percentage: number;
+  }) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await apiService.put("/api/config/pricing-percentages", percentages);
+      return { success: true, data: response.data.data };
+    } catch (err: any) {
+      error.value = err.response?.data?.message || "Failed to update default pricing percentages";
+      return { success: false, error: error.value };
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const getAllConfigurations = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await apiService.get("/api/config/all");
+      return { success: true, data: response.data.data };
+    } catch (err: any) {
+      error.value = err.response?.data?.message || "Failed to fetch all configurations";
       return { success: false, error: error.value };
     } finally {
       isLoading.value = false;
@@ -532,6 +581,9 @@ export const useSettingsStore = defineStore("settings", () => {
     // Actions
     fetchSettings,
     updateBusinessConfig,
+    getDefaultPricingPercentages,
+    updateDefaultPricingPercentages,
+    getAllConfigurations,
     updateThemeSettings,
     updateLanguageSettings,
     updateSecuritySettings,

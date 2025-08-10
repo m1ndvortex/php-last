@@ -232,6 +232,9 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::put('/tax', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateTaxConfig']);
         Route::get('/profit', [\App\Http\Controllers\BusinessConfigurationController::class, 'getProfitConfig']);
         Route::put('/profit', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateProfitConfig']);
+        Route::get('/pricing-percentages', [\App\Http\Controllers\BusinessConfigurationController::class, 'getDefaultPricingPercentages']);
+        Route::put('/pricing-percentages', [\App\Http\Controllers\BusinessConfigurationController::class, 'updateDefaultPricingPercentages']);
+        Route::get('/all', [\App\Http\Controllers\BusinessConfigurationController::class, 'getAllConfigurations']);
         Route::get('/category/{category}', [\App\Http\Controllers\BusinessConfigurationController::class, 'getByCategory']);
         Route::post('/clear-cache', [\App\Http\Controllers\BusinessConfigurationController::class, 'clearCache']);
     });

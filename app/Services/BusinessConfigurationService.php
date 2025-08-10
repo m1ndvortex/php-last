@@ -169,6 +169,56 @@ class BusinessConfigurationService
     }
 
     /**
+     * Get default pricing percentages for gold pricing calculations
+     */
+    public function getDefaultPricingPercentages(): array
+    {
+        return [
+            'labor_percentage' => $this->get('default_labor_percentage', 10.0),
+            'profit_percentage' => $this->get('default_profit_percentage', 15.0),
+            'tax_percentage' => $this->get('default_tax_percentage', 9.0)
+        ];
+    }
+
+    /**
+     * Update default pricing percentages
+     */
+    public function updateDefaultPricingPercentages(array $data): void
+    {
+        $pricingFields = [
+            'default_labor_percentage' => [
+                'value' => $data['labor_percentage'] ?? 10.0,
+                'type' => 'number',
+                'category' => 'pricing'
+            ],
+            'default_profit_percentage' => [
+                'value' => $data['profit_percentage'] ?? 15.0,
+                'type' => 'number',
+                'category' => 'pricing'
+            ],
+            'default_tax_percentage' => [
+                'value' => $data['tax_percentage'] ?? 9.0,
+                'type' => 'number',
+                'category' => 'pricing'
+            ]
+        ];
+
+        $this->updateMultiple($pricingFields);
+    }
+
+    /**
+     * Get all business configuration as a flat array
+     */
+    public function getAllConfigurations(): array
+    {
+        $cacheKey = self::CACHE_PREFIX . 'all_configurations';
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () {
+            return BusinessConfiguration::getAllConfigurations();
+        });
+    }
+
+    /**
      * Clear all configuration cache
      */
     public function clearCache(): void
@@ -184,5 +234,8 @@ class BusinessConfigurationService
         foreach ($categories as $category) {
             Cache::forget(self::CACHE_PREFIX . 'category_' . $category);
         }
+        
+        // Clear all configurations cache
+        Cache::forget(self::CACHE_PREFIX . 'all_configurations');
     }
 }

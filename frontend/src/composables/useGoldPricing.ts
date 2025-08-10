@@ -31,14 +31,11 @@ export function useGoldPricing() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // Get default settings from business configuration
-  const defaultSettings = computed((): DefaultPricingSettings => {
-    const businessConfig = settingsStore.businessConfig
-    return {
-      defaultLaborPercentage: businessConfig?.default_labor_percentage || 10,
-      defaultProfitPercentage: businessConfig?.default_profit_percentage || 15,
-      defaultTaxPercentage: businessConfig?.default_tax_rate || 9
-    }
+  // Default settings state
+  const defaultSettings = ref<DefaultPricingSettings>({
+    defaultLaborPercentage: 10,
+    defaultProfitPercentage: 15,
+    defaultTaxPercentage: 9
   })
 
   // Calculate item price using Persian jewelry formula
@@ -99,13 +96,17 @@ export function useGoldPricing() {
       loading.value = true
       error.value = null
 
-      // If settings are already loaded, use them
-      if (settingsStore.businessConfig) {
-        return defaultSettings.value
+      // Fetch pricing percentages from the dedicated endpoint
+      const result = await settingsStore.getDefaultPricingPercentages()
+      
+      if (result.success) {
+        defaultSettings.value = {
+          defaultLaborPercentage: result.data.labor_percentage || 10,
+          defaultProfitPercentage: result.data.profit_percentage || 15,
+          defaultTaxPercentage: result.data.tax_percentage || 9
+        }
       }
 
-      // Otherwise fetch from API
-      await settingsStore.fetchSettings()
       return defaultSettings.value
 
     } catch (err: any) {

@@ -83,8 +83,10 @@ abstract class BaseReportGenerator
     /**
      * Format currency value
      */
-    protected function formatCurrency(float $amount): string
+    protected function formatCurrency(?float $amount): string
     {
+        $amount = $amount ?? 0;
+        
         if ($this->language === 'fa') {
             return number_format($amount, 0) . ' ریال';
         }

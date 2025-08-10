@@ -31,7 +31,7 @@
           <button
             v-for="type in reportTypes"
             :key="type.key"
-            @click="activeReportType = type.key"
+            @click="switchReportType(type.key)"
             :class="[
               'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
               activeReportType === type.key
@@ -55,6 +55,7 @@
             </label>
             <select
               v-model="filters.subtype"
+              @change="onSubtypeChange"
               class="form-select w-full"
             >
               <option
@@ -100,11 +101,13 @@
                 v-model="filters.startDate"
                 type="date"
                 class="form-input flex-1"
+                :max="filters.endDate"
               />
               <input
                 v-model="filters.endDate"
                 type="date"
                 class="form-input flex-1"
+                :min="filters.startDate"
               />
             </div>
           </div>
@@ -162,7 +165,7 @@
             </button>
             
             <button
-              v-if="currentReport"
+              v-if="currentReport && !loading"
               @click="showExportModal = true"
               class="btn btn-secondary"
             >
@@ -180,112 +183,44 @@
     </div>
 
     <!-- Report Display -->
-    <div v-if="currentReport" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-      <!-- Simple Report Display -->
-      <div class="p-6">
-        <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            {{ currentReport.title || 'Sales Report' }}
-          </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {{ currentReport.date_range?.start }} to {{ currentReport.date_range?.end }}
-          </p>
-        </div>
+    <div v-if="currentReport && !loading" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <ReportDisplay 
+        :report="currentReport" 
+        :report-type="activeReportType"
+        @export="handleExportRequest"
+      />
+    </div>
 
-        <!-- Summary Cards -->
-        <div v-if="currentReport.summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div
-            v-for="(item, key) in currentReport.summary"
-            :key="key"
-            class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg"
-          >
-            <p class="text-sm font-medium text-blue-600 dark:text-blue-400">
-              {{ String(key).replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) }}
-            </p>
-            <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
-              {{ item.formatted || item.value }}
-            </p>
-            <p v-if="item.change !== undefined" class="text-xs text-green-600">
-              {{ item.change > 0 ? '+' : '' }}{{ item.change.toFixed(1) }}% vs previous period
-            </p>
-          </div>
-        </div>
+    <!-- Loading State -->
+    <div v-else-if="loading" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+      <div class="flex flex-col items-center">
+        <i class="fas fa-spinner animate-spin text-4xl text-blue-500 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {{ $t('reports.generating_report') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          {{ $t('reports.please_wait') }}
+        </p>
+      </div>
+    </div>
 
-        <!-- Data Tables -->
-        <div v-if="currentReport.data">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Report Data
-          </h3>
-          
-          <!-- Top Customers -->
-          <div v-if="currentReport.data.top_customers" class="mb-6">
-            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Top Customers</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Customer</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Orders</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr v-for="customer in currentReport.data.top_customers" :key="customer.id">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ customer.name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ customer.total.toFixed(2) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ customer.count }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Top Products -->
-          <div v-if="currentReport.data.top_products" class="mb-6">
-            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Top Products</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Product</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Quantity</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr v-for="product in currentReport.data.top_products" :key="product.id">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ product.name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ product.quantity }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ product.total.toFixed(2) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Daily Sales -->
-          <div v-if="currentReport.data.daily_sales" class="mb-6">
-            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Daily Sales</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total Sales</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Orders</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr v-for="day in currentReport.data.daily_sales" :key="day.date">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ day.date }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ day.total.toFixed(2) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ day.count }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    <!-- Error State -->
+    <div v-else-if="error" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+      <div class="flex flex-col items-center">
+        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {{ $t('reports.error_generating_report') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">
+          {{ error }}
+        </p>
+        <button
+          @click="generateReport"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-redo mr-2"></i>
+          {{ $t('reports.try_again') }}
+        </button>
       </div>
     </div>
 
@@ -325,34 +260,44 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
+import { useApi } from '@/composables/useApi'
 import ReportDisplay from './ReportDisplay.vue'
 import ScheduleReportModal from './ScheduleReportModal.vue'
 import ExportReportModal from './ExportReportModal.vue'
-import api from '@/services/api'
 
 const { t } = useI18n()
 const { showNotification } = useNotifications()
+const api = useApi()
 
 // State
 const loading = ref(false)
+const error = ref<string | null>(null)
 const showScheduleModal = ref(false)
 const showExportModal = ref(false)
 const activeReportType = ref('sales')
+
 interface ReportData {
-  title?: string;
-  date_range?: {
+  id: string;
+  title: string;
+  type: string;
+  subtype: string;
+  date_range: {
     start: string;
     end: string;
   };
+  language: string;
+  generated_at: string;
   summary?: Record<string, any>;
-  data?: {
-    top_customers?: Array<{ id: number; name: string; total: number; count: number }>;
-    top_products?: Array<{ id: number; name: string; quantity: number; total: number }>;
-    daily_sales?: Array<{ date: string; total: number; orders: number; count: number }>;
-  };
+  charts?: Record<string, any>;
+  data?: Record<string, any>;
+  totals?: Record<string, any>;
 }
 
 const currentReport = ref<ReportData | null>(null)
+const availableCustomers = ref<Array<{value: string, label: string}>>([])
+const availableCategories = ref<Array<{value: string, label: string}>>([])
+const availableLocations = ref<Array<{value: string, label: string}>>([])
+const reportTypesData = ref<Record<string, any>>({})
 
 // Report types
 const reportTypes = ref([
@@ -406,7 +351,7 @@ const additionalFilters = computed(() => {
         {
           key: 'customer_id',
           label: 'customer',
-          options: [] as Array<{value: string, label: string}>
+          options: availableCustomers.value
         }
       ]
     case 'inventory':
@@ -414,12 +359,20 @@ const additionalFilters = computed(() => {
         {
           key: 'category_id',
           label: 'category',
-          options: [] as Array<{value: string, label: string}>
+          options: availableCategories.value
         },
         {
           key: 'location_id',
           label: 'location',
-          options: [] as Array<{value: string, label: string}>
+          options: availableLocations.value
+        }
+      ]
+    case 'customer':
+      return [
+        {
+          key: 'customer_id',
+          label: 'customer',
+          options: availableCustomers.value
         }
       ]
     default:
@@ -434,6 +387,98 @@ const canGenerate = computed(() => {
 })
 
 // Methods
+const loadReportTypes = async () => {
+  try {
+    const response = await api.get('api/reports/types')
+    if (response) {
+      reportTypesData.value = response
+    }
+  } catch (error) {
+    console.error('Failed to load report types:', error)
+  }
+}
+
+const loadFilterOptions = async () => {
+  try {
+    // Load customers for sales and customer reports
+    if (['sales', 'customer'].includes(activeReportType.value)) {
+      try {
+        console.log('Loading customers for reports...')
+        const customersResponse = await api.get('api/customers')
+        console.log('Customers response:', customersResponse)
+        
+        if (customersResponse && customersResponse.data && Array.isArray(customersResponse.data)) {
+          availableCustomers.value = customersResponse.data.map((customer: any) => ({
+            value: customer.id.toString(),
+            label: customer.name
+          }))
+        } else if (customersResponse && Array.isArray(customersResponse)) {
+          availableCustomers.value = customersResponse.map((customer: any) => ({
+            value: customer.id.toString(),
+            label: customer.name
+          }))
+        } else {
+          console.warn('Unexpected customers response format:', customersResponse)
+        }
+        console.log('Available customers:', availableCustomers.value)
+      } catch (customerError) {
+        console.error('Failed to load customers:', customerError)
+        // Try alternative approach using the API service directly
+        try {
+          const { apiService } = await import('@/services/api')
+          const altResponse = await apiService.customers.getCustomers()
+          if (altResponse && altResponse.data && Array.isArray(altResponse.data)) {
+            availableCustomers.value = altResponse.data.map((customer: any) => ({
+              value: customer.id.toString(),
+              label: customer.name
+            }))
+          }
+        } catch (altError) {
+          console.error('Alternative customer loading also failed:', altError)
+        }
+      }
+    }
+
+    // Load categories and locations for inventory reports
+    if (activeReportType.value === 'inventory') {
+      try {
+        const [categoriesResponse, locationsResponse] = await Promise.all([
+          api.get('api/categories'),
+          api.get('api/locations')
+        ])
+
+        if (categoriesResponse && Array.isArray(categoriesResponse)) {
+          availableCategories.value = categoriesResponse.map((category: any) => ({
+            value: category.id.toString(),
+            label: category.name
+          }))
+        } else if (categoriesResponse && categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
+          availableCategories.value = categoriesResponse.data.map((category: any) => ({
+            value: category.id.toString(),
+            label: category.name
+          }))
+        }
+
+        if (locationsResponse && Array.isArray(locationsResponse)) {
+          availableLocations.value = locationsResponse.map((location: any) => ({
+            value: location.id.toString(),
+            label: location.name
+          }))
+        } else if (locationsResponse && locationsResponse.data && Array.isArray(locationsResponse.data)) {
+          availableLocations.value = locationsResponse.data.map((location: any) => ({
+            value: location.id.toString(),
+            label: location.name
+          }))
+        }
+      } catch (inventoryError) {
+        console.error('Failed to load inventory filter options:', inventoryError)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load filter options:', error)
+  }
+}
+
 const updateDateRange = () => {
   if (filters.value.dateRange !== 'custom') {
     const ranges = getDateRanges()
@@ -447,43 +492,89 @@ const updateDateRange = () => {
 
 const getDateRanges = (): Record<string, {start: string, end: string}> => {
   const today = new Date()
-  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()))
+  const yesterday = new Date(today.getTime() - 86400000)
+  
+  // Start of week (Sunday)
+  const startOfWeek = new Date(today)
+  startOfWeek.setDate(today.getDate() - today.getDay())
+  
+  // Last week
+  const lastWeekStart = new Date(startOfWeek)
+  lastWeekStart.setDate(startOfWeek.getDate() - 7)
+  const lastWeekEnd = new Date(startOfWeek)
+  lastWeekEnd.setDate(startOfWeek.getDate() - 1)
+  
+  // Start of month
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  
+  // Last month
+  const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+  
+  // Start of quarter
   const startOfQuarter = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1)
+  
+  // Last quarter
+  const lastQuarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3 - 3, 1)
+  const lastQuarterEnd = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 0)
+  
+  // Start of year
   const startOfYear = new Date(today.getFullYear(), 0, 1)
 
   return {
     today: {
-      start: new Date().toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
+      start: today.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0]
     },
     yesterday: {
-      start: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      end: new Date(Date.now() - 86400000).toISOString().split('T')[0]
+      start: yesterday.toISOString().split('T')[0],
+      end: yesterday.toISOString().split('T')[0]
     },
     this_week: {
       start: startOfWeek.toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
+      end: today.toISOString().split('T')[0]
+    },
+    last_week: {
+      start: lastWeekStart.toISOString().split('T')[0],
+      end: lastWeekEnd.toISOString().split('T')[0]
     },
     this_month: {
       start: startOfMonth.toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
+      end: today.toISOString().split('T')[0]
+    },
+    last_month: {
+      start: lastMonthStart.toISOString().split('T')[0],
+      end: lastMonthEnd.toISOString().split('T')[0]
     },
     this_quarter: {
       start: startOfQuarter.toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
+      end: today.toISOString().split('T')[0]
+    },
+    last_quarter: {
+      start: lastQuarterStart.toISOString().split('T')[0],
+      end: lastQuarterEnd.toISOString().split('T')[0]
     },
     this_year: {
       start: startOfYear.toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
+      end: today.toISOString().split('T')[0]
     }
   }
 }
 
 const generateReport = async () => {
+  if (!canGenerate.value) {
+    showNotification({
+      type: 'warning',
+      title: t('reports.please_select_all_required_fields')
+    })
+    return
+  }
+
   loading.value = true
+  error.value = null
+  
   try {
-    const response = await api.post('/api/reports/generate', {
+    const response = await api.post('api/reports/generate', {
       type: activeReportType.value,
       subtype: filters.value.subtype,
       date_range: {
@@ -495,24 +586,84 @@ const generateReport = async () => {
       format: 'json'
     })
 
-    currentReport.value = response.data.data
-    showNotification({
-      type: 'success',
-      title: t('reports.report_generated_successfully')
-    })
-  } catch (error) {
-    console.error('Failed to generate report:', error)
+    if (response) {
+      currentReport.value = response
+      showNotification({
+        type: 'success',
+        title: t('reports.report_generated_successfully')
+      })
+    } else {
+      throw new Error('Failed to generate report')
+    }
+  } catch (err: any) {
+    console.error('Failed to generate report:', err)
+    error.value = err || t('reports.failed_to_generate_report')
     showNotification({
       type: 'error',
-      title: t('reports.failed_to_generate_report')
+      title: t('reports.failed_to_generate_report'),
+      message: error.value || undefined
     })
   } finally {
     loading.value = false
   }
 }
 
-const handleExport = (format: string) => {
-  showExportModal.value = true
+const switchReportType = (type: string) => {
+  activeReportType.value = type
+  filters.value.subtype = currentReportSubtypes.value[0] || ''
+  filters.value.additional = {}
+  currentReport.value = null
+  error.value = null
+  loadFilterOptions()
+}
+
+const onSubtypeChange = () => {
+  currentReport.value = null
+  error.value = null
+}
+
+const handleExportRequest = (format: string) => {
+  if (currentReport.value) {
+    exportReport(format)
+  }
+}
+
+const exportReport = async (format: string) => {
+  if (!currentReport.value) return
+
+  try {
+    loading.value = true
+    const response = await api.post('api/reports/export', {
+      report_id: currentReport.value.id,
+      format: format
+    })
+
+    if (response && response.download_url) {
+      // Create download link
+      const link = document.createElement('a')
+      link.href = response.download_url
+      link.download = response.filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      showNotification({
+        type: 'success',
+        title: t('reports.report_exported_successfully')
+      })
+    } else {
+      throw new Error('Failed to export report')
+    }
+  } catch (err: any) {
+    console.error('Failed to export report:', err)
+    showNotification({
+      type: 'error',
+      title: t('reports.failed_to_export_report'),
+      message: err || undefined
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleReportScheduled = () => {
@@ -534,23 +685,25 @@ const handleReportExported = () => {
 const refreshReports = () => {
   if (currentReport.value) {
     generateReport()
+  } else {
+    loadFilterOptions()
   }
 }
 
 // Watchers
 watch(activeReportType, () => {
-  filters.value.subtype = currentReportSubtypes.value[0] || ''
-  filters.value.additional = {}
-  currentReport.value = null
+  loadFilterOptions()
 })
 
-watch(() => filters.value.subtype, () => {
-  currentReport.value = null
+watch(() => filters.value.dateRange, () => {
+  updateDateRange()
 })
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   updateDateRange()
+  await loadReportTypes()
+  await loadFilterOptions()
 })
 </script>
 

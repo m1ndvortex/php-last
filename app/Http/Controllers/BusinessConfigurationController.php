@@ -174,6 +174,55 @@ class BusinessConfigurationController extends Controller
     }
 
     /**
+     * Get default pricing percentages
+     */
+    public function getDefaultPricingPercentages(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->configService->getDefaultPricingPercentages()
+        ]);
+    }
+
+    /**
+     * Update default pricing percentages
+     */
+    public function updateDefaultPricingPercentages(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'labor_percentage' => 'required|numeric|min:0|max:1000',
+            'profit_percentage' => 'required|numeric|min:0|max:1000',
+            'tax_percentage' => 'required|numeric|min:0|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $this->configService->updateDefaultPricingPercentages($validator->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Default pricing percentages updated successfully'
+        ]);
+    }
+
+    /**
+     * Get all configurations
+     */
+    public function getAllConfigurations(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->configService->getAllConfigurations()
+        ]);
+    }
+
+    /**
      * Clear configuration cache
      */
     public function clearCache(): JsonResponse

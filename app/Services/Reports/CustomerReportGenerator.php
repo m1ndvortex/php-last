@@ -438,7 +438,7 @@ class CustomerReportGenerator extends BaseReportGenerator
         });
 
         $segmentAnalysis = $customerAnalytics->groupBy('customer_segment')
-            ->map(function ($segmentCustomers, $segment) {
+            ->map(function ($segmentCustomers, $segment) use ($customerAnalytics) {
                 return [
                     'segment' => $segment,
                     'customer_count' => $segmentCustomers->count(),
