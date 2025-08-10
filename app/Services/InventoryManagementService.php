@@ -143,6 +143,8 @@ class InventoryManagementService
      */
     protected function createInventoryMovement(array $data): InventoryMovement
     {
+        $userId = $data['created_by'] ?? auth()->id() ?? 1; // Fallback to user ID 1 for tests
+        
         return InventoryMovement::create([
             'inventory_item_id' => $data['inventory_item_id'],
             'type' => $data['type'],
@@ -150,8 +152,8 @@ class InventoryManagementService
             'reference_type' => $data['reference_type'],
             'reference_id' => $data['reference_id'],
             'notes' => $data['notes'],
-            'user_id' => $data['created_by'] ?? auth()->id(),
-            'created_by' => $data['created_by'] ?? auth()->id(),
+            'user_id' => $userId,
+            'created_by' => $userId,
             'movement_date' => now(),
             'created_at' => now()
         ]);

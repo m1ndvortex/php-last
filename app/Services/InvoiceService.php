@@ -8,13 +8,28 @@ use App\Models\InvoiceTag;
 use App\Models\Customer;
 use App\Models\InventoryItem;
 use App\Models\BusinessConfiguration;
+use App\Services\InventoryManagementService;
+use App\Services\GoldPricingService;
+use App\Exceptions\InsufficientInventoryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceService
 {
+    protected $inventoryService;
+    protected $goldPricingService;
+
+    public function __construct(
+        InventoryManagementService $inventoryService,
+        GoldPricingService $goldPricingService
+    ) {
+        $this->inventoryService = $inventoryService;
+        $this->goldPricingService = $goldPricingService;
+    }
+
     /**
-     * Create a new invoice with real data and inventory deduction.
+     * Create a new invoice with inventory integration and dynamic gold pricing.
      */
     public function createInvoice(array $data)
     {
@@ -28,12 +43,15 @@ class InvoiceService
                     $data['invoice_number'] = $this->generateInvoiceNumber();
                 }
 
-                // Validate inventory availability before creating invoice
+                // Check inventory availability first using InventoryManagementService
                 if (isset($data['items']) && is_array($data['items'])) {
-                    $this->validateInventoryAvailability($data['items']);
+                    $this->inventoryService->validateInventoryAvailability($data['items']);
                 }
 
-                // Create the invoice with real customer data
+                // Get gold pricing parameters with defaults
+                $goldPricing = $this->getGoldPricingParameters($data);
+
+                // Create the invoice with gold pricing parameters
                 $invoice = Invoice::create([
                     'customer_id' => $customer->id,
                     'template_id' => $data['template_id'] ?? null,
@@ -45,11 +63,16 @@ class InvoiceService
                     'internal_notes' => $data['internal_notes'] ?? null,
                     'status' => $data['status'] ?? 'draft',
                     'discount_amount' => $data['discount_amount'] ?? 0,
+                    // Store gold pricing parameters
+                    'gold_price_per_gram' => $goldPricing['gold_price_per_gram'],
+                    'labor_percentage' => $goldPricing['labor_percentage'],
+                    'profit_percentage' => $goldPricing['profit_percentage'],
+                    'tax_percentage' => $goldPricing['tax_percentage'],
                 ]);
 
-                // Add invoice items with real inventory data and deduction
+                // Add invoice items with dynamic pricing and inventory integration
                 if (isset($data['items']) && is_array($data['items'])) {
-                    $this->addInvoiceItemsWithInventoryDeduction($invoice, $data['items']);
+                    $this->addInvoiceItemsWithDynamicPricing($invoice, $data['items'], $goldPricing);
                 }
 
                 // Add tags
@@ -57,17 +80,27 @@ class InvoiceService
                     $this->addInvoiceTags($invoice, $data['tags']);
                 }
 
-                // Calculate totals with real business tax rates
+                // Calculate totals
                 $this->calculateInvoiceTotals($invoice);
 
+                // Reserve inventory using InventoryManagementService
+                $this->inventoryService->reserveInventory($invoice);
+
                 // Log invoice creation for audit trail
-                $this->logInvoiceActivity($invoice, 'created', 'Invoice created successfully');
+                $this->logInvoiceActivity($invoice, 'created', 'Invoice created successfully with inventory reservation');
 
                 return $invoice->load(['items.inventoryItem', 'tags', 'customer', 'template']);
                 
+            } catch (InsufficientInventoryException $e) {
+                Log::error('Invoice creation failed due to insufficient inventory', [
+                    'data' => $data,
+                    'unavailable_items' => $e->getUnavailableItems(),
+                    'error' => $e->getMessage()
+                ]);
+                throw $e;
+                
             } catch (\Exception $e) {
-                // Log error for debugging
-                \Log::error('Invoice creation failed', [
+                Log::error('Invoice creation failed', [
                     'data' => $data,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -79,71 +112,187 @@ class InvoiceService
     }
 
     /**
-     * Update an existing invoice.
+     * Update an existing invoice with inventory integration and dynamic pricing.
      */
     public function updateInvoice(Invoice $invoice, array $data)
     {
         return DB::transaction(function () use ($invoice, $data) {
-            // Update invoice basic data
-            $invoice->update([
-                'customer_id' => $data['customer_id'] ?? $invoice->customer_id,
-                'template_id' => $data['template_id'] ?? $invoice->template_id,
-                'issue_date' => $data['issue_date'] ?? $invoice->issue_date,
-                'due_date' => $data['due_date'] ?? $invoice->due_date,
-                'language' => $data['language'] ?? $invoice->language,
-                'notes' => $data['notes'] ?? $invoice->notes,
-                'internal_notes' => $data['internal_notes'] ?? $invoice->internal_notes,
-                'status' => $data['status'] ?? $invoice->status,
-            ]);
+            try {
+                // If items are being updated, handle inventory changes
+                if (isset($data['items']) && is_array($data['items'])) {
+                    // Load invoice with items to ensure we have the current state
+                    $invoice->load('items');
+                    
+                    // Restore inventory from original items first
+                    $this->inventoryService->restoreInventory($invoice);
+                    
+                    // Check availability for new items
+                    $this->inventoryService->validateInventoryAvailability($data['items']);
+                }
 
-            // Update items if provided
-            if (isset($data['items'])) {
-                $invoice->items()->delete();
-                $this->addInvoiceItems($invoice, $data['items']);
+                // Get gold pricing parameters if provided
+                $goldPricing = null;
+                if (isset($data['gold_pricing'])) {
+                    $goldPricing = $this->getGoldPricingParameters($data);
+                }
+
+                // Update invoice basic data including gold pricing if provided
+                $updateData = [
+                    'customer_id' => $data['customer_id'] ?? $invoice->customer_id,
+                    'template_id' => $data['template_id'] ?? $invoice->template_id,
+                    'issue_date' => $data['issue_date'] ?? $invoice->issue_date,
+                    'due_date' => $data['due_date'] ?? $invoice->due_date,
+                    'language' => $data['language'] ?? $invoice->language,
+                    'notes' => $data['notes'] ?? $invoice->notes,
+                    'internal_notes' => $data['internal_notes'] ?? $invoice->internal_notes,
+                    'status' => $data['status'] ?? $invoice->status,
+                    'discount_amount' => $data['discount_amount'] ?? $invoice->discount_amount,
+                ];
+
+                // Add gold pricing parameters if provided
+                if ($goldPricing) {
+                    $updateData = array_merge($updateData, [
+                        'gold_price_per_gram' => $goldPricing['gold_price_per_gram'],
+                        'labor_percentage' => $goldPricing['labor_percentage'],
+                        'profit_percentage' => $goldPricing['profit_percentage'],
+                        'tax_percentage' => $goldPricing['tax_percentage'],
+                    ]);
+                }
+
+                $invoice->update($updateData);
+
+                // Update items if provided
+                if (isset($data['items'])) {
+                    $invoice->items()->delete();
+                    
+                    if ($goldPricing) {
+                        // Use dynamic pricing for new items
+                        $this->addInvoiceItemsWithDynamicPricing($invoice, $data['items'], $goldPricing);
+                    } else {
+                        // Use existing gold pricing from invoice
+                        $existingGoldPricing = [
+                            'gold_price_per_gram' => $invoice->gold_price_per_gram ?? 0,
+                            'labor_percentage' => $invoice->labor_percentage ?? 0,
+                            'profit_percentage' => $invoice->profit_percentage ?? 0,
+                            'tax_percentage' => $invoice->tax_percentage ?? 0,
+                        ];
+                        $this->addInvoiceItemsWithDynamicPricing($invoice, $data['items'], $existingGoldPricing);
+                    }
+                    
+                    // Reload the invoice with new items
+                    $invoice->load('items');
+                    
+                    // Reserve inventory for new items
+                    $this->inventoryService->reserveInventory($invoice);
+                }
+
+                // Update tags if provided
+                if (isset($data['tags'])) {
+                    $invoice->tags()->delete();
+                    $this->addInvoiceTags($invoice, $data['tags']);
+                }
+
+                // Recalculate totals
+                $this->calculateInvoiceTotals($invoice);
+
+                // Log invoice update for audit trail
+                $this->logInvoiceActivity($invoice, 'updated', 'Invoice updated with inventory and pricing integration', [
+                    'items_updated' => isset($data['items']),
+                    'pricing_updated' => isset($data['gold_pricing']),
+                    'new_items_count' => isset($data['items']) ? count($data['items']) : $invoice->items->count()
+                ]);
+
+                return $invoice->load(['items.inventoryItem', 'tags', 'customer', 'template']);
+                
+            } catch (InsufficientInventoryException $e) {
+                Log::error('Invoice update failed due to insufficient inventory', [
+                    'invoice_id' => $invoice->id,
+                    'data' => $data,
+                    'unavailable_items' => $e->getUnavailableItems(),
+                    'error' => $e->getMessage()
+                ]);
+                throw $e;
+                
+            } catch (\Exception $e) {
+                Log::error('Invoice update failed', [
+                    'invoice_id' => $invoice->id,
+                    'data' => $data,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                throw new \Exception('Failed to update invoice: ' . $e->getMessage());
             }
-
-            // Update tags if provided
-            if (isset($data['tags'])) {
-                $invoice->tags()->delete();
-                $this->addInvoiceTags($invoice, $data['tags']);
-            }
-
-            // Recalculate totals
-            $this->calculateInvoiceTotals($invoice);
-
-            return $invoice->load(['items', 'tags', 'customer', 'template']);
         });
     }
 
     /**
-     * Validate inventory availability before creating invoice.
+     * Get gold pricing parameters with defaults from business configuration
      */
-    protected function validateInventoryAvailability(array $items)
+    protected function getGoldPricingParameters(array $data): array
     {
-        foreach ($items as $itemData) {
-            if (isset($itemData['inventory_item_id']) && $itemData['inventory_item_id']) {
-                $inventoryItem = InventoryItem::find($itemData['inventory_item_id']);
-                
-                if (!$inventoryItem) {
-                    throw new \Exception("Inventory item with ID {$itemData['inventory_item_id']} not found");
+        try {
+            $defaults = $this->goldPricingService->getDefaultPricingSettings();
+            
+            $goldPricing = [
+                'gold_price_per_gram' => $data['gold_pricing']['gold_price_per_gram'] ?? 0,
+                'labor_percentage' => $data['gold_pricing']['labor_percentage'] ?? $defaults['default_labor_percentage'],
+                'profit_percentage' => $data['gold_pricing']['profit_percentage'] ?? $defaults['default_profit_percentage'],
+                'tax_percentage' => $data['gold_pricing']['tax_percentage'] ?? $defaults['default_tax_percentage'],
+            ];
+
+            // Validate pricing parameters if gold pricing is provided and gold price > 0
+            // Allow gold_price_per_gram = 0 for fallback scenarios, but validate other parameters
+            if (isset($data['gold_pricing'])) {
+                // Check for negative values which are always invalid
+                if ($goldPricing['gold_price_per_gram'] < 0) {
+                    throw new \InvalidArgumentException('Invalid pricing parameters: Gold price per gram cannot be negative');
                 }
                 
-                if (!$inventoryItem->is_active) {
-                    throw new \Exception("Inventory item '{$inventoryItem->name}' is not active");
+                if ($goldPricing['labor_percentage'] < 0) {
+                    throw new \InvalidArgumentException('Invalid pricing parameters: Labor percentage cannot be negative');
                 }
                 
-                $requestedQuantity = $itemData['quantity'];
-                if ($inventoryItem->quantity < $requestedQuantity) {
-                    throw new \Exception("Insufficient stock for '{$inventoryItem->name}'. Available: {$inventoryItem->quantity}, Requested: {$requestedQuantity}");
+                if ($goldPricing['profit_percentage'] < 0) {
+                    throw new \InvalidArgumentException('Invalid pricing parameters: Profit percentage cannot be negative');
+                }
+                
+                if ($goldPricing['tax_percentage'] < 0) {
+                    throw new \InvalidArgumentException('Invalid pricing parameters: Tax percentage cannot be negative');
+                }
+                
+                // Only do full validation if gold price > 0 (for dynamic pricing)
+                if ($goldPricing['gold_price_per_gram'] > 0) {
+                    $validationErrors = $this->goldPricingService->validatePricingParams([
+                        'weight' => 1, // Dummy weight for validation
+                        'gold_price_per_gram' => $goldPricing['gold_price_per_gram'],
+                        'quantity' => 1, // Dummy quantity for validation
+                        'labor_percentage' => $goldPricing['labor_percentage'],
+                        'profit_percentage' => $goldPricing['profit_percentage'],
+                        'tax_percentage' => $goldPricing['tax_percentage'],
+                    ]);
+
+                    if (!empty($validationErrors)) {
+                        throw new \InvalidArgumentException('Invalid pricing parameters: ' . implode(', ', $validationErrors));
+                    }
                 }
             }
+
+            return $goldPricing;
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to get gold pricing parameters', [
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            throw new \Exception('Failed to process gold pricing parameters: ' . $e->getMessage());
         }
     }
 
     /**
-     * Add items to an invoice with real inventory data and deduction.
+     * Add items to an invoice with dynamic gold pricing and inventory integration.
      */
-    protected function addInvoiceItemsWithInventoryDeduction(Invoice $invoice, array $items)
+    protected function addInvoiceItemsWithDynamicPricing(Invoice $invoice, array $items, array $goldPricing)
     {
         foreach ($items as $itemData) {
             $inventoryItem = null;
@@ -172,42 +321,119 @@ class InvoiceService
                         $categoryPath = implode(' > ', $pathParts);
                     }
                     
-                    // Deduct inventory quantity
-                    $requestedQuantity = $itemData['quantity'];
-                    $inventoryItem->decrement('quantity', $requestedQuantity);
-                    
-                    // Create inventory movement record
-                    $inventoryItem->movements()->create([
-                        'type' => 'sale',
-                        'quantity' => -$requestedQuantity,
-                        'movement_date' => now(),
-                        'reference_type' => 'invoice',
-                        'reference_id' => $invoice->id,
-                        'notes' => "Sold via invoice #{$invoice->invoice_number}",
-                        'user_id' => auth()->id() ?? 1, // Default to user ID 1 for tests
-                    ]);
-                    
-                    // Use real inventory data for invoice item
+                    // Use real inventory data for pricing calculation
                     $itemName = $itemData['name'] ?? $inventoryItem->name;
-                    $unitPrice = $itemData['unit_price'] ?? $inventoryItem->unit_price;
                     $goldPurity = $itemData['gold_purity'] ?? $inventoryItem->gold_purity;
                     $weight = $itemData['weight'] ?? $inventoryItem->weight;
                 } else {
                     // Fallback to provided data if inventory item not found
                     $itemName = $itemData['name'];
-                    $unitPrice = $itemData['unit_price'];
                     $goldPurity = $itemData['gold_purity'] ?? null;
                     $weight = $itemData['weight'] ?? null;
                 }
             } else {
                 // Use provided data for non-inventory items
                 $itemName = $itemData['name'];
-                $unitPrice = $itemData['unit_price'];
                 $goldPurity = $itemData['gold_purity'] ?? null;
                 $weight = $itemData['weight'] ?? null;
             }
 
-            $totalPrice = $itemData['quantity'] * $unitPrice;
+            // Calculate dynamic pricing using GoldPricingService
+            $unitPrice = $itemData['unit_price'] ?? null;
+            $totalPrice = $itemData['total_price'] ?? null;
+            $baseGoldCost = 0;
+            $laborCost = 0;
+            $profit = 0;
+            $tax = 0;
+
+            // Use dynamic pricing if weight and gold price are available
+            if ($weight && $goldPricing['gold_price_per_gram'] > 0) {
+                try {
+                    // Validate pricing parameters before calculation
+                    $pricingParams = [
+                        'weight' => $weight,
+                        'gold_price_per_gram' => $goldPricing['gold_price_per_gram'],
+                        'labor_percentage' => $goldPricing['labor_percentage'],
+                        'profit_percentage' => $goldPricing['profit_percentage'],
+                        'tax_percentage' => $goldPricing['tax_percentage'],
+                        'quantity' => $itemData['quantity']
+                    ];
+
+                    $validationErrors = $this->goldPricingService->validatePricingParams($pricingParams);
+                    if (!empty($validationErrors)) {
+                        throw new \InvalidArgumentException('Invalid pricing parameters for item: ' . implode(', ', $validationErrors));
+                    }
+
+                    $pricingResult = $this->goldPricingService->calculateItemPrice($pricingParams);
+
+                    $unitPrice = $pricingResult['unit_price'];
+                    $totalPrice = $pricingResult['total_price'];
+                    $baseGoldCost = $pricingResult['base_gold_cost'];
+                    $laborCost = $pricingResult['labor_cost'];
+                    $profit = $pricingResult['profit'];
+                    $tax = $pricingResult['tax'];
+
+                    Log::info('Dynamic pricing calculated for invoice item', [
+                        'invoice_id' => $invoice->id,
+                        'inventory_item_id' => $itemData['inventory_item_id'] ?? null,
+                        'item_name' => $itemName,
+                        'weight' => $weight,
+                        'gold_price_per_gram' => $goldPricing['gold_price_per_gram'],
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'price_breakdown' => [
+                            'base_gold_cost' => $baseGoldCost,
+                            'labor_cost' => $laborCost,
+                            'profit' => $profit,
+                            'tax' => $tax
+                        ]
+                    ]);
+
+                } catch (\InvalidArgumentException $e) {
+                    Log::error('Invalid pricing parameters for invoice item', [
+                        'invoice_id' => $invoice->id,
+                        'inventory_item_id' => $itemData['inventory_item_id'] ?? null,
+                        'item_name' => $itemName,
+                        'error' => $e->getMessage(),
+                        'pricing_params' => $pricingParams ?? []
+                    ]);
+                    throw new \Exception("Pricing calculation failed for item '{$itemName}': " . $e->getMessage());
+                    
+                } catch (\Exception $e) {
+                    Log::warning('Failed to calculate dynamic pricing, using fallback', [
+                        'invoice_id' => $invoice->id,
+                        'inventory_item_id' => $itemData['inventory_item_id'] ?? null,
+                        'item_name' => $itemName,
+                        'error' => $e->getMessage(),
+                        'weight' => $weight,
+                        'gold_price_per_gram' => $goldPricing['gold_price_per_gram']
+                    ]);
+                    
+                    // Fallback to provided or inventory unit price
+                    $unitPrice = $unitPrice ?? ($inventoryItem ? $inventoryItem->unit_price : 0);
+                    $totalPrice = $itemData['quantity'] * $unitPrice;
+                    
+                    // Log fallback usage
+                    Log::info('Using fallback pricing for invoice item', [
+                        'invoice_id' => $invoice->id,
+                        'item_name' => $itemName,
+                        'fallback_unit_price' => $unitPrice,
+                        'fallback_total_price' => $totalPrice
+                    ]);
+                }
+            } else {
+                // Use provided or inventory unit price
+                $unitPrice = $unitPrice ?? ($inventoryItem ? $inventoryItem->unit_price : 0);
+                $totalPrice = $totalPrice ?? ($itemData['quantity'] * $unitPrice);
+                
+                Log::info('Using static pricing for invoice item', [
+                    'invoice_id' => $invoice->id,
+                    'item_name' => $itemName,
+                    'reason' => $weight ? 'No gold price provided' : 'No weight available',
+                    'static_unit_price' => $unitPrice,
+                    'static_total_price' => $totalPrice
+                ]);
+            }
 
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
@@ -223,6 +449,11 @@ class InvoiceService
                 'category_id' => $categoryId,
                 'main_category_id' => $mainCategoryId,
                 'category_path' => $categoryPath,
+                // Store complete price breakdown
+                'base_gold_cost' => $baseGoldCost,
+                'labor_cost' => $laborCost,
+                'profit_amount' => $profit,
+                'tax_amount' => $tax,
             ]);
         }
     }
@@ -232,7 +463,16 @@ class InvoiceService
      */
     protected function addInvoiceItems(Invoice $invoice, array $items)
     {
-        return $this->addInvoiceItemsWithInventoryDeduction($invoice, $items);
+        // Get default gold pricing for legacy calls
+        $defaults = $this->goldPricingService->getDefaultPricingSettings();
+        $goldPricing = [
+            'gold_price_per_gram' => 0, // No dynamic pricing for legacy calls
+            'labor_percentage' => $defaults['default_labor_percentage'],
+            'profit_percentage' => $defaults['default_profit_percentage'],
+            'tax_percentage' => $defaults['default_tax_percentage'],
+        ];
+        
+        return $this->addInvoiceItemsWithDynamicPricing($invoice, $items, $goldPricing);
     }
 
     /**
@@ -542,29 +782,14 @@ class InvoiceService
     }
 
     /**
-     * Cancel an invoice and restore inventory.
+     * Cancel an invoice and restore inventory using InventoryManagementService.
      */
     public function cancelInvoice(Invoice $invoice, string $reason = '')
     {
         return DB::transaction(function () use ($invoice, $reason) {
             try {
-                // Restore inventory quantities
-                foreach ($invoice->items as $item) {
-                    if ($item->inventory_item_id && $item->inventoryItem) {
-                        $item->inventoryItem->increment('quantity', $item->quantity);
-                        
-                        // Create inventory movement record
-                        $item->inventoryItem->movements()->create([
-                            'type' => 'return',
-                            'quantity' => $item->quantity,
-                            'movement_date' => now(),
-                            'reference_type' => 'invoice_cancellation',
-                            'reference_id' => $invoice->id,
-                            'notes' => "Returned due to invoice cancellation: {$reason}",
-                            'user_id' => auth()->id() ?? 1, // Default to user ID 1 for tests
-                        ]);
-                    }
-                }
+                // Restore inventory using InventoryManagementService
+                $this->inventoryService->restoreInventory($invoice);
 
                 $invoice->update([
                     'status' => 'cancelled',
@@ -572,17 +797,24 @@ class InvoiceService
                                       "Cancelled on " . now()->format('Y-m-d H:i:s') . ": {$reason}"
                 ]);
 
-                $this->logInvoiceActivity($invoice, 'cancelled', "Invoice cancelled: {$reason}");
+                $this->logInvoiceActivity($invoice, 'cancelled', "Invoice cancelled with inventory restoration: {$reason}");
 
                 // Trigger cancelled event
                 event(new \App\Events\InvoiceCancelled($invoice, $reason));
 
+                Log::info('Invoice cancelled successfully', [
+                    'invoice_id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'reason' => $reason
+                ]);
+
                 return $invoice;
             } catch (\Exception $e) {
-                \Log::error('Failed to cancel invoice', [
+                Log::error('Failed to cancel invoice', [
                     'invoice_id' => $invoice->id,
                     'reason' => $reason,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
                 throw new \Exception('Failed to cancel invoice: ' . $e->getMessage());
             }
@@ -860,5 +1092,171 @@ class InvoiceService
         }
 
         return $processed;
+    }
+
+    /**
+     * Create multiple invoices with inventory integration and error handling.
+     */
+    public function createBulkInvoices(array $invoicesData): array
+    {
+        $results = [
+            'successful' => [],
+            'failed' => [],
+            'total_processed' => count($invoicesData),
+            'success_count' => 0,
+            'failure_count' => 0
+        ];
+
+        foreach ($invoicesData as $index => $invoiceData) {
+            try {
+                $invoice = $this->createInvoice($invoiceData);
+                $results['successful'][] = [
+                    'index' => $index,
+                    'invoice_id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'customer_name' => $invoice->customer->name ?? 'Unknown'
+                ];
+                $results['success_count']++;
+
+            } catch (InsufficientInventoryException $e) {
+                $results['failed'][] = [
+                    'index' => $index,
+                    'error_type' => 'insufficient_inventory',
+                    'error_message' => $e->getMessage(),
+                    'unavailable_items' => $e->getUnavailableItems(),
+                    'customer_id' => $invoiceData['customer_id'] ?? null
+                ];
+                $results['failure_count']++;
+
+            } catch (\Exception $e) {
+                $results['failed'][] = [
+                    'index' => $index,
+                    'error_type' => 'general_error',
+                    'error_message' => $e->getMessage(),
+                    'customer_id' => $invoiceData['customer_id'] ?? null
+                ];
+                $results['failure_count']++;
+            }
+        }
+
+        Log::info('Bulk invoice creation completed', [
+            'total_processed' => $results['total_processed'],
+            'success_count' => $results['success_count'],
+            'failure_count' => $results['failure_count']
+        ]);
+
+        return $results;
+    }
+
+    /**
+     * Validate invoice data before creation with comprehensive checks.
+     */
+    public function validateInvoiceData(array $data): array
+    {
+        $errors = [];
+
+        // Validate customer
+        if (!isset($data['customer_id']) || !Customer::find($data['customer_id'])) {
+            $errors['customer_id'] = 'Valid customer is required';
+        }
+
+        // Validate items
+        if (!isset($data['items']) || !is_array($data['items']) || empty($data['items'])) {
+            $errors['items'] = 'At least one item is required';
+        } else {
+            foreach ($data['items'] as $index => $item) {
+                if (!isset($item['quantity']) || $item['quantity'] <= 0) {
+                    $errors["items.{$index}.quantity"] = 'Quantity must be greater than zero';
+                }
+
+                if (isset($item['inventory_item_id']) && $item['inventory_item_id']) {
+                    $inventoryItem = InventoryItem::find($item['inventory_item_id']);
+                    if (!$inventoryItem) {
+                        $errors["items.{$index}.inventory_item_id"] = 'Invalid inventory item';
+                    }
+                }
+            }
+        }
+
+        // Validate gold pricing if provided
+        if (isset($data['gold_pricing'])) {
+            try {
+                $this->getGoldPricingParameters($data);
+            } catch (\Exception $e) {
+                $errors['gold_pricing'] = $e->getMessage();
+            }
+        }
+
+        // Validate dates
+        if (isset($data['issue_date']) && !strtotime($data['issue_date'])) {
+            $errors['issue_date'] = 'Invalid issue date format';
+        }
+
+        if (isset($data['due_date']) && !strtotime($data['due_date'])) {
+            $errors['due_date'] = 'Invalid due date format';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Get comprehensive invoice statistics with error handling.
+     */
+    public function getInvoiceStatistics(array $filters = []): array
+    {
+        try {
+            $query = Invoice::query();
+
+            // Apply filters
+            if (isset($filters['start_date']) && isset($filters['end_date'])) {
+                $query->whereBetween('issue_date', [$filters['start_date'], $filters['end_date']]);
+            }
+
+            if (isset($filters['customer_id'])) {
+                $query->where('customer_id', $filters['customer_id']);
+            }
+
+            if (isset($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+
+            $invoices = $query->with(['items', 'customer'])->get();
+
+            $stats = [
+                'total_invoices' => $invoices->count(),
+                'total_amount' => $invoices->sum('total_amount'),
+                'average_amount' => $invoices->avg('total_amount'),
+                'by_status' => $invoices->groupBy('status')->map->count(),
+                'by_month' => $invoices->groupBy(function ($invoice) {
+                    return $invoice->issue_date->format('Y-m');
+                })->map(function ($monthInvoices) {
+                    return [
+                        'count' => $monthInvoices->count(),
+                        'total_amount' => $monthInvoices->sum('total_amount'),
+                        'average_amount' => $monthInvoices->avg('total_amount')
+                    ];
+                }),
+                'inventory_impact' => [
+                    'total_items_sold' => $invoices->flatMap->items->sum('quantity'),
+                    'unique_items_sold' => $invoices->flatMap->items->pluck('inventory_item_id')->filter()->unique()->count(),
+                    'total_weight_sold' => $invoices->flatMap->items->sum('weight')
+                ],
+                'pricing_breakdown' => [
+                    'total_base_gold_cost' => $invoices->flatMap->items->sum('base_gold_cost'),
+                    'total_labor_cost' => $invoices->flatMap->items->sum('labor_cost'),
+                    'total_profit' => $invoices->flatMap->items->sum('profit_amount'),
+                    'total_tax' => $invoices->flatMap->items->sum('tax_amount')
+                ]
+            ];
+
+            return $stats;
+
+        } catch (\Exception $e) {
+            Log::error('Failed to generate invoice statistics', [
+                'filters' => $filters,
+                'error' => $e->getMessage()
+            ]);
+            throw new \Exception('Failed to generate invoice statistics: ' . $e->getMessage());
+        }
     }
 }

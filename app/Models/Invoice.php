@@ -37,6 +37,11 @@ class Invoice extends Model
         'pdf_path',
         'sent_at',
         'paid_at',
+        // Gold pricing fields
+        'gold_price_per_gram',
+        'labor_percentage',
+        'profit_percentage',
+        'tax_percentage',
     ];
 
     /**

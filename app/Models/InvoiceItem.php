@@ -29,6 +29,11 @@ class InvoiceItem extends Model
         'category_id',
         'main_category_id',
         'category_path',
+        // Price breakdown fields
+        'base_gold_cost',
+        'labor_cost',
+        'profit_amount',
+        'tax_amount',
     ];
 
     /**
@@ -42,6 +47,11 @@ class InvoiceItem extends Model
         'total_price' => 'decimal:2',
         'gold_purity' => 'decimal:3',
         'weight' => 'decimal:3',
+        // Price breakdown fields
+        'base_gold_cost' => 'decimal:2',
+        'labor_cost' => 'decimal:2',
+        'profit_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
     ];
 
     /**

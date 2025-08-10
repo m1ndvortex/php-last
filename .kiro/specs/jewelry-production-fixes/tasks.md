@@ -66,7 +66,19 @@
   - Add InsufficientInventoryException for stock validation errors
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 6. Enhance InvoiceService with inventory integration
+- [x] 6. Enhance InvoiceService with inventory integration
+
+
+
+
+
+
+
+
+
+
+
+
   - Update createInvoice method to check inventory availability first
   - Integrate GoldPricingService for dynamic price calculations
   - Add inventory reservation within database transaction
