@@ -41,7 +41,6 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\SecurityMiddleware::class,
             \App\Http\Middleware\SessionSecurityMiddleware::class,
             \App\Http\Middleware\SecurityAuditMiddleware::class,

@@ -57,39 +57,81 @@ const handleLogout = () => {
   router.push("/login");
 };
 
-// Response interceptor with enhanced error handling
+// Response interceptor with enhanced error handling and retry logic
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const config = error.config as any;
+    
+    // Initialize retry metadata if not present
+    if (!config.metadata) {
+      config.metadata = { retryCount: 0 };
+    }
+
     // Enhanced error logging
     console.error("API Error Details:", {
-      url: error.config?.url,
-      method: error.config?.method,
+      url: config?.url,
+      method: config?.method,
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
       message: error.message,
+      retryCount: config.metadata.retryCount,
       timestamp: new Date().toISOString()
     });
 
-    // Handle different error status codes
+    // Handle authentication errors with token refresh
+    if (error.response?.status === 401) {
+      const errorData = error.response.data as any;
+      
+      // Don't retry auth endpoints or if already retried
+      if (config.url?.includes('/auth/') || config.metadata.retryCount > 0) {
+        console.error("Authentication failed:", errorData);
+        handleLogout();
+        return Promise.reject(error);
+      }
+
+      // Try to refresh token
+      try {
+        const refreshResponse = await api.post("api/auth/refresh");
+        if (refreshResponse.data.success) {
+          const { token: newToken } = refreshResponse.data.data;
+          localStorage.setItem("auth_token", newToken);
+          
+          // Retry original request with new token
+          config.headers.Authorization = `Bearer ${newToken}`;
+          config.metadata.retryCount++;
+          return api.request(config);
+        }
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        handleLogout();
+        return Promise.reject(error);
+      }
+    }
+
+    // Handle network errors with retry logic
+    if (!error.response && config.metadata.retryCount < 3) {
+      const delay = Math.pow(2, config.metadata.retryCount) * 1000; // Exponential backoff
+      console.log(`Retrying request in ${delay}ms... (attempt ${config.metadata.retryCount + 1})`);
+      
+      config.metadata.retryCount++;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return api.request(config);
+    }
+
+    // Handle other error status codes
     if (error.response) {
       const errorData = error.response.data as any;
       
       switch (error.response.status) {
-        case 401:
-          // Unauthorized - clear auth and redirect to login
-          console.error("Authentication failed:", errorData);
-          handleLogout();
-          break;
-
         case 403:
           // Forbidden - show error message
           console.error("Access forbidden:", errorData);
           showErrorNotification(
-            errorData?.message || "Access forbidden. You don't have permission to perform this action."
+            errorData?.error?.message || errorData?.message || "Access forbidden. You don't have permission to perform this action."
           );
           break;
 
@@ -97,7 +139,7 @@ api.interceptors.response.use(
           // Not found
           console.error("Resource not found:", errorData);
           showErrorNotification(
-            errorData?.message || "The requested resource was not found."
+            errorData?.error?.message || errorData?.message || "The requested resource was not found."
           );
           break;
 
@@ -109,7 +151,7 @@ api.interceptors.response.use(
             break;
           }
           showErrorNotification(
-            errorData?.message || "The provided data is invalid."
+            errorData?.error?.message || errorData?.message || "The provided data is invalid."
           );
           break;
 
@@ -117,7 +159,7 @@ api.interceptors.response.use(
           // Too many requests
           console.error("Rate limit exceeded:", errorData);
           showErrorNotification(
-            errorData?.message || "Too many requests. Please try again later."
+            errorData?.error?.message || errorData?.message || "Too many requests. Please try again later."
           );
           break;
 
@@ -125,17 +167,26 @@ api.interceptors.response.use(
         case 502:
         case 503:
         case 504:
-          // Server errors
+          // Server errors - retry if not already retried
           console.error("Server error:", errorData);
+          if (config.metadata.retryCount < 2) {
+            const delay = Math.pow(2, config.metadata.retryCount) * 1000;
+            console.log(`Retrying server error in ${delay}ms...`);
+            
+            config.metadata.retryCount++;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return api.request(config);
+          }
+          
           showErrorNotification(
-            errorData?.message || "Server error occurred. Please try again later."
+            errorData?.error?.message || errorData?.message || "Server error occurred. Please try again later."
           );
           break;
 
         default:
           console.error("API Error:", errorData);
           showErrorNotification(
-            errorData?.message || "An unexpected error occurred."
+            errorData?.error?.message || errorData?.message || "An unexpected error occurred."
           );
       }
     } else if (error.request) {
@@ -248,6 +299,10 @@ export const apiService = {
       api.post("api/auth/2fa/backup-codes/regenerate"),
 
     // Session Management
+    validateSession: () => api.post("api/auth/validate-session"),
+
+    extendSession: () => api.post("api/auth/extend-session"),
+
     getSessions: () => api.get("api/auth/sessions"),
 
     revokeSession: (sessionId: string) =>

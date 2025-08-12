@@ -150,6 +150,12 @@ export interface Notification {
   message: string;
   timestamp: Date;
   read: boolean;
+  duration?: number;
+  persistent?: boolean;
+  action?: {
+    label: string;
+    handler: () => void | Promise<void>;
+  };
   actions?: {
     label: string;
     action: () => void;

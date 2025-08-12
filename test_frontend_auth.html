@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { margin: 5px; padding: 10px 15px; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Login Test</h3>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Get User Info</h3>
+        <button onclick="testGetUser()">Get User Info</button>
+        <div id="user-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Validate Session</h3>
+        <button onclick="testValidateSession()">Validate Session</button>
+        <div id="validate-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Extend Session</h3>
+        <button onclick="testExtendSession()">Extend Session</button>
+        <div id="extend-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Logout Test</h3>
+        <button onclick="testLogout()">Test Logout</button>
+        <div id="logout-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>6. Test After Logout</h3>
+        <button onclick="testAfterLogout()">Test User Info After Logout</button>
+        <div id="after-logout-result"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        const API_BASE = 'http://localhost:8080/api';
+
+        async function makeRequest(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                ...options
+            };
+
+            if (authToken && !defaultOptions.headers.Authorization) {
+                defaultOptions.headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${url}`, defaultOptions);
+                const data = await response.json();
+                return { status: response.status, data };
+            } catch (error) {
+                return { status: 0, error: error.message };
+            }
+        }
+
+        async function testLogin() {
+            const result = await makeRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'test@example.com',
+                    password: 'password123'
+                })
+            });
+
+            const resultDiv = document.getElementById('login-result');
+            
+            if (result.status === 200 && result.data.success) {
+                authToken = result.data.data.token;
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ Login Successful</h4>
+                    <p>Token: ${authToken.substring(0, 20)}...</p>
+                    <p>User: ${result.data.data.user.email}</p>
+                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Login Failed</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testGetUser() {
+            if (!authToken) {
+                document.getElementById('user-result').innerHTML = '<p>Please login first</p>';
+                return;
+            }
+
+            const result = await makeRequest('/auth/user');
+            const resultDiv = document.getElementById('user-result');
+            
+            if (result.status === 200 && result.data.success) {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ User Info Retrieved</h4>
+                    <p>User: ${result.data.data.user.email}</p>
+                    <p>Session expires: ${result.data.data.session.expires_at}</p>
+                    <p>Time remaining: ${result.data.data.session.time_remaining_minutes} minutes</p>
+                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Get User Failed</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testValidateSession() {
+            if (!authToken) {
+                document.getElementById('validate-result').innerHTML = '<p>Please login first</p>';
+                return;
+            }
+
+            const result = await makeRequest('/auth/validate-session', { method: 'POST' });
+            const resultDiv = document.getElementById('validate-result');
+            
+            if (result.status === 200 && result.data.success) {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ Session Valid</h4>
+                    <p>Valid: ${result.data.data.session_valid}</p>
+                    <p>Time remaining: ${result.data.data.time_remaining_minutes} minutes</p>
+                    <p>Expiring soon: ${result.data.data.is_expiring_soon}</p>
+                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Session Validation Failed</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testExtendSession() {
+            if (!authToken) {
+                document.getElementById('extend-result').innerHTML = '<p>Please login first</p>';
+                return;
+            }
+
+            const result = await makeRequest('/auth/extend-session', { method: 'POST' });
+            const resultDiv = document.getElementById('extend-result');
+            
+            if (result.status === 200 && result.data.success) {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ Session Extended</h4>
+                    <p>Extended: ${result.data.data.session_extended}</p>
+                    <p>New expiry: ${result.data.data.expires_at}</p>
+                    <p>Time remaining: ${result.data.data.time_remaining_minutes} minutes</p>
+                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Session Extension Failed</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testLogout() {
+            if (!authToken) {
+                document.getElementById('logout-result').innerHTML = '<p>Please login first</p>';
+                return;
+            }
+
+            const result = await makeRequest('/auth/logout', { method: 'POST' });
+            const resultDiv = document.getElementById('logout-result');
+            
+            if (result.status === 200 && result.data.success) {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ Logout Successful</h4>
+                    <p>Message: ${result.data.message}</p>
+                    <p>Logged out at: ${result.data.data.logged_out_at}</p>
+                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Logout Failed</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testAfterLogout() {
+            if (!authToken) {
+                document.getElementById('after-logout-result').innerHTML = '<p>Please login and logout first</p>';
+                return;
+            }
+
+            const result = await makeRequest('/auth/user');
+            const resultDiv = document.getElementById('after-logout-result');
+            
+            if (result.status === 401) {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <h4>✅ Token Invalid After Logout (Expected)</h4>
+                    <p>Status: ${result.status}</p>
+                    <p>This confirms that logout properly invalidated the token</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                authToken = null; // Clear the token
+            } else if (result.status === 200) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>⚠️ Token Still Valid After Logout</h4>
+                    <p>Status: ${result.status}</p>
+                    <p>This might be due to session caching in the same browser session</p>
+                    <p>In a real application with separate requests, this would be invalid</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Unexpected Response</h4>
+                    <p>Status: ${result.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

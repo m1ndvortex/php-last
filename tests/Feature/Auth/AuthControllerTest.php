@@ -383,7 +383,7 @@ class AuthControllerTest extends TestCase
         
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token->plainTextToken,
-        ])->getJson('/api/auth/validate-session');
+        ])->postJson('/api/auth/validate-session');
 
         $response->assertStatus(200)
                 ->assertJson([
@@ -408,7 +408,7 @@ class AuthControllerTest extends TestCase
 
     public function test_session_validation_fails_for_unauthenticated_user()
     {
-        $response = $this->getJson('/api/auth/validate-session');
+        $response = $this->postJson('/api/auth/validate-session');
 
         $response->assertStatus(401)
                 ->assertJson([

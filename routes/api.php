@@ -31,7 +31,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::post('/logout', [App\Http\Controllers\Auth\AuthController::class, 'logout']);
         Route::get('/user', [App\Http\Controllers\Auth\AuthController::class, 'user']);
-        Route::get('/validate-session', [App\Http\Controllers\Auth\AuthController::class, 'validateSession']);
+        Route::post('/validate-session', [App\Http\Controllers\Auth\AuthController::class, 'validateSession']);
         Route::post('/refresh', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
         Route::post('/extend-session', [App\Http\Controllers\Auth\AuthController::class, 'extendSession']);
         Route::put('/profile', [App\Http\Controllers\Auth\AuthController::class, 'updateProfile']);

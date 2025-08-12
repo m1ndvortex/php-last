@@ -3,6 +3,9 @@
     <div id="app" :class="{ dark: isDarkMode }">
       <router-view />
 
+      <!-- Authentication Components -->
+      <SessionTimeoutWarning />
+
       <!-- PWA Components -->
       <OfflineIndicator />
       <InstallPrompt ref="installPrompt" />
@@ -13,18 +16,37 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 import { useAppStore } from "./stores/app";
+import { useAuthStore } from "./stores/auth";
+import { useSessionSync } from "./composables/useSessionSync";
 import RTLProvider from "./components/localization/RTLProvider.vue";
 import OfflineIndicator from "./components/pwa/OfflineIndicator.vue";
 import InstallPrompt from "./components/pwa/InstallPrompt.vue";
+import SessionTimeoutWarning from "./components/auth/SessionTimeoutWarning.vue";
 import "./assets/css/rtl-fixes.css";
 
 const appStore = useAppStore();
+const authStore = useAuthStore();
 const isDarkMode = computed(() => appStore.isDarkMode);
 const installPrompt = ref<InstanceType<typeof InstallPrompt>>();
 
-onMounted(() => {
+// Initialize session synchronization
+const sessionSync = useSessionSync({
+  syncInterval: 5, // 5 minutes
+  warningTime: 5, // 5 minutes before expiry
+  autoExtend: true
+});
+
+onMounted(async () => {
   // Initialize app store
   appStore.initialize();
+  
+  // Initialize auth store
+  await authStore.initialize();
+  
+  // Start session sync if authenticated
+  if (authStore.isAuthenticated) {
+    sessionSync.startSync();
+  }
 });
 </script>
 

@@ -133,12 +133,8 @@ const router = createRouter({
   ],
 });
 
-// Navigation guard for authentication (temporarily disabled for testing)
+// Enhanced navigation guard for authentication with session validation
 router.beforeEach(async (to, from, next) => {
-  // Temporarily bypass authentication for testing
-  next();
-  return;
-
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
@@ -152,15 +148,19 @@ router.beforeEach(async (to, from, next) => {
     // If we have a token but no user data, try to fetch user
     if (authStore.token && !authStore.user) {
       try {
-        await authStore.fetchUser();
-        if (authStore.isAuthenticated) {
-          next();
-          return;
+        const userFetched = await authStore.fetchUser();
+        if (userFetched && authStore.isAuthenticated) {
+          // Validate session before proceeding
+          const sessionValid = await authStore.validateSession();
+          if (sessionValid) {
+            next();
+            return;
+          }
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
         // Clear invalid token
-        authStore.logout();
+        await authStore.logout();
       }
     }
 
@@ -168,6 +168,25 @@ router.beforeEach(async (to, from, next) => {
     const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
     next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
     return;
+  }
+
+  // If user is authenticated, validate session for protected routes
+  if (requiresAuth && authStore.isAuthenticated) {
+    try {
+      const sessionValid = await authStore.validateSession();
+      if (!sessionValid) {
+        // Session expired, redirect to login
+        const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+        next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+        return;
+      }
+    } catch (error) {
+      console.error("Session validation failed:", error);
+      // On validation error, redirect to login
+      const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+      next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+      return;
+    }
   }
 
   // If user is authenticated and trying to access login page

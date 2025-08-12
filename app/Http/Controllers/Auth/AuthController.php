@@ -102,7 +102,8 @@ class AuthController extends Controller
 
             // Create Sanctum token with enhanced metadata
             $tokenName = 'auth-token-' . now()->timestamp;
-            $token = $user->createToken($tokenName, ['*'], now()->addMinutes(config('sanctum.expiration', 60)))->plainTextToken;
+            $expirationMinutes = config('sanctum.expiration') ?: config('session.lifetime', 120);
+            $token = $user->createToken($tokenName, ['*'], now()->addMinutes($expirationMinutes))->plainTextToken;
 
             // Calculate session expiry
             $sessionTimeout = config('session.lifetime', 120); // minutes
@@ -162,8 +163,8 @@ class AuthController extends Controller
             $user = $request->user();
             $tokenId = $request->user()->currentAccessToken()->id ?? null;
 
-            // Delete current access token
-            $request->user()->currentAccessToken()?->delete();
+            // Delete ALL user tokens for security
+            $user->tokens()->delete();
 
             // Clear session data if exists
             try {
@@ -445,7 +446,8 @@ class AuthController extends Controller
 
             // Create new token
             $tokenName = 'auth-token-refreshed-' . now()->timestamp;
-            $newToken = $user->createToken($tokenName, ['*'], now()->addMinutes(config('sanctum.expiration', 60)))->plainTextToken;
+            $expirationMinutes = config('sanctum.expiration') ?: config('session.lifetime', 120);
+            $newToken = $user->createToken($tokenName, ['*'], now()->addMinutes($expirationMinutes))->plainTextToken;
 
             // Delete old token
             $currentToken->delete();

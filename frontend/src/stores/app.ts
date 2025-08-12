@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import type { Notification } from "@/types";
 
 export interface AppTheme {
   mode: "light" | "dark";
@@ -26,16 +27,7 @@ export const useAppStore = defineStore("app", () => {
   });
 
   const isLoading = ref(false);
-  const notifications = ref<
-    Array<{
-      id: string;
-      type: "success" | "error" | "warning" | "info";
-      title: string;
-      message: string;
-      timestamp: Date;
-      read: boolean;
-    }>
-  >([]);
+  const notifications = ref<Notification[]>([]);
 
   // Getters
   const isDarkMode = computed(() => settings.value.theme.mode === "dark");
@@ -74,10 +66,7 @@ export const useAppStore = defineStore("app", () => {
   };
 
   const addNotification = (
-    notification: Omit<
-      (typeof notifications.value)[0],
-      "id" | "timestamp" | "read"
-    >,
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
   ) => {
     const id = Date.now().toString();
     notifications.value.unshift({
