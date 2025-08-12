@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class SecurityAuditMiddleware
 {
@@ -166,6 +167,14 @@ class SecurityAuditMiddleware
      */
     protected function writeSecurityLog(string $eventType, Request $request, Response $response): void
     {
+        $sessionId = null;
+        try {
+            $sessionId = $request->hasSession() ? $request->session()->getId() : null;
+        } catch (Throwable $e) {
+            // Session not available (e.g., during testing)
+            $sessionId = 'test-session';
+        }
+
         $logData = [
             'event_type' => $eventType,
             'timestamp' => now()->toISOString(),
@@ -175,7 +184,7 @@ class SecurityAuditMiddleware
             'url' => $request->fullUrl(),
             'method' => $request->method(),
             'status_code' => $response->getStatusCode(),
-            'session_id' => $request->session()->getId(),
+            'session_id' => $sessionId,
         ];
 
         // Add additional context for specific events

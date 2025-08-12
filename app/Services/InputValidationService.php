@@ -126,4 +126,142 @@ class InputValidationService
         
         return $filename;
     }
+
+    /**
+     * Validate login credentials with comprehensive checks
+     */
+    public function validateLoginCredentials(array $data): array
+    {
+        $errors = [];
+        $sanitizedData = [];
+
+        // Email validation
+        if (empty($data['email'])) {
+            $errors['email'] = ['Email is required.'];
+        } else {
+            $email = self::sanitize($data['email']);
+            if (!self::isValidEmail($email)) {
+                $errors['email'] = ['Please enter a valid email address.'];
+            } elseif (self::containsXSS($email) || self::containsSQLInjection($email)) {
+                $errors['email'] = ['Email contains invalid characters.'];
+            } else {
+                $sanitizedData['email'] = strtolower($email);
+            }
+        }
+
+        // Password validation
+        if (empty($data['password'])) {
+            $errors['password'] = ['Password is required.'];
+        } else {
+            $password = $data['password']; // Don't sanitize passwords
+            if (strlen($password) < 6) {
+                $errors['password'] = ['Password must be at least 6 characters long.'];
+            } elseif (strlen($password) > 255) {
+                $errors['password'] = ['Password is too long.'];
+            } else {
+                $sanitizedData['password'] = $password;
+            }
+        }
+
+        return [
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'data' => $sanitizedData
+        ];
+    }
+
+    /**
+     * Validate profile update data
+     */
+    public function validateProfileUpdate(array $data): array
+    {
+        $errors = [];
+        $sanitizedData = [];
+
+        // Name validation
+        if (isset($data['name'])) {
+            if (empty($data['name'])) {
+                $errors['name'] = ['Name is required when provided.'];
+            } else {
+                $name = self::sanitize($data['name']);
+                if (strlen($name) > 255) {
+                    $errors['name'] = ['Name must not exceed 255 characters.'];
+                } elseif (self::containsXSS($name) || self::containsSQLInjection($name)) {
+                    $errors['name'] = ['Name contains invalid characters.'];
+                } else {
+                    $sanitizedData['name'] = $name;
+                }
+            }
+        }
+
+        // Language validation
+        if (isset($data['preferred_language'])) {
+            $language = self::sanitize($data['preferred_language']);
+            $allowedLanguages = ['en', 'fa'];
+            
+            if (!in_array($language, $allowedLanguages)) {
+                $errors['preferred_language'] = ['Please select a valid language (English or Persian).'];
+            } else {
+                $sanitizedData['preferred_language'] = $language;
+            }
+        }
+
+        return [
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'data' => $sanitizedData
+        ];
+    }
+
+    /**
+     * Validate password change data
+     */
+    public function validatePasswordChange(array $data): array
+    {
+        $errors = [];
+        $sanitizedData = [];
+
+        // Current password validation
+        if (empty($data['current_password'])) {
+            $errors['current_password'] = ['Current password is required.'];
+        } else {
+            $sanitizedData['current_password'] = $data['current_password'];
+        }
+
+        // New password validation
+        if (empty($data['new_password'])) {
+            $errors['new_password'] = ['New password is required.'];
+        } else {
+            $newPassword = $data['new_password'];
+            
+            if (strlen($newPassword) < 8) {
+                $errors['new_password'] = ['New password must be at least 8 characters long.'];
+            } elseif (strlen($newPassword) > 255) {
+                $errors['new_password'] = ['New password is too long.'];
+            } elseif (!self::isStrongPassword($newPassword)) {
+                $errors['new_password'] = ['New password must contain at least one uppercase letter, one lowercase letter, and one number.'];
+            } else {
+                $sanitizedData['new_password'] = $newPassword;
+            }
+        }
+
+        // Password confirmation validation
+        if (empty($data['new_password_confirmation'])) {
+            $errors['new_password_confirmation'] = ['Password confirmation is required.'];
+        } elseif (isset($data['new_password']) && $data['new_password'] !== $data['new_password_confirmation']) {
+            $errors['new_password_confirmation'] = ['Password confirmation does not match the new password.'];
+        }
+
+        // Check if new password is different from current
+        if (isset($data['current_password']) && isset($data['new_password']) && 
+            $data['current_password'] === $data['new_password']) {
+            $errors['new_password'] = ['New password must be different from the current password.'];
+        }
+
+        return [
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'data' => $sanitizedData
+        ];
+    }
 }
