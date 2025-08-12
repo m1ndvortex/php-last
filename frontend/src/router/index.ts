@@ -58,6 +58,7 @@ const router = createRouter({
             requiresAuth: true,
             title: "Dashboard",
             preload: true,
+            roles: ["admin", "manager", "user"], // All authenticated users can access dashboard
           },
         },
         {
@@ -67,6 +68,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Invoices",
+            roles: ["admin", "manager", "user"], // All authenticated users can access invoices
           },
         },
         {
@@ -76,6 +78,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Inventory",
+            roles: ["admin", "manager", "user"], // All authenticated users can access inventory
           },
         },
         {
@@ -85,6 +88,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Customers",
+            roles: ["admin", "manager", "user"], // All authenticated users can access customers
           },
         },
         {
@@ -94,6 +98,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Accounting",
+            roles: ["admin", "manager"], // Only admin and manager can access accounting
           },
         },
         {
@@ -103,6 +108,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Reports",
+            roles: ["admin", "manager"], // Only admin and manager can access reports
           },
         },
         {
@@ -112,6 +118,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Profile",
+            roles: ["admin", "manager", "user"], // All authenticated users can access profile
           },
         },
         {
@@ -121,6 +128,7 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: "Settings",
+            roles: ["admin"], // Only admin can access settings
           },
         },
       ],
@@ -133,81 +141,142 @@ const router = createRouter({
   ],
 });
 
-// Enhanced navigation guard for authentication with session validation
+// Enhanced navigation guard for authentication with comprehensive session validation
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-  // Initialize auth store if not already done
-  if (!authStore.initialized) {
-    await authStore.initialize();
-  }
+  // Set loading state for authentication checks
+  authStore.isLoading = true;
 
-  // If route requires auth and user is not authenticated
-  if (requiresAuth && !authStore.isAuthenticated) {
-    // If we have a token but no user data, try to fetch user
-    if (authStore.token && !authStore.user) {
-      try {
-        const userFetched = await authStore.fetchUser();
-        if (userFetched && authStore.isAuthenticated) {
-          // Validate session before proceeding
+  try {
+    // Initialize auth store if not already done
+    if (!authStore.initialized) {
+      await authStore.initialize();
+    }
+
+    // Pre-route session validation for all protected routes
+    if (requiresAuth) {
+      // If user appears authenticated, validate session first
+      if (authStore.isAuthenticated) {
+        try {
           const sessionValid = await authStore.validateSession();
-          if (sessionValid) {
-            next();
+          if (!sessionValid) {
+            // Session expired, clear auth state and redirect to login
+            await authStore.cleanupAuthState();
+            const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+            next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
             return;
           }
+        } catch (error) {
+          console.error("Pre-route session validation failed:", error);
+          // Clear auth state on validation error
+          await authStore.cleanupAuthState();
+          const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+          next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+          return;
         }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        // Clear invalid token
-        await authStore.logout();
+      }
+
+      // If not authenticated after session validation
+      if (!authStore.isAuthenticated) {
+        // If we have a token but no user data, try to fetch user
+        if (authStore.token && !authStore.user) {
+          try {
+            const userFetched = await authStore.fetchUser();
+            if (userFetched && authStore.isAuthenticated) {
+              // Validate the newly fetched session
+              const sessionValid = await authStore.validateSession();
+              if (!sessionValid) {
+                await authStore.cleanupAuthState();
+                const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+                next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+                return;
+              }
+            } else {
+              // Failed to fetch user, redirect to login
+              const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+              next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+              return;
+            }
+          } catch (error) {
+            console.error("Failed to fetch user during route guard:", error);
+            // Clear invalid token and redirect
+            await authStore.cleanupAuthState();
+            const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+            next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+            return;
+          }
+        } else {
+          // No token or user, redirect to login with return URL
+          const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+          next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+          return;
+        }
+      }
+
+      // Role-based access control
+      if (to.meta.roles && authStore.user) {
+        const userRole = authStore.user.role;
+        const allowedRoles = to.meta.roles as string[];
+
+        // Owner role has access to everything
+        if (userRole === 'owner') {
+          // Owner can access all routes
+        } else if (!userRole || !allowedRoles.includes(userRole)) {
+          console.warn(`Access denied: User role '${userRole}' not in allowed roles:`, allowedRoles);
+          // Redirect to dashboard with error message
+          next("/dashboard?error=access_denied");
+          return;
+        }
+      }
+
+      // Permission-based access control (if specified)
+      if (to.meta.permissions && authStore.user) {
+        const requiredPermissions = to.meta.permissions as string[];
+        // TODO: Implement permission checking when user permissions are available
+        // For now, we'll skip this check
       }
     }
 
-    // Store the intended route for redirect after login
-    const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
-    next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
-    return;
-  }
+    // If user is authenticated and trying to access auth pages (login, forgot-password)
+    if ((to.name === "login" || to.name === "forgot-password") && authStore.isAuthenticated) {
+      // Check if there's a return URL to redirect to
+      const returnUrl = (to.query.returnUrl as string) || "/dashboard";
+      next(returnUrl);
+      return;
+    }
 
-  // If user is authenticated, validate session for protected routes
-  if (requiresAuth && authStore.isAuthenticated) {
-    try {
-      const sessionValid = await authStore.validateSession();
-      if (!sessionValid) {
-        // Session expired, redirect to login
-        const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
-        next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+    // Handle return URL redirect after successful login
+    if (to.name === "login" && to.query.returnUrl && authStore.isAuthenticated) {
+      const returnUrl = decodeURIComponent(to.query.returnUrl as string);
+      // Validate the return URL to prevent open redirects
+      if (returnUrl.startsWith("/") && !returnUrl.startsWith("//")) {
+        next(returnUrl);
+        return;
+      } else {
+        next("/dashboard");
         return;
       }
-    } catch (error) {
-      console.error("Session validation failed:", error);
-      // On validation error, redirect to login
-      const redirectPath = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
-      next(`/login?redirect=${encodeURIComponent(redirectPath)}`);
-      return;
     }
-  }
 
-  // If user is authenticated and trying to access login page
-  if (to.name === "login" && authStore.isAuthenticated) {
-    next("/dashboard");
-    return;
-  }
+    // All checks passed, proceed to route
+    next();
 
-  // Check for role-based access if specified
-  if (to.meta.roles && authStore.user) {
-    const userRole = authStore.user?.role;
-    const allowedRoles = to.meta.roles as string[];
-
-    if (!allowedRoles.includes(userRole || "")) {
-      // Redirect to unauthorized page or dashboard
-      next("/dashboard");
-      return;
+  } catch (error) {
+    console.error("Router guard error:", error);
+    // On any unexpected error, redirect to login for protected routes
+    if (requiresAuth) {
+      await authStore.cleanupAuthState();
+      const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+      next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+    } else {
+      next();
     }
+  } finally {
+    // Clear loading state
+    authStore.isLoading = false;
   }
-
-  next();
 });
 
 // Set page title

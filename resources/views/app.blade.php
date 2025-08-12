@@ -8,26 +8,26 @@
     <title>{{ config('app.name', 'Jewelry Platform') }}</title>
     
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#3b82f6" />
-    <meta name="description" content="Bilingual Persian/English Jewelry Business Management Platform" />
-    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1f2937">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Jewelry Platform">
     
-    <!-- iOS PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Jewelry Platform" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
-    <!-- Vite -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest">
 </head>
 <body class="font-sans antialiased">
     <div id="app"></div>
+    
+    <!-- Vue.js Application will be loaded here by Vite -->
+    <script type="module" src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>

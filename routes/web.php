@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return ['Laravel' => app()->version()];
-});
+// Serve the Vue.js SPA for all non-API routes
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '^(?!api).*$');
 
 // Sanctum routes for SPA authentication
 Route::middleware('web')->group(function () {

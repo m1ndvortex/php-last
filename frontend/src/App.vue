@@ -3,6 +3,9 @@
     <div id="app" :class="{ dark: isDarkMode }">
       <router-view />
 
+      <!-- Router Loading Indicator -->
+      <RouterLoadingIndicator />
+
       <!-- Authentication Components -->
       <SessionTimeoutWarning />
 
@@ -22,6 +25,7 @@ import RTLProvider from "./components/localization/RTLProvider.vue";
 import OfflineIndicator from "./components/pwa/OfflineIndicator.vue";
 import InstallPrompt from "./components/pwa/InstallPrompt.vue";
 import SessionTimeoutWarning from "./components/auth/SessionTimeoutWarning.vue";
+import RouterLoadingIndicator from "./components/router/RouterLoadingIndicator.vue";
 import "./assets/css/rtl-fixes.css";
 
 const appStore = useAppStore();
