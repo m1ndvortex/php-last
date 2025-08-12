@@ -34,6 +34,7 @@ class User extends Authenticatable
         'two_factor_phone',
         'two_factor_confirmed_at',
         'two_factor_backup_codes',
+        'session_timeout',
     ];
 
     /**
@@ -64,6 +65,7 @@ class User extends Authenticatable
         'two_factor_backup_codes' => 'array',
         'dashboard_layout' => 'array',
         'password' => 'hashed',
+        'session_timeout' => 'integer',
     ];
 
     /**

@@ -33,6 +33,7 @@ Route::prefix('auth')->group(function () {
         Route::get('/user', [App\Http\Controllers\Auth\AuthController::class, 'user']);
         Route::get('/validate-session', [App\Http\Controllers\Auth\AuthController::class, 'validateSession']);
         Route::post('/refresh', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
+        Route::post('/extend-session', [App\Http\Controllers\Auth\AuthController::class, 'extendSession']);
         Route::put('/profile', [App\Http\Controllers\Auth\AuthController::class, 'updateProfile']);
         Route::put('/password', [App\Http\Controllers\Auth\AuthController::class, 'changePassword']);
     });

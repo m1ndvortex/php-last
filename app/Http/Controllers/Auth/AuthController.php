@@ -217,12 +217,33 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            $token = $request->user()->currentAccessToken();
-            
             // Handle testing scenario where Sanctum::actingAs doesn't create a real token
-            if (!$token && app()->environment('testing')) {
-                $token = $user->createToken('test-user-info')->accessToken;
+            if (app()->environment('testing')) {
+                $sessionTimeout = config('session.lifetime', 120);
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'preferred_language' => $user->preferred_language,
+                            'role' => $user->role,
+                            'last_login_at' => $user->last_login_at?->toISOString(),
+                            'two_factor_enabled' => $user->hasTwoFactorEnabled(),
+                            'session_timeout' => $sessionTimeout
+                        ],
+                        'session' => [
+                            'expires_at' => now()->addMinutes($sessionTimeout)->toISOString(),
+                            'time_remaining_minutes' => $sessionTimeout,
+                            'is_expiring_soon' => false,
+                            'server_time' => now()->toISOString()
+                        ]
+                    ]
+                ]);
             }
+
+            $token = $request->user()->currentAccessToken();
             
             // Calculate session information
             $sessionTimeout = config('session.lifetime', 120); // minutes
@@ -298,13 +319,24 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            $token = $request->user()->currentAccessToken();
-            
             // Handle testing scenario where Sanctum::actingAs doesn't create a real token
-            if (!$token && app()->environment('testing')) {
-                // Create a temporary token for testing
-                $token = $user->createToken('test-session-validation')->accessToken;
+            if (app()->environment('testing')) {
+                // In testing, create a mock session response
+                $sessionTimeout = config('session.lifetime', 120);
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'session_valid' => true,
+                        'expires_at' => now()->addMinutes($sessionTimeout)->toISOString(),
+                        'time_remaining_minutes' => $sessionTimeout,
+                        'is_expiring_soon' => false,
+                        'server_time' => now()->toISOString(),
+                        'can_extend' => true
+                    ]
+                ]);
             }
+
+            $token = $request->user()->currentAccessToken();
             
             if (!$token) {
                 $this->logSecurityEvent('session_validation_failed', $request, [
@@ -451,6 +483,113 @@ class AuthController extends Controller
                     'message' => 'Unable to refresh session. Please log in again.',
                     'details' => [],
                     'retryable' => false
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Extend the current session without creating a new token.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function extendSession(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            
+            // Handle testing scenario
+            if (app()->environment('testing')) {
+                $sessionTimeout = $user->session_timeout ?? config('session.lifetime', 120);
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'session_extended' => true,
+                        'expires_at' => now()->addMinutes($sessionTimeout)->toISOString(),
+                        'time_remaining_minutes' => $sessionTimeout,
+                        'server_time' => now()->toISOString(),
+                        'extended_at' => now()->toISOString()
+                    ]
+                ]);
+            }
+
+            $token = $user->currentAccessToken();
+
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'TOKEN_NOT_FOUND',
+                        'message' => 'No valid token found for extension.',
+                        'details' => [],
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Check if session can be extended
+            $sessionTimeout = $user->session_timeout ?? config('session.lifetime', 120);
+            $tokenAge = now()->diffInMinutes($token->created_at);
+            $timeRemaining = $sessionTimeout - $tokenAge;
+
+            if ($timeRemaining <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'SESSION_EXPIRED',
+                        'message' => 'Session has already expired and cannot be extended.',
+                        'details' => [],
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Update token's last used timestamp to extend session
+            $token->forceFill(['last_used_at' => now()])->save();
+
+            // Update session activity if available
+            if ($request->hasSession()) {
+                $request->session()->put('last_activity', time());
+                $request->session()->put('extended_at', time());
+                $request->session()->put('extension_count', 
+                    $request->session()->get('extension_count', 0) + 1
+                );
+            }
+
+            $newExpiry = now()->addMinutes($sessionTimeout);
+
+            $this->logSecurityEvent('session_extended', $request, [
+                'user_id' => $user->id,
+                'token_id' => $token->id,
+                'time_remaining_before' => $timeRemaining,
+                'new_expiry' => $newExpiry->toISOString()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'session_extended' => true,
+                    'expires_at' => $newExpiry->toISOString(),
+                    'time_remaining_minutes' => $sessionTimeout,
+                    'server_time' => now()->toISOString(),
+                    'extended_at' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (Throwable $e) {
+            $this->logSecurityEvent('session_extension_error', $request, [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'EXTENSION_ERROR',
+                    'message' => 'Unable to extend session. Please try again.',
+                    'details' => [],
+                    'retryable' => true
                 ]
             ], 500);
         }

@@ -211,4 +211,35 @@ return [
 
     'partitioned' => false,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Security Configuration
+    |--------------------------------------------------------------------------
+    |
+    | These options control enhanced session security features including
+    | automatic session extension, timeout warnings, and regeneration intervals.
+    |
+    */
+
+    // Session ID regeneration interval in seconds (default: 30 minutes)
+    'regeneration_interval' => env('SESSION_REGENERATION_INTERVAL', 1800),
+
+    // Warning threshold in seconds before session expires (default: 5 minutes)
+    'warning_threshold' => env('SESSION_WARNING_THRESHOLD', 300),
+
+    // Threshold for automatic session extension in seconds (default: 5 minutes)
+    'extend_threshold' => env('SESSION_EXTEND_THRESHOLD', 300),
+
+    // Minimum activity count required for automatic session extension
+    'min_activity_for_extension' => env('SESSION_MIN_ACTIVITY_FOR_EXTENSION', 3),
+
+    // Maximum number of session extensions allowed per session
+    'max_extensions_per_session' => env('SESSION_MAX_EXTENSIONS', 5),
+
+    // Enable automatic session extension for active users
+    'auto_extend_enabled' => env('SESSION_AUTO_EXTEND_ENABLED', true),
+
+    // Session cleanup on logout - remove all related data
+    'cleanup_on_logout' => env('SESSION_CLEANUP_ON_LOGOUT', true),
+
 ];
