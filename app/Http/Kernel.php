@@ -33,14 +33,19 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\SessionSecurityMiddleware::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            // \App\Http\Middleware\VerifyCsrfToken::class, // TEMPORARILY DISABLED
+            \App\Http\Middleware\SimpleCSRFProtection::class,
+            \App\Http\Middleware\SecurityAuditMiddleware::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
         'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, // TEMPORARILY DISABLED
-            // \Illuminate\Routing\Middleware\ThrottleRequests::class.':api', // TEMPORARILY DISABLED
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\SecurityMiddleware::class,
+            \App\Http\Middleware\SecurityAuditMiddleware::class,
+            \App\Http\Middleware\ApiResponseCache::class,
+            \App\Http\Middleware\ApiErrorHandling::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SetLocale::class,
         ],
@@ -68,5 +73,11 @@ class Kernel extends HttpKernel
         'active' => \App\Http\Middleware\EnsureUserIsActive::class,
         'auth.api' => \App\Http\Middleware\AuthenticateApi::class,
         'locale' => \App\Http\Middleware\SetLocale::class,
+        'api.errors' => \App\Http\Middleware\ApiErrorHandling::class,
+        'api.cache' => \App\Http\Middleware\ApiResponseCache::class,
+        'security' => \App\Http\Middleware\SecurityMiddleware::class,
+        'csrf.simple' => \App\Http\Middleware\SimpleCSRFProtection::class,
+        'session.security' => \App\Http\Middleware\SessionSecurityMiddleware::class,
+        'audit.security' => \App\Http\Middleware\SecurityAuditMiddleware::class,
     ];
 }

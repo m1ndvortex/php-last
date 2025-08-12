@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BusinessConfiguration;
+use App\Exceptions\PricingException;
 use Illuminate\Support\Facades\Log;
 
 class GoldPricingService
@@ -13,20 +14,48 @@ class GoldPricingService
      *
      * @param array $params
      * @return array
+     * @throws PricingException
      */
     public function calculateItemPrice(array $params): array
     {
-        $weight = (float) ($params['weight'] ?? 0);
-        $goldPricePerGram = (float) ($params['gold_price_per_gram'] ?? 0);
-        $laborPercentage = (float) ($params['labor_percentage'] ?? 0);
-        $profitPercentage = (float) ($params['profit_percentage'] ?? 0);
-        $taxPercentage = (float) ($params['tax_percentage'] ?? 0);
-        $quantity = (int) ($params['quantity'] ?? 1);
-        
-        // Validate inputs
-        if ($weight <= 0 || $goldPricePerGram <= 0 || $quantity <= 0) {
-            throw new \InvalidArgumentException('Weight, gold price per gram, and quantity must be greater than zero');
-        }
+        try {
+            // Validate parameters first
+            $validationErrors = $this->validatePricingParams($params);
+            if (!empty($validationErrors)) {
+                throw new PricingException(
+                    __('errors.pricing.invalid_formula_parameters'),
+                    ['validation_errors' => $validationErrors]
+                );
+            }
+
+            $weight = (float) ($params['weight'] ?? 0);
+            $goldPricePerGram = (float) ($params['gold_price_per_gram'] ?? 0);
+            $laborPercentage = (float) ($params['labor_percentage'] ?? 0);
+            $profitPercentage = (float) ($params['profit_percentage'] ?? 0);
+            $taxPercentage = (float) ($params['tax_percentage'] ?? 0);
+            $quantity = (int) ($params['quantity'] ?? 1);
+            
+            // Additional validation
+            if ($weight <= 0) {
+                throw new PricingException(
+                    __('errors.pricing.zero_weight_not_allowed'),
+                    ['weight' => $weight]
+                );
+            }
+            
+            if ($goldPricePerGram <= 0) {
+                throw new PricingException(
+                    __('errors.pricing.invalid_gold_price'),
+                    ['gold_price_per_gram' => $goldPricePerGram]
+                );
+            }
+            
+            if ($quantity <= 0) {
+                throw new PricingException(
+                    __('errors.pricing.invalid_quantity'),
+                    ['quantity' => $quantity]
+                );
+            }
         
         // Persian jewelry pricing formula implementation
         
@@ -69,26 +98,56 @@ class GoldPricingService
             'total_price' => $totalPrice
         ]);
         
-        return [
-            'base_gold_cost' => round($baseGoldCost * $quantity, 2),
-            'labor_cost' => round($laborCost * $quantity, 2),
-            'profit' => round($profit * $quantity, 2),
-            'tax' => round($tax * $quantity, 2),
-            'unit_price' => round($unitPrice, 2),
-            'total_price' => round($totalPrice, 2),
-            'breakdown' => [
-                'weight' => $weight,
-                'gold_price_per_gram' => $goldPricePerGram,
-                'labor_percentage' => $laborPercentage,
-                'profit_percentage' => $profitPercentage,
-                'tax_percentage' => $taxPercentage,
-                'quantity' => $quantity,
-                'base_gold_cost_per_unit' => round($baseGoldCost, 2),
-                'labor_cost_per_unit' => round($laborCost, 2),
-                'profit_per_unit' => round($profit, 2),
-                'tax_per_unit' => round($tax, 2)
-            ]
-        ];
+            // Validate calculated prices are not negative
+            if ($unitPrice < 0 || $totalPrice < 0) {
+                throw new PricingException(
+                    __('errors.pricing.negative_price_not_allowed'),
+                    [
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'params' => $params
+                    ]
+                );
+            }
+
+            return [
+                'base_gold_cost' => round($baseGoldCost * $quantity, 2),
+                'labor_cost' => round($laborCost * $quantity, 2),
+                'profit' => round($profit * $quantity, 2),
+                'tax' => round($tax * $quantity, 2),
+                'unit_price' => round($unitPrice, 2),
+                'total_price' => round($totalPrice, 2),
+                'breakdown' => [
+                    'weight' => $weight,
+                    'gold_price_per_gram' => $goldPricePerGram,
+                    'labor_percentage' => $laborPercentage,
+                    'profit_percentage' => $profitPercentage,
+                    'tax_percentage' => $taxPercentage,
+                    'quantity' => $quantity,
+                    'base_gold_cost_per_unit' => round($baseGoldCost, 2),
+                    'labor_cost_per_unit' => round($laborCost, 2),
+                    'profit_per_unit' => round($profit, 2),
+                    'tax_per_unit' => round($tax, 2)
+                ]
+            ];
+        } catch (PricingException $e) {
+            Log::error('Pricing calculation failed', [
+                'params' => $params,
+                'error' => $e->getMessage(),
+                'pricing_data' => $e->getPricingData()
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in pricing calculation', [
+                'params' => $params,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new PricingException(
+                __('errors.pricing.calculation_failed'),
+                ['params' => $params, 'error' => $e->getMessage()]
+            );
+        }
     }
     
     /**
@@ -181,28 +240,41 @@ class GoldPricingService
     {
         $errors = [];
         
-        if (!isset($params['weight']) || $params['weight'] <= 0) {
-            $errors['weight'] = 'Weight must be greater than zero';
+        if (!isset($params['weight']) || !is_numeric($params['weight']) || $params['weight'] <= 0) {
+            $errors['weight'] = __('errors.pricing.zero_weight_not_allowed');
         }
         
-        if (!isset($params['gold_price_per_gram']) || $params['gold_price_per_gram'] <= 0) {
-            $errors['gold_price_per_gram'] = 'Gold price per gram must be greater than zero';
+        if (!isset($params['gold_price_per_gram']) || !is_numeric($params['gold_price_per_gram']) || $params['gold_price_per_gram'] <= 0) {
+            $errors['gold_price_per_gram'] = __('errors.pricing.invalid_gold_price');
         }
         
-        if (!isset($params['quantity']) || $params['quantity'] <= 0) {
+        if (!isset($params['quantity']) || !is_numeric($params['quantity']) || $params['quantity'] <= 0) {
             $errors['quantity'] = 'Quantity must be greater than zero';
         }
         
-        if (isset($params['labor_percentage']) && $params['labor_percentage'] < 0) {
-            $errors['labor_percentage'] = 'Labor percentage cannot be negative';
+        if (isset($params['labor_percentage']) && (!is_numeric($params['labor_percentage']) || $params['labor_percentage'] < 0)) {
+            $errors['labor_percentage'] = __('errors.pricing.invalid_percentage');
         }
         
-        if (isset($params['profit_percentage']) && $params['profit_percentage'] < 0) {
-            $errors['profit_percentage'] = 'Profit percentage cannot be negative';
+        if (isset($params['profit_percentage']) && (!is_numeric($params['profit_percentage']) || $params['profit_percentage'] < 0)) {
+            $errors['profit_percentage'] = __('errors.pricing.invalid_percentage');
         }
         
-        if (isset($params['tax_percentage']) && $params['tax_percentage'] < 0) {
-            $errors['tax_percentage'] = 'Tax percentage cannot be negative';
+        if (isset($params['tax_percentage']) && (!is_numeric($params['tax_percentage']) || $params['tax_percentage'] < 0)) {
+            $errors['tax_percentage'] = __('errors.pricing.invalid_percentage');
+        }
+        
+        // Check for extremely high percentages that might indicate input errors
+        if (isset($params['labor_percentage']) && $params['labor_percentage'] > 1000) {
+            $errors['labor_percentage'] = 'Labor percentage seems unusually high (>1000%)';
+        }
+        
+        if (isset($params['profit_percentage']) && $params['profit_percentage'] > 1000) {
+            $errors['profit_percentage'] = 'Profit percentage seems unusually high (>1000%)';
+        }
+        
+        if (isset($params['tax_percentage']) && $params['tax_percentage'] > 100) {
+            $errors['tax_percentage'] = 'Tax percentage seems unusually high (>100%)';
         }
         
         return $errors;

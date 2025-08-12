@@ -386,4 +386,122 @@ class CustomerService
             return '90+';
         }
     }
+
+    /**
+     * Update customer purchase history after invoice creation
+     */
+    public function updatePurchaseHistory(int $customerId, $invoice): void
+    {
+        $customer = Customer::find($customerId);
+        if (!$customer) {
+            return;
+        }
+
+        // Update customer statistics
+        $totalInvoiceAmount = $customer->invoices()->sum('total_amount');
+        $lastInvoiceDate = $customer->invoices()->max('issue_date');
+        $invoiceCount = $customer->invoices()->count();
+
+        // Update customer record with calculated statistics
+        $customer->update([
+            'last_purchase_date' => $lastInvoiceDate,
+            'total_purchases' => $totalInvoiceAmount,
+            'purchase_count' => $invoiceCount,
+        ]);
+
+        // Log the purchase activity
+        $this->logCustomerActivity(
+            $customer,
+            "Purchase made - Invoice #{$invoice->invoice_number} for " . number_format($invoice->total_amount, 2),
+            'note'
+        );
+    }
+
+    /**
+     * Update customer return history
+     */
+    public function updateReturnHistory(int $customerId, array $returnItems): void
+    {
+        $customer = Customer::find($customerId);
+        if (!$customer) {
+            return;
+        }
+
+        $returnValue = collect($returnItems)->sum('total_price');
+        
+        // Log the return activity
+        $this->logCustomerActivity(
+            $customer,
+            "Return processed - Value: " . number_format($returnValue, 2),
+            'note'
+        );
+
+        // Recalculate customer statistics
+        $this->recalculateCustomerStatistics($customerId);
+    }
+
+    /**
+     * Recalculate customer statistics
+     */
+    public function recalculateCustomerStatistics(int $customerId): void
+    {
+        $customer = Customer::find($customerId);
+        if (!$customer) {
+            return;
+        }
+
+        // Recalculate totals from actual invoices
+        $totalInvoiceAmount = $customer->invoices()->sum('total_amount');
+        $lastInvoiceDate = $customer->invoices()->max('issue_date');
+        $invoiceCount = $customer->invoices()->count();
+        $outstandingBalance = $customer->invoices()
+            ->where('status', '!=', 'paid')
+            ->sum('total_amount');
+
+        // Update customer record
+        $customer->update([
+            'last_purchase_date' => $lastInvoiceDate,
+            'total_purchases' => $totalInvoiceAmount,
+            'purchase_count' => $invoiceCount,
+            'outstanding_balance' => $outstandingBalance,
+        ]);
+
+        // Update CRM stage based on purchase behavior
+        $this->updateCRMStage($customer);
+    }
+
+    /**
+     * Update CRM stage based on customer behavior
+     */
+    protected function updateCRMStage(Customer $customer): void
+    {
+        $daysSinceLastPurchase = $customer->last_purchase_date 
+            ? now()->diffInDays($customer->last_purchase_date) 
+            : null;
+
+        $currentStage = $customer->crm_stage;
+        $newStage = $currentStage;
+
+        // Logic to update CRM stage based on purchase behavior
+        if ($customer->purchase_count == 0) {
+            $newStage = 'lead';
+        } elseif ($customer->purchase_count == 1) {
+            $newStage = 'prospect';
+        } elseif ($customer->purchase_count >= 2 && $daysSinceLastPurchase <= 90) {
+            $newStage = 'customer';
+        } elseif ($customer->purchase_count >= 5 && $daysSinceLastPurchase <= 60) {
+            $newStage = 'loyal_customer';
+        } elseif ($daysSinceLastPurchase > 365) {
+            $newStage = 'inactive';
+        }
+
+        if ($newStage !== $currentStage) {
+            $customer->update(['crm_stage' => $newStage]);
+            $this->logCustomerActivity(
+                $customer,
+                "CRM stage updated from {$currentStage} to {$newStage}",
+                'note'
+            );
+        }
+    }
 }

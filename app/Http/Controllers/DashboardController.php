@@ -8,6 +8,7 @@ use App\Services\WidgetService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
@@ -31,25 +32,47 @@ class DashboardController extends Controller
      */
     public function getKPIs(Request $request): JsonResponse
     {
-        $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date'
-        ]);
+        try {
+            $request->validate([
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date'
+            ]);
 
-        $dateRange = null;
-        if ($request->start_date && $request->end_date) {
-            $dateRange = [
-                'start' => $request->start_date,
-                'end' => $request->end_date
-            ];
+            $dateRange = null;
+            if ($request->start_date && $request->end_date) {
+                $dateRange = [
+                    'start' => $request->start_date,
+                    'end' => $request->end_date
+                ];
+            }
+
+            $kpis = $this->dashboardService->getKPIs($dateRange);
+
+            return response()->json([
+                'success' => true,
+                'data' => $kpis,
+                'meta' => [
+                    'date_range' => $dateRange,
+                    'generated_at' => now()->toISOString(),
+                    'cache_duration' => 300
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Let validation exceptions bubble up to be handled by Laravel
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Failed to get dashboard KPIs', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve dashboard KPIs',
+                'error' => app()->environment('production') ? 'Internal server error' : $e->getMessage()
+            ], 500);
         }
-
-        $kpis = $this->dashboardService->getKPIs($dateRange);
-
-        return response()->json([
-            'success' => true,
-            'data' => $kpis
-        ]);
     }
 
     /**
@@ -57,17 +80,39 @@ class DashboardController extends Controller
      */
     public function getSalesChart(Request $request): JsonResponse
     {
-        $request->validate([
-            'period' => ['nullable', Rule::in(['week', 'month', 'year'])]
-        ]);
+        try {
+            $request->validate([
+                'period' => ['nullable', Rule::in(['week', 'month', 'year'])]
+            ]);
 
-        $period = $request->get('period', 'month');
-        $chartData = $this->dashboardService->getSalesChartData($period);
+            $period = $request->get('period', 'month');
+            $chartData = $this->dashboardService->getSalesChartData($period);
 
-        return response()->json([
-            'success' => true,
-            'data' => $chartData
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $chartData,
+                'meta' => [
+                    'period' => $period,
+                    'data_points' => count($chartData),
+                    'generated_at' => now()->toISOString()
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Let validation exceptions bubble up to be handled by Laravel
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Failed to get sales chart data', [
+                'error' => $e->getMessage(),
+                'period' => $request->get('period', 'month'),
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve sales chart data',
+                'error' => app()->environment('production') ? 'Internal server error' : $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

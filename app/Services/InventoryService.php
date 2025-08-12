@@ -6,12 +6,27 @@ use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\Location;
 use App\Models\Category;
+use App\Services\IntegrationEventService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class InventoryService
 {
+    protected $integrationService;
+
+    public function __construct()
+    {
+        // Integration service will be resolved lazily to avoid circular dependencies
+    }
+
+    protected function getIntegrationService()
+    {
+        if (!$this->integrationService) {
+            $this->integrationService = app(IntegrationEventService::class);
+        }
+        return $this->integrationService;
+    }
     /**
      * Create a new inventory item.
      */
@@ -115,7 +130,65 @@ class InventoryService
      */
     public function createMovement(array $data): InventoryMovement
     {
-        return InventoryMovement::create($data);
+        $movement = InventoryMovement::create($data);
+        
+        // Trigger cross-module integration for inventory adjustments
+        if (in_array($movement->type, [
+            InventoryMovement::TYPE_ADJUSTMENT,
+            InventoryMovement::TYPE_IN,
+            InventoryMovement::TYPE_OUT
+        ])) {
+            $this->getIntegrationService()->handleInventoryAdjustment($movement);
+        }
+        
+        return $movement;
+    }
+
+    /**
+     * Update stock levels for an inventory item
+     */
+    public function updateStock(int $inventoryItemId, float $quantityChange, string $type, string $notes = null, int $referenceId = null): InventoryMovement
+    {
+        return DB::transaction(function () use ($inventoryItemId, $quantityChange, $type, $notes, $referenceId) {
+            $item = InventoryItem::findOrFail($inventoryItemId);
+            
+            // Update the item quantity
+            $item->increment('quantity', $quantityChange);
+            
+            // Create movement record
+            $movement = $this->createMovement([
+                'inventory_item_id' => $inventoryItemId,
+                'type' => $quantityChange > 0 ? InventoryMovement::TYPE_IN : InventoryMovement::TYPE_OUT,
+                'quantity' => abs($quantityChange),
+                'unit_cost' => $item->cost_price,
+                'reference_type' => $type,
+                'reference_id' => $referenceId,
+                'notes' => $notes,
+                'user_id' => auth()->id(),
+                'movement_date' => now(),
+                'to_location_id' => $quantityChange > 0 ? $item->location_id : null,
+                'from_location_id' => $quantityChange < 0 ? $item->location_id : null,
+            ]);
+            
+            return $movement;
+        });
+    }
+
+    /**
+     * Recalculate item valuation after inventory changes
+     */
+    public function recalculateItemValuation(int $inventoryItemId): void
+    {
+        $item = InventoryItem::findOrFail($inventoryItemId);
+        
+        // Recalculate total value based on current quantity and unit price
+        $totalValue = $item->quantity * $item->unit_price;
+        $totalCost = $item->quantity * $item->cost_price;
+        
+        $item->update([
+            'total_value' => $totalValue,
+            'total_cost' => $totalCost,
+        ]);
     }
 
     /**

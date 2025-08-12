@@ -185,8 +185,7 @@ class GoldPricingServiceTest extends TestCase
         ];
 
         // Act & Assert
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Weight, gold price per gram, and quantity must be greater than zero');
+        $this->expectException(\App\Exceptions\PricingException::class);
         
         $this->goldPricingService->calculateItemPrice($params);
     }
@@ -205,8 +204,7 @@ class GoldPricingServiceTest extends TestCase
         ];
 
         // Act & Assert
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Weight, gold price per gram, and quantity must be greater than zero');
+        $this->expectException(\App\Exceptions\PricingException::class);
         
         $this->goldPricingService->calculateItemPrice($params);
     }
@@ -225,8 +223,7 @@ class GoldPricingServiceTest extends TestCase
         ];
 
         // Act & Assert
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Weight, gold price per gram, and quantity must be greater than zero');
+        $this->expectException(\App\Exceptions\PricingException::class);
         
         $this->goldPricingService->calculateItemPrice($params);
     }

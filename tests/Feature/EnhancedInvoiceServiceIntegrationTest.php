@@ -50,18 +50,18 @@ class EnhancedInvoiceServiceIntegrationTest extends TestCase
         ]);
 
         // Set up business configuration
-        BusinessConfiguration::create([
-            'key' => 'default_labor_percentage',
-            'value' => '10.0'
-        ]);
-        BusinessConfiguration::create([
-            'key' => 'default_profit_percentage',
-            'value' => '15.0'
-        ]);
-        BusinessConfiguration::create([
-            'key' => 'default_tax_percentage',
-            'value' => '9.0'
-        ]);
+        BusinessConfiguration::updateOrCreate(
+            ['key' => 'default_labor_percentage'],
+            ['value' => '10.0']
+        );
+        BusinessConfiguration::updateOrCreate(
+            ['key' => 'default_profit_percentage'],
+            ['value' => '15.0']
+        );
+        BusinessConfiguration::updateOrCreate(
+            ['key' => 'default_tax_percentage'],
+            ['value' => '9.0']
+        );
     }
 
     public function test_create_invoice_with_dynamic_pricing_and_inventory_integration()

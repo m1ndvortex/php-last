@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Transaction extends Model
 {
@@ -47,6 +48,11 @@ class Transaction extends Model
     public function entries(): HasMany
     {
         return $this->hasMany(TransactionEntry::class);
+    }
+
+    public function approvalRequests(): MorphMany
+    {
+        return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
 
     public function creator(): BelongsTo

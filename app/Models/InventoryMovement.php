@@ -82,11 +82,32 @@ class InventoryMovement extends Model
     }
 
     /**
+     * Get the accounting entries related to this movement.
+     */
+    public function accountingEntries()
+    {
+        return $this->morphMany(Transaction::class, 'source');
+    }
+
+    /**
      * Get the total value of this movement.
      */
     public function getTotalValueAttribute(): float
     {
         return (float) ($this->quantity * ($this->unit_cost ?? 0));
+    }
+
+    /**
+     * Get the quantity change (positive for inbound, negative for outbound).
+     */
+    public function getQuantityChangeAttribute(): float
+    {
+        if ($this->is_inbound) {
+            return (float) $this->quantity;
+        } elseif ($this->is_outbound) {
+            return -(float) $this->quantity;
+        }
+        return 0;
     }
 
     /**

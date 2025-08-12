@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Currency extends Model
 {
@@ -16,24 +15,23 @@ class Currency extends Model
         'name_persian',
         'symbol',
         'exchange_rate',
-        'is_base',
+        'is_base_currency',
         'is_active',
+        'decimal_places',
     ];
 
     protected $casts = [
         'exchange_rate' => 'decimal:6',
-        'is_base' => 'boolean',
+        'is_base_currency' => 'boolean',
         'is_active' => 'boolean',
+        'decimal_places' => 'integer',
     ];
 
-    public function exchangeRatesFrom(): HasMany
+    public function getLocalizedNameAttribute(): string
     {
-        return $this->hasMany(ExchangeRate::class, 'from_currency', 'code');
-    }
-
-    public function exchangeRatesTo(): HasMany
-    {
-        return $this->hasMany(ExchangeRate::class, 'to_currency', 'code');
+        return app()->getLocale() === 'fa' && $this->name_persian 
+            ? $this->name_persian 
+            : $this->name;
     }
 
     public function scopeActive($query)
@@ -41,42 +39,8 @@ class Currency extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeBase($query)
+    public function scopeBaseCurrency($query)
     {
-        return $query->where('is_base', true);
-    }
-
-    public function getLocalizedNameAttribute(): string
-    {
-        $locale = app()->getLocale();
-        return $locale === 'fa' && $this->name_persian ? $this->name_persian : $this->name;
-    }
-
-    public static function getBaseCurrency(): ?Currency
-    {
-        return static::base()->first();
-    }
-
-    public function convertTo(string $toCurrency, float $amount, ?string $date = null): float
-    {
-        if ($this->code === $toCurrency) {
-            return $amount;
-        }
-
-        $rate = $this->getExchangeRate($toCurrency, $date);
-        return $amount * $rate;
-    }
-
-    public function getExchangeRate(string $toCurrency, ?string $date = null): float
-    {
-        $date = $date ?? now()->toDateString();
-        
-        $exchangeRate = ExchangeRate::where('from_currency', $this->code)
-            ->where('to_currency', $toCurrency)
-            ->where('effective_date', '<=', $date)
-            ->orderBy('effective_date', 'desc')
-            ->first();
-
-        return $exchangeRate ? $exchangeRate->rate : 1.0;
+        return $query->where('is_base_currency', true);
     }
 }

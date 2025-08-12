@@ -25,17 +25,61 @@ class InventoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only([
-            'search', 'category_id', 'location_id', 'low_stock', 'expiring', 'expiring_days',
-            'gold_purity_min', 'gold_purity_max', 'gold_purity_range'
-        ]);
+        try {
+            $request->validate([
+                'search' => 'nullable|string|max:255',
+                'category_id' => 'nullable|exists:categories,id',
+                'location_id' => 'nullable|exists:locations,id',
+                'low_stock' => 'nullable|boolean',
+                'expiring' => 'nullable|boolean',
+                'expiring_days' => 'nullable|integer|min:1|max:365',
+                'gold_purity_min' => 'nullable|numeric|min:0|max:24',
+                'gold_purity_max' => 'nullable|numeric|min:0|max:24',
+                'gold_purity_range' => 'nullable|string|max:50',
+                'per_page' => 'nullable|integer|min:1|max:100'
+            ]);
 
-        $items = $this->inventoryService->searchItems($filters);
+            $filters = $request->only([
+                'search', 'category_id', 'location_id', 'low_stock', 'expiring', 'expiring_days',
+                'gold_purity_min', 'gold_purity_max', 'gold_purity_range'
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'data' => $items->load(['category', 'location']),
-        ]);
+            $items = $this->inventoryService->searchItems($filters);
+            
+            // Apply pagination if requested
+            $perPage = $request->get('per_page', 50);
+            if ($items instanceof \Illuminate\Database\Eloquent\Collection) {
+                $items = $items->paginate($perPage);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $items->load(['category', 'location']),
+                'meta' => [
+                    'filters_applied' => array_filter($filters),
+                    'total_items' => is_object($items) && method_exists($items, 'total') ? $items->total() : $items->count(),
+                    'generated_at' => now()->toISOString()
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid request parameters',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Failed to retrieve inventory items', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve inventory items',
+                'error' => app()->environment('production') ? 'Internal server error' : $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -269,5 +313,81 @@ class InventoryController extends Controller
                 'purity_ranges' => $goldPurityService->getPurityRanges(),
             ],
         ]);
+    }
+
+    /**
+     * Get categories for inventory form dropdown.
+     */
+    public function getCategories(): JsonResponse
+    {
+        try {
+            $categories = Category::with('children')
+                ->whereNull('parent_id')
+                ->orderBy('name')
+                ->get();
+                
+            return response()->json([
+                'success' => true,
+                'data' => $categories->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'name_persian' => $category->name_persian,
+                        'children' => $category->children->map(function ($child) {
+                            return [
+                                'id' => $child->id,
+                                'name' => $child->name,
+                                'name_persian' => $child->name_persian,
+                            ];
+                        })
+                    ];
+                })
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to load categories for inventory form', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load categories'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get locations for inventory form dropdown.
+     */
+    public function getLocations(): JsonResponse
+    {
+        try {
+            $locations = Location::orderBy('name')->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $locations->map(function ($location) {
+                    return [
+                        'id' => $location->id,
+                        'name' => $location->name,
+                        'name_persian' => $location->name_persian ?? $location->name,
+                        'code' => $location->code ?? null,
+                        'description' => $location->description ?? null,
+                    ];
+                })
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to load locations for inventory form', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load locations'
+            ], 500);
+        }
     }
 }

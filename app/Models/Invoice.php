@@ -108,6 +108,14 @@ class Invoice extends Model
     }
 
     /**
+     * Get the alerts related to this invoice.
+     */
+    public function alerts()
+    {
+        return $this->morphMany(Alert::class, 'reference');
+    }
+
+    /**
      * Scope for filtering by status with index optimization.
      */
     public function scopeByStatus($query, $status)

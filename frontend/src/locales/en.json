@@ -30,6 +30,33 @@
     "expand": "Expand",
     "collapse": "Collapse"
   },
+  "errors": {
+    "something_went_wrong": "Something went wrong. Please try again.",
+    "network_error": "Network error. Please check your connection and try again.",
+    "server_error": "Server error. Please try again later.",
+    "validation_failed": "The provided data is invalid.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "not_found": "The requested resource was not found.",
+    "inventory": {
+      "insufficient_stock": "Insufficient stock for the requested items.",
+      "unavailable_items": "Unavailable items",
+      "failed_to_create_item": "Failed to create inventory item"
+    },
+    "pricing": {
+      "calculation_failed": "Failed to calculate item price.",
+      "error_details": "Error details"
+    },
+    "auth": {
+      "invalid_credentials": "Invalid credentials provided."
+    },
+    "database": {
+      "connection_failed": "Database connection failed. Please try again later."
+    }
+  },
+  "inventory": {
+    "requested": "Requested",
+    "available": "Available"
+  },
   "pwa": {
     "install": {
       "title": "Install App",

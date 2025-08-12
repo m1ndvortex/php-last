@@ -227,4 +227,181 @@ class ReportController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generate Sales Report with real data
+     */
+    public function generateSalesReport(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'customer_id' => 'nullable|exists:customers,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'format' => 'sometimes|string|in:json,pdf,excel'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $filters = $request->only(['date_from', 'date_to', 'customer_id', 'category_id']);
+            $report = $this->reportService->generateSalesReport($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $report
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate sales report', [
+                'error' => $e->getMessage(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate sales report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate Inventory Report with real data
+     */
+    public function generateInventoryReport(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'nullable|exists:categories,id',
+            'location_id' => 'nullable|exists:locations,id',
+            'low_stock_only' => 'nullable|boolean',
+            'include_movements' => 'nullable|boolean',
+            'format' => 'sometimes|string|in:json,pdf,excel'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $filters = $request->only(['category_id', 'location_id', 'low_stock_only', 'include_movements']);
+            $report = $this->reportService->generateInventoryReport($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $report
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate inventory report', [
+                'error' => $e->getMessage(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate inventory report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate Financial Report with real data
+     */
+    public function generateFinancialReport(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'date_from' => 'required|date',
+            'date_to' => 'required|date|after_or_equal:date_from',
+            'include_tax_breakdown' => 'nullable|boolean',
+            'include_profit_analysis' => 'nullable|boolean',
+            'format' => 'sometimes|string|in:json,pdf,excel'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $filters = $request->only(['date_from', 'date_to', 'include_tax_breakdown', 'include_profit_analysis']);
+            $report = $this->reportService->generateFinancialReport($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $report
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate financial report', [
+                'error' => $e->getMessage(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate financial report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate Customer Report with real data
+     */
+    public function generateCustomerReport(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'nullable|exists:customers,id',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'include_purchase_history' => 'nullable|boolean',
+            'include_communication_log' => 'nullable|boolean',
+            'format' => 'sometimes|string|in:json,pdf,excel'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $filters = $request->only(['customer_id', 'date_from', 'date_to', 'include_purchase_history', 'include_communication_log']);
+            $report = $this->reportService->generateCustomerReport($filters);
+
+            return response()->json([
+                'success' => true,
+                'data' => $report
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate customer report', [
+                'error' => $e->getMessage(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate customer report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

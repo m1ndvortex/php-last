@@ -2,271 +2,256 @@
 
 namespace App\Services;
 
-use App\Models\Invoice;
 use App\Models\InventoryItem;
 use App\Models\Customer;
+use App\Models\Alert;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Collection;
 
 class AlertService
 {
     /**
-     * Get all active alerts
+     * Check reorder levels for inventory items
      */
-    public function getAlerts(): array
+    public function checkReorderLevels(int $inventoryItemId): void
     {
-        $cacheKey = 'dashboard_alerts';
+        $item = InventoryItem::find($inventoryItemId);
         
-        return Cache::remember($cacheKey, 300, function () {
-            return [
-                'pending_cheques' => $this->getPendingChequeAlerts(),
-                'stock_warnings' => $this->getStockWarningAlerts(),
-                'overdue_invoices' => $this->getOverdueInvoiceAlerts(),
-                'expiring_items' => $this->getExpiringItemAlerts(),
-                'low_stock' => $this->getLowStockAlerts(),
-                'high_value_pending' => $this->getHighValuePendingAlerts()
-            ];
-        });
+        if (!$item) {
+            return;
+        }
+
+        // Check if item is below reorder level
+        if ($item->quantity <= $item->reorder_level && $item->reorder_level > 0) {
+            $this->createLowStockAlert($item);
+        }
+
+        // Check if item is critically low (below minimum stock level)
+        if ($item->quantity <= ($item->reorder_level * 0.5) && $item->reorder_level > 0) {
+            $this->createCriticalStockAlert($item);
+        }
     }
 
     /**
-     * Get pending cheque alerts
+     * Create low stock alert
      */
-    private function getPendingChequeAlerts(): array
+    public function createLowStockAlert(InventoryItem $item): void
     {
-        $pendingCheques = Invoice::where('payment_method', 'cheque')
-            ->whereIn('status', ['sent', 'overdue'])
-            ->where('due_date', '<=', Carbon::now()->addDays(7))
-            ->with('customer')
-            ->get();
+        // Check if alert already exists for this item
+        $existingAlert = Alert::where('type', 'low_stock')
+            ->where('reference_type', 'inventory_item')
+            ->where('reference_id', $item->id)
+            ->where('status', 'active')
+            ->first();
 
-        return $pendingCheques->map(function ($invoice) {
-            $daysOverdue = Carbon::now()->diffInDays($invoice->due_date, false);
-            
-            return [
-                'id' => $invoice->id,
-                'type' => 'pending_cheque',
-                'severity' => $daysOverdue > 0 ? 'high' : 'medium',
-                'title' => 'Pending Cheque Payment',
-                'message' => "Cheque payment of {$invoice->total_amount} from {$invoice->customer->name} is " . 
-                           ($daysOverdue > 0 ? "{$daysOverdue} days overdue" : "due in " . abs($daysOverdue) . " days"),
-                'data' => [
-                    'invoice_id' => $invoice->id,
-                    'customer_name' => $invoice->customer->name,
-                    'amount' => $invoice->total_amount,
-                    'due_date' => $invoice->due_date,
-                    'days_overdue' => $daysOverdue
-                ],
-                'created_at' => now()
-            ];
-        })->toArray();
-    }
-
-    /**
-     * Get stock warning alerts
-     */
-    private function getStockWarningAlerts(): array
-    {
-        $lowStockItems = InventoryItem::where('quantity', '<=', 5)
-            ->where('quantity', '>', 0)
-            ->get();
-
-        $outOfStockItems = InventoryItem::where('quantity', '<=', 0)->get();
-
-        $alerts = [];
-
-        // Low stock alerts
-        foreach ($lowStockItems as $item) {
-            $alerts[] = [
-                'id' => "low_stock_{$item->id}",
+        if ($existingAlert) {
+            // Update existing alert
+            $existingAlert->update([
+                'message' => "Low stock alert: {$item->name} has {$item->quantity} units remaining (reorder level: {$item->reorder_level})",
+                'updated_at' => now(),
+            ]);
+        } else {
+            // Create new alert
+            Alert::create([
                 'type' => 'low_stock',
-                'severity' => 'medium',
-                'title' => 'Low Stock Warning',
-                'message' => "Item '{$item->name}' has only {$item->quantity} units remaining",
-                'data' => [
-                    'item_id' => $item->id,
+                'priority' => 'medium',
+                'title' => 'Low Stock Alert',
+                'message' => "Low stock alert: {$item->name} has {$item->quantity} units remaining (reorder level: {$item->reorder_level})",
+                'reference_type' => 'inventory_item',
+                'reference_id' => $item->id,
+                'status' => 'active',
+                'created_by' => auth()->id(),
+                'metadata' => [
                     'item_name' => $item->name,
                     'current_quantity' => $item->quantity,
-                    'sku' => $item->sku
+                    'reorder_level' => $item->reorder_level,
+                    'sku' => $item->sku,
                 ],
-                'created_at' => now()
-            ];
+            ]);
         }
 
-        // Out of stock alerts
-        foreach ($outOfStockItems as $item) {
-            $alerts[] = [
-                'id' => "out_of_stock_{$item->id}",
-                'type' => 'out_of_stock',
-                'severity' => 'high',
-                'title' => 'Out of Stock',
-                'message' => "Item '{$item->name}' is out of stock",
-                'data' => [
-                    'item_id' => $item->id,
-                    'item_name' => $item->name,
-                    'sku' => $item->sku
-                ],
-                'created_at' => now()
-            ];
-        }
-
-        return $alerts;
+        Log::info('Low stock alert created/updated', [
+            'item_id' => $item->id,
+            'item_name' => $item->name,
+            'current_quantity' => $item->quantity,
+            'reorder_level' => $item->reorder_level,
+        ]);
     }
 
     /**
-     * Get overdue invoice alerts
+     * Create critical stock alert
      */
-    private function getOverdueInvoiceAlerts(): array
+    public function createCriticalStockAlert(InventoryItem $item): void
     {
-        $overdueInvoices = Invoice::where('status', 'overdue')
-            ->where('due_date', '<', Carbon::now())
-            ->with('customer')
-            ->get();
+        Alert::create([
+            'type' => 'critical_stock',
+            'priority' => 'high',
+            'title' => 'Critical Stock Alert',
+            'message' => "CRITICAL: {$item->name} has only {$item->quantity} units remaining!",
+            'reference_type' => 'inventory_item',
+            'reference_id' => $item->id,
+            'status' => 'active',
+            'created_by' => auth()->id(),
+            'metadata' => [
+                'item_name' => $item->name,
+                'current_quantity' => $item->quantity,
+                'reorder_level' => $item->reorder_level,
+                'sku' => $item->sku,
+            ],
+        ]);
 
-        return $overdueInvoices->map(function ($invoice) {
-            $daysOverdue = Carbon::now()->diffInDays($invoice->due_date);
-            
-            return [
-                'id' => "overdue_{$invoice->id}",
-                'type' => 'overdue_invoice',
-                'severity' => $daysOverdue > 30 ? 'high' : 'medium',
-                'title' => 'Overdue Invoice',
-                'message' => "Invoice #{$invoice->invoice_number} from {$invoice->customer->name} is {$daysOverdue} days overdue",
-                'data' => [
-                    'invoice_id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
-                    'customer_name' => $invoice->customer->name,
-                    'amount' => $invoice->total_amount,
-                    'due_date' => $invoice->due_date,
-                    'days_overdue' => $daysOverdue
-                ],
-                'created_at' => now()
-            ];
-        })->toArray();
+        Log::warning('Critical stock alert created', [
+            'item_id' => $item->id,
+            'item_name' => $item->name,
+            'current_quantity' => $item->quantity,
+        ]);
     }
 
     /**
-     * Get expiring item alerts
+     * Create customer payment overdue alert
      */
-    private function getExpiringItemAlerts(): array
+    public function createOverduePaymentAlert(Customer $customer, $invoice): void
     {
-        $expiringItems = InventoryItem::whereNotNull('expiry_date')
-            ->where('expiry_date', '<=', Carbon::now()->addDays(30))
-            ->where('expiry_date', '>', Carbon::now())
-            ->get();
+        Alert::create([
+            'type' => 'overdue_payment',
+            'priority' => 'high',
+            'title' => 'Overdue Payment Alert',
+            'message' => "Payment overdue: {$customer->name} - Invoice #{$invoice->invoice_number} (Due: {$invoice->due_date->format('Y-m-d')})",
+            'reference_type' => 'invoice',
+            'reference_id' => $invoice->id,
+            'status' => 'active',
+            'created_by' => auth()->id(),
+            'metadata' => [
+                'customer_name' => $customer->name,
+                'customer_id' => $customer->id,
+                'invoice_number' => $invoice->invoice_number,
+                'due_date' => $invoice->due_date->toDateString(),
+                'amount' => $invoice->total_amount,
+                'days_overdue' => now()->diffInDays($invoice->due_date),
+            ],
+        ]);
 
-        return $expiringItems->map(function ($item) {
-            $daysUntilExpiry = Carbon::now()->diffInDays($item->expiry_date);
-            
-            return [
-                'id' => "expiring_{$item->id}",
-                'type' => 'expiring_item',
-                'severity' => $daysUntilExpiry <= 7 ? 'high' : 'medium',
-                'title' => 'Item Expiring Soon',
-                'message' => "Item '{$item->name}' expires in {$daysUntilExpiry} days",
-                'data' => [
-                    'item_id' => $item->id,
-                    'item_name' => $item->name,
-                    'expiry_date' => $item->expiry_date,
-                    'days_until_expiry' => $daysUntilExpiry,
-                    'quantity' => $item->quantity
-                ],
-                'created_at' => now()
-            ];
-        })->toArray();
+        Log::info('Overdue payment alert created', [
+            'customer_id' => $customer->id,
+            'invoice_id' => $invoice->id,
+            'days_overdue' => now()->diffInDays($invoice->due_date),
+        ]);
     }
 
     /**
-     * Get low stock alerts (different threshold than stock warnings)
+     * Create birthday reminder alert
      */
-    private function getLowStockAlerts(): array
+    public function createBirthdayReminderAlert(Customer $customer): void
     {
-        $lowStockItems = InventoryItem::where('quantity', '<=', 10)
-            ->where('quantity', '>', 5)
-            ->get();
-
-        return $lowStockItems->map(function ($item) {
-            return [
-                'id' => "low_stock_alert_{$item->id}",
-                'type' => 'low_stock_alert',
-                'severity' => 'low',
-                'title' => 'Stock Running Low',
-                'message' => "Consider restocking '{$item->name}' - {$item->quantity} units remaining",
-                'data' => [
-                    'item_id' => $item->id,
-                    'item_name' => $item->name,
-                    'current_quantity' => $item->quantity,
-                    'sku' => $item->sku
-                ],
-                'created_at' => now()
-            ];
-        })->toArray();
+        Alert::create([
+            'type' => 'birthday_reminder',
+            'priority' => 'low',
+            'title' => 'Birthday Reminder',
+            'message' => "Upcoming birthday: {$customer->name} - {$customer->birthday->format('M d')}",
+            'reference_type' => 'customer',
+            'reference_id' => $customer->id,
+            'status' => 'active',
+            'created_by' => auth()->id(),
+            'metadata' => [
+                'customer_name' => $customer->name,
+                'birthday' => $customer->birthday->toDateString(),
+                'days_until_birthday' => now()->diffInDays($customer->birthday->setYear(now()->year)),
+            ],
+        ]);
     }
 
     /**
-     * Get high value pending invoice alerts
+     * Resolve alert
      */
-    private function getHighValuePendingAlerts(): array
+    public function resolveAlert(int $alertId, string $resolution = null): bool
     {
-        $highValueThreshold = 50000; // Configurable threshold
+        $alert = Alert::find($alertId);
         
-        $highValueInvoices = Invoice::whereIn('status', ['sent', 'overdue'])
-            ->where('total_amount', '>=', $highValueThreshold)
-            ->with('customer')
-            ->get();
+        if (!$alert) {
+            return false;
+        }
 
-        return $highValueInvoices->map(function ($invoice) {
-            return [
-                'id' => "high_value_{$invoice->id}",
-                'type' => 'high_value_pending',
-                'severity' => 'medium',
-                'title' => 'High Value Pending Invoice',
-                'message' => "High value invoice #{$invoice->invoice_number} ({$invoice->total_amount}) is pending payment",
-                'data' => [
-                    'invoice_id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
-                    'customer_name' => $invoice->customer->name,
-                    'amount' => $invoice->total_amount,
-                    'issue_date' => $invoice->issue_date
-                ],
-                'created_at' => now()
-            ];
-        })->toArray();
-    }
+        $alert->update([
+            'status' => 'resolved',
+            'resolved_at' => now(),
+            'resolved_by' => auth()->id(),
+            'resolution' => $resolution,
+        ]);
 
-    /**
-     * Get alert count by severity
-     */
-    public function getAlertCounts(): array
-    {
-        $alerts = $this->getAlerts();
-        $allAlerts = collect($alerts)->flatten(1);
+        Log::info('Alert resolved', [
+            'alert_id' => $alertId,
+            'type' => $alert->type,
+            'resolved_by' => auth()->id(),
+        ]);
 
-        return [
-            'total' => $allAlerts->count(),
-            'high' => $allAlerts->where('severity', 'high')->count(),
-            'medium' => $allAlerts->where('severity', 'medium')->count(),
-            'low' => $allAlerts->where('severity', 'low')->count()
-        ];
-    }
-
-    /**
-     * Mark alert as read (for future implementation)
-     */
-    public function markAsRead(string $alertId): bool
-    {
-        // This would typically update a user_alerts table
-        // For now, we'll just clear the cache to refresh alerts
-        $this->clearCache();
         return true;
     }
 
     /**
-     * Clear alerts cache
+     * Get active alerts
      */
-    public function clearCache(): void
+    public function getActiveAlerts(array $filters = [])
     {
-        Cache::forget('dashboard_alerts');
+        $query = Alert::where('status', 'active')
+            ->orderBy('priority', 'desc')
+            ->orderBy('created_at', 'desc');
+
+        if (isset($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (isset($filters['priority'])) {
+            $query->where('priority', $filters['priority']);
+        }
+
+        return $query->paginate($filters['per_page'] ?? 20);
+    }
+
+    /**
+     * Check for overdue invoices and create alerts
+     */
+    public function checkOverdueInvoices(): void
+    {
+        $overdueInvoices = \App\Models\Invoice::with('customer')
+            ->where('due_date', '<', now())
+            ->where('status', '!=', 'paid')
+            ->whereDoesntHave('alerts', function ($query) {
+                $query->where('type', 'overdue_payment')
+                    ->where('status', 'active');
+            })
+            ->get();
+
+        foreach ($overdueInvoices as $invoice) {
+            $this->createOverduePaymentAlert($invoice->customer, $invoice);
+        }
+    }
+
+    /**
+     * Check for upcoming birthdays and create alerts
+     */
+    public function checkUpcomingBirthdays(): void
+    {
+        $upcomingBirthdays = Customer::active()
+            ->whereNotNull('birthday')
+            ->get()
+            ->filter(function ($customer) {
+                $birthday = $customer->birthday->setYear(now()->year);
+                $daysUntil = now()->diffInDays($birthday, false);
+                return $daysUntil >= 0 && $daysUntil <= 7; // Next 7 days
+            });
+
+        foreach ($upcomingBirthdays as $customer) {
+            // Check if alert already exists
+            $existingAlert = Alert::where('type', 'birthday_reminder')
+                ->where('reference_type', 'customer')
+                ->where('reference_id', $customer->id)
+                ->where('status', 'active')
+                ->whereDate('created_at', now())
+                ->first();
+
+            if (!$existingAlert) {
+                $this->createBirthdayReminderAlert($customer);
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ use App\Models\InventoryItem;
 use App\Models\BusinessConfiguration;
 use App\Services\InventoryManagementService;
 use App\Services\GoldPricingService;
+use App\Services\IntegrationEventService;
 use App\Exceptions\InsufficientInventoryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,7 @@ class InvoiceService
 {
     protected $inventoryService;
     protected $goldPricingService;
+    protected $integrationService;
 
     public function __construct(
         InventoryManagementService $inventoryService,
@@ -26,6 +28,14 @@ class InvoiceService
     ) {
         $this->inventoryService = $inventoryService;
         $this->goldPricingService = $goldPricingService;
+    }
+
+    protected function getIntegrationService()
+    {
+        if (!$this->integrationService) {
+            $this->integrationService = app(IntegrationEventService::class);
+        }
+        return $this->integrationService;
     }
 
     /**
@@ -88,6 +98,9 @@ class InvoiceService
 
                 // Log invoice creation for audit trail
                 $this->logInvoiceActivity($invoice, 'created', 'Invoice created successfully with inventory reservation');
+
+                // Trigger cross-module integration
+                $this->getIntegrationService()->handleInvoiceCreated($invoice);
 
                 return $invoice->load(['items.inventoryItem', 'tags', 'customer', 'template']);
                 
@@ -434,6 +447,10 @@ class InvoiceService
                     'static_total_price' => $totalPrice
                 ]);
             }
+
+            // Ensure unit_price is never null
+            $unitPrice = $unitPrice ?? 0;
+            $totalPrice = $totalPrice ?? 0;
 
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
@@ -827,22 +844,45 @@ class InvoiceService
     public function deleteInvoice(Invoice $invoice)
     {
         return DB::transaction(function () use ($invoice) {
-            // Delete PDF file if exists
-            if ($invoice->pdf_path && Storage::exists($invoice->pdf_path)) {
-                Storage::delete($invoice->pdf_path);
-            }
-
-            // Delete attachments
-            foreach ($invoice->attachments as $attachment) {
-                if (Storage::exists($attachment->file_path)) {
-                    Storage::delete($attachment->file_path);
+            try {
+                // Load invoice with items to ensure we have the current state
+                $invoice->load('items');
+                
+                // Restore inventory before deletion
+                $this->inventoryService->restoreInventory($invoice);
+                
+                // Log inventory restoration for audit trail
+                $this->logInvoiceActivity($invoice, 'inventory_restored', 'Inventory restored before invoice deletion');
+                
+                // Delete PDF file if exists
+                if ($invoice->pdf_path && Storage::exists($invoice->pdf_path)) {
+                    Storage::delete($invoice->pdf_path);
                 }
+
+                // Delete attachments
+                foreach ($invoice->attachments as $attachment) {
+                    if (Storage::exists($attachment->file_path)) {
+                        Storage::delete($attachment->file_path);
+                    }
+                }
+
+                // Log invoice deletion for audit trail
+                $this->logInvoiceActivity($invoice, 'deleted', 'Invoice deleted with inventory restoration');
+
+                // Delete the invoice (cascade will handle related records)
+                $invoice->delete();
+
+                return true;
+                
+            } catch (\Exception $e) {
+                Log::error('Invoice deletion failed', [
+                    'invoice_id' => $invoice->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                throw new \Exception('Failed to delete invoice: ' . $e->getMessage());
             }
-
-            // Delete the invoice (cascade will handle related records)
-            $invoice->delete();
-
-            return true;
         });
     }
 

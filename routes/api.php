@@ -49,7 +49,7 @@ Route::prefix('localization')->group(function () {
 });
 
 // Protected routes
-Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
+Route::middleware(['auth:sanctum', 'auth.api', 'api.errors'])->group(function () {
     // Dashboard routes
     Route::prefix('dashboard')->group(function () {
         Route::get('/kpis', [\App\Http\Controllers\DashboardController::class, 'getKPIs']);
@@ -138,6 +138,11 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::get('/summary/location', [\App\Http\Controllers\InventoryController::class, 'summaryByLocation']);
         Route::get('/summary/category', [\App\Http\Controllers\InventoryController::class, 'summaryByCategory']);
         Route::get('/gold-purity-options', [\App\Http\Controllers\InventoryController::class, 'goldPurityOptions']);
+        // Missing routes for inventory form data with throttling
+        Route::middleware(['throttle:60,1'])->group(function () {
+            Route::get('/categories', [\App\Http\Controllers\InventoryController::class, 'getCategories']);
+            Route::get('/locations', [\App\Http\Controllers\InventoryController::class, 'getLocations']);
+        });
         Route::post('/{inventory}/transfer', [\App\Http\Controllers\InventoryController::class, 'transfer']);
         Route::get('/{inventory}/movements', [\App\Http\Controllers\InventoryController::class, 'movements']);
     });
@@ -387,5 +392,28 @@ Route::middleware(['auth:sanctum', 'auth.api'])->group(function () {
         Route::post('/schedule', [App\Http\Controllers\ReportController::class, 'scheduleReport']);
         Route::get('/scheduled', [App\Http\Controllers\ReportController::class, 'getScheduledReports']);
         Route::delete('/scheduled/{id}', [App\Http\Controllers\ReportController::class, 'deleteScheduledReport']);
+        
+        // Specific report endpoints with real data and throttling
+        Route::middleware(['throttle:30,1'])->group(function () {
+            Route::post('/sales', [App\Http\Controllers\ReportController::class, 'generateSalesReport']);
+            Route::post('/inventory', [App\Http\Controllers\ReportController::class, 'generateInventoryReport']);
+            Route::post('/financial', [App\Http\Controllers\ReportController::class, 'generateFinancialReport']);
+            Route::post('/customer', [App\Http\Controllers\ReportController::class, 'generateCustomerReport']);
+        });
+    });
+
+    // API Cache Management routes
+    Route::prefix('cache')->group(function () {
+        Route::get('/statistics', [\App\Http\Controllers\ApiCacheController::class, 'statistics']);
+        Route::post('/clear-data-type', [\App\Http\Controllers\ApiCacheController::class, 'clearDataType']);
+        Route::post('/clear-all', [\App\Http\Controllers\ApiCacheController::class, 'clearAll']);
+        Route::post('/warm-up', [\App\Http\Controllers\ApiCacheController::class, 'warmUp']);
+    });
+
+    // Integration routes
+    Route::prefix('integration')->group(function () {
+        Route::get('/status', [App\Http\Controllers\IntegrationController::class, 'getIntegrationStatus']);
+        Route::get('/validate-consistency', [App\Http\Controllers\IntegrationController::class, 'validateDataConsistency']);
+        Route::post('/fix-consistency', [App\Http\Controllers\IntegrationController::class, 'fixDataConsistency']);
     });
 });

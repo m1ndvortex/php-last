@@ -57,38 +57,68 @@ const handleLogout = () => {
   router.push("/login");
 };
 
-// Response interceptor
+// Response interceptor with enhanced error handling
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
   (error: AxiosError) => {
+    // Enhanced error logging
+    console.error("API Error Details:", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+
     // Handle different error status codes
     if (error.response) {
+      const errorData = error.response.data as any;
+      
       switch (error.response.status) {
         case 401:
           // Unauthorized - clear auth and redirect to login
+          console.error("Authentication failed:", errorData);
           handleLogout();
           break;
 
         case 403:
           // Forbidden - show error message
-          console.error("Access forbidden:", error.response.data);
+          console.error("Access forbidden:", errorData);
+          showErrorNotification(
+            errorData?.message || "Access forbidden. You don't have permission to perform this action."
+          );
           break;
 
         case 404:
           // Not found
-          console.error("Resource not found:", error.response.data);
+          console.error("Resource not found:", errorData);
+          showErrorNotification(
+            errorData?.message || "The requested resource was not found."
+          );
           break;
 
         case 422:
-          // Validation errors
-          console.error("Validation errors:", error.response.data);
+          // Validation errors - handle specially for form validation
+          console.error("Validation errors:", errorData);
+          if (errorData?.error === 'insufficient_inventory') {
+            // Let the component handle insufficient inventory errors
+            break;
+          }
+          showErrorNotification(
+            errorData?.message || "The provided data is invalid."
+          );
           break;
 
         case 429:
           // Too many requests
-          console.error("Rate limit exceeded:", error.response.data);
+          console.error("Rate limit exceeded:", errorData);
+          showErrorNotification(
+            errorData?.message || "Too many requests. Please try again later."
+          );
           break;
 
         case 500:
@@ -96,24 +126,28 @@ api.interceptors.response.use(
         case 503:
         case 504:
           // Server errors
-          console.error("Server error:", error.response.data);
-          // Show user-friendly error message
+          console.error("Server error:", errorData);
           showErrorNotification(
-            "Server error occurred. Please try again later.",
+            errorData?.message || "Server error occurred. Please try again later."
           );
           break;
 
         default:
-          console.error("API Error:", error.response.data);
+          console.error("API Error:", errorData);
+          showErrorNotification(
+            errorData?.message || "An unexpected error occurred."
+          );
       }
     } else if (error.request) {
-      // Network error
-      console.error("Network error:", error.request);
-      showErrorNotification("Network error. Please check your connection.");
+      // Network error - no response received
+      console.error("Network error - no response:", error.request);
+      showErrorNotification(
+        "Network error. Please check your internet connection and try again."
+      );
     } else {
-      // Other error
-      console.error("Error:", error.message);
-      showErrorNotification("An unexpected error occurred.");
+      // Request setup error
+      console.error("Request setup error:", error.message);
+      showErrorNotification("An unexpected error occurred while making the request.");
     }
 
     return Promise.reject(error);

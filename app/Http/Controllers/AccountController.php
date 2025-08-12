@@ -18,43 +18,74 @@ class AccountController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Account::query();
+        try {
+            $request->validate([
+                'type' => 'nullable|in:asset,liability,equity,revenue,expense',
+                'active' => 'nullable|boolean',
+                'parent_id' => 'nullable|exists:accounts,id'
+            ]);
 
-        if ($request->has('type')) {
-            $query->byType($request->type);
+            $query = Account::query();
+
+            if ($request->has('type')) {
+                $query->byType($request->type);
+            }
+
+            if ($request->has('active')) {
+                $query->where('is_active', $request->boolean('active'));
+            }
+
+            if ($request->has('parent_id')) {
+                $query->where('parent_id', $request->parent_id);
+            }
+
+            $accounts = $query->with('parent', 'children')
+                ->orderBy('code')
+                ->get()
+                ->map(function ($account) {
+                    return [
+                        'id' => $account->id,
+                        'code' => $account->code,
+                        'name' => $account->localized_name,
+                        'type' => $account->type,
+                        'subtype' => $account->subtype,
+                        'parent_id' => $account->parent_id,
+                        'parent_name' => $account->parent?->localized_name,
+                        'currency' => $account->currency,
+                        'current_balance' => $account->current_balance,
+                        'is_active' => $account->is_active,
+                        'children_count' => $account->children->count(),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $accounts,
+                'meta' => [
+                    'total_accounts' => $accounts->count(),
+                    'filters_applied' => array_filter($request->only(['type', 'active', 'parent_id'])),
+                    'generated_at' => now()->toISOString()
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid request parameters',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Failed to retrieve accounts', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve accounts',
+                'error' => app()->environment('production') ? 'Internal server error' : $e->getMessage()
+            ], 500);
         }
-
-        if ($request->has('active')) {
-            $query->where('is_active', $request->boolean('active'));
-        }
-
-        if ($request->has('parent_id')) {
-            $query->where('parent_id', $request->parent_id);
-        }
-
-        $accounts = $query->with('parent', 'children')
-            ->orderBy('code')
-            ->get()
-            ->map(function ($account) {
-                return [
-                    'id' => $account->id,
-                    'code' => $account->code,
-                    'name' => $account->localized_name,
-                    'type' => $account->type,
-                    'subtype' => $account->subtype,
-                    'parent_id' => $account->parent_id,
-                    'parent_name' => $account->parent?->localized_name,
-                    'currency' => $account->currency,
-                    'current_balance' => $account->current_balance,
-                    'is_active' => $account->is_active,
-                    'children_count' => $account->children->count(),
-                ];
-            });
-
-        return response()->json([
-            'success' => true,
-            'data' => $accounts,
-        ]);
     }
 
     public function store(Request $request): JsonResponse

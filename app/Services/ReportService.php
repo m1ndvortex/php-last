@@ -43,6 +43,70 @@ class ReportService
     }
 
     /**
+     * Generate Sales Report with real data
+     */
+    public function generateSalesReport(array $filters): array
+    {
+        $generator = app(SalesReportGenerator::class);
+        
+        return $generator
+            ->setSubtype('summary')
+            ->setDateRange($filters['date_from'] ?? now()->subMonth()->format('Y-m-d'), $filters['date_to'] ?? now()->format('Y-m-d'))
+            ->setFilters($filters)
+            ->setLanguage('en')
+            ->setFormat('json')
+            ->generate();
+    }
+
+    /**
+     * Generate Inventory Report with real data
+     */
+    public function generateInventoryReport(array $filters): array
+    {
+        $generator = app(InventoryReportGenerator::class);
+        
+        return $generator
+            ->setSubtype('stock_levels')
+            ->setDateRange($filters['date_from'] ?? now()->subMonth()->format('Y-m-d'), $filters['date_to'] ?? now()->format('Y-m-d'))
+            ->setFilters($filters)
+            ->setLanguage('en')
+            ->setFormat('json')
+            ->generate();
+    }
+
+    /**
+     * Generate Financial Report with real data
+     */
+    public function generateFinancialReport(array $filters): array
+    {
+        $generator = app(FinancialReportGenerator::class);
+        
+        return $generator
+            ->setSubtype('profit_loss')
+            ->setDateRange($filters['date_from'], $filters['date_to'])
+            ->setFilters($filters)
+            ->setLanguage('en')
+            ->setFormat('json')
+            ->generate();
+    }
+
+    /**
+     * Generate Customer Report with real data
+     */
+    public function generateCustomerReport(array $filters): array
+    {
+        $generator = app(CustomerReportGenerator::class);
+        
+        return $generator
+            ->setSubtype('analytics')
+            ->setDateRange($filters['date_from'] ?? now()->subMonth()->format('Y-m-d'), $filters['date_to'] ?? now()->format('Y-m-d'))
+            ->setFilters($filters)
+            ->setLanguage('en')
+            ->setFormat('json')
+            ->generate();
+    }
+
+    /**
      * Export report to file
      */
     public function exportReport(string $reportId, string $format): string

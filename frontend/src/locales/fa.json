@@ -30,6 +30,33 @@
     "expand": "باز کردن",
     "collapse": "بستن"
   },
+  "errors": {
+    "something_went_wrong": "مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.",
+    "network_error": "خطای شبکه. لطفاً اتصال خود را بررسی کرده و دوباره تلاش کنید.",
+    "server_error": "خطای سرور. لطفاً بعداً دوباره تلاش کنید.",
+    "validation_failed": "اطلاعات ارائه شده نامعتبر است.",
+    "unauthorized": "شما مجاز به انجام این عمل نیستید.",
+    "not_found": "منبع درخواستی یافت نشد.",
+    "inventory": {
+      "insufficient_stock": "موجودی کافی برای اقلام درخواستی وجود ندارد.",
+      "unavailable_items": "اقلام در دسترس نیست",
+      "failed_to_create_item": "ایجاد کالای موجودی ناموفق بود"
+    },
+    "pricing": {
+      "calculation_failed": "محاسبه قیمت کالا ناموفق بود.",
+      "error_details": "جزئیات خطا"
+    },
+    "auth": {
+      "invalid_credentials": "اطلاعات ورود نامعتبر است."
+    },
+    "database": {
+      "connection_failed": "اتصال به پایگاه داده ناموفق بود. لطفاً بعداً دوباره تلاش کنید."
+    }
+  },
+  "inventory": {
+    "requested": "درخواست شده",
+    "available": "موجود"
+  },
   "pwa": {
     "install": {
       "title": "نصب اپلیکیشن",

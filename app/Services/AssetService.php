@@ -63,6 +63,123 @@ class AssetService
         return $asset->calculateDepreciation($asOfDate);
     }
 
+    /**
+     * Enhanced depreciation calculation with multiple methods
+     */
+    public function calculateEnhancedDepreciation(Asset $asset, ?Carbon $asOfDate = null): array
+    {
+        $asOfDate = $asOfDate ?? now();
+        $method = $asset->depreciation_method ?? 'straight_line';
+        $cost = $asset->purchase_cost;
+        $salvageValue = $asset->salvage_value ?? 0;
+        $usefulLifeYears = $asset->useful_life_years;
+        $usefulLifeMonths = $asset->useful_life_months ?? ($usefulLifeYears * 12);
+        $purchaseDate = $asset->purchase_date ?? $asset->created_at;
+        
+        // Calculate age in months for more precision
+        $ageInMonths = $purchaseDate->diffInMonths($asOfDate);
+        $ageInYears = $ageInMonths / 12;
+        
+        $depreciableAmount = $cost - $salvageValue;
+        $accumulatedDepreciation = $asset->accumulated_depreciation ?? 0;
+        
+        $result = [
+            'method' => $method,
+            'cost' => $cost,
+            'salvage_value' => $salvageValue,
+            'depreciable_amount' => $depreciableAmount,
+            'useful_life_years' => $usefulLifeYears,
+            'useful_life_months' => $usefulLifeMonths,
+            'age_in_months' => $ageInMonths,
+            'age_in_years' => $ageInYears,
+            'accumulated_depreciation' => $accumulatedDepreciation,
+            'book_value' => $cost - $accumulatedDepreciation,
+            'annual_depreciation' => 0,
+            'monthly_depreciation' => 0,
+            'remaining_depreciation' => 0,
+            'is_fully_depreciated' => false,
+        ];
+
+        if ($ageInMonths >= $usefulLifeMonths) {
+            $result['is_fully_depreciated'] = true;
+            $result['accumulated_depreciation'] = $depreciableAmount;
+            $result['book_value'] = $salvageValue;
+            return $result;
+        }
+
+        switch ($method) {
+            case 'straight_line':
+                $result['annual_depreciation'] = $depreciableAmount / $usefulLifeYears;
+                $result['monthly_depreciation'] = $depreciableAmount / $usefulLifeMonths;
+                $result['accumulated_depreciation'] = min($depreciableAmount, $result['monthly_depreciation'] * $ageInMonths);
+                break;
+
+            case 'declining_balance':
+                $rate = 2 / $usefulLifeYears; // Double declining balance
+                $remainingValue = $cost;
+                $totalDepreciation = 0;
+                
+                for ($month = 1; $month <= $ageInMonths; $month++) {
+                    $monthlyRate = $rate / 12;
+                    $monthlyDepreciation = min($remainingValue * $monthlyRate, $remainingValue - $salvageValue);
+                    $totalDepreciation += $monthlyDepreciation;
+                    $remainingValue -= $monthlyDepreciation;
+                    
+                    if ($remainingValue <= $salvageValue) {
+                        break;
+                    }
+                }
+                
+                $result['accumulated_depreciation'] = $totalDepreciation;
+                $result['annual_depreciation'] = min($remainingValue * $rate, $remainingValue - $salvageValue);
+                $result['monthly_depreciation'] = $result['annual_depreciation'] / 12;
+                break;
+
+            case 'sum_of_years_digits':
+                $sumOfYears = ($usefulLifeYears * ($usefulLifeYears + 1)) / 2;
+                $totalDepreciation = 0;
+                
+                for ($year = 1; $year <= ceil($ageInYears); $year++) {
+                    $yearFraction = ($usefulLifeYears - $year + 1) / $sumOfYears;
+                    $yearDepreciation = $depreciableAmount * $yearFraction;
+                    
+                    if ($year <= floor($ageInYears)) {
+                        $totalDepreciation += $yearDepreciation;
+                    } else {
+                        // Partial year
+                        $partialYear = $ageInYears - floor($ageInYears);
+                        $totalDepreciation += $yearDepreciation * $partialYear;
+                    }
+                }
+                
+                $result['accumulated_depreciation'] = $totalDepreciation;
+                $currentYearFraction = ($usefulLifeYears - ceil($ageInYears) + 1) / $sumOfYears;
+                $result['annual_depreciation'] = $depreciableAmount * $currentYearFraction;
+                $result['monthly_depreciation'] = $result['annual_depreciation'] / 12;
+                break;
+
+            case 'units_of_production':
+                $totalUnits = $asset->total_estimated_units ?? 1;
+                $unitsUsed = $asset->units_used ?? 0;
+                $depreciationPerUnit = $depreciableAmount / $totalUnits;
+                
+                $result['accumulated_depreciation'] = min($depreciableAmount, $unitsUsed * $depreciationPerUnit);
+                $result['depreciation_per_unit'] = $depreciationPerUnit;
+                $result['units_used'] = $unitsUsed;
+                $result['total_estimated_units'] = $totalUnits;
+                break;
+
+            default:
+                // No depreciation
+                break;
+        }
+
+        $result['book_value'] = $cost - $result['accumulated_depreciation'];
+        $result['remaining_depreciation'] = $depreciableAmount - $result['accumulated_depreciation'];
+
+        return $result;
+    }
+
     public function processDepreciation(?Carbon $asOfDate = null): Collection
     {
         $asOfDate = $asOfDate ?? now();

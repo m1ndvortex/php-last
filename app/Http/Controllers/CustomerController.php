@@ -30,6 +30,20 @@ class CustomerController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $request->validate([
+                'search' => 'nullable|string|max:255',
+                'customer_type' => 'nullable|in:individual,business',
+                'crm_stage' => 'nullable|in:lead,prospect,customer,inactive',
+                'is_active' => 'nullable|boolean',
+                'preferred_language' => 'nullable|in:en,fa',
+                'lead_source' => 'nullable|string|max:100',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
+                'sort_by' => 'nullable|in:name,email,customer_type,crm_stage,created_at,updated_at',
+                'sort_direction' => 'nullable|in:asc,desc',
+                'per_page' => 'nullable|integer|min:1|max:100'
+            ]);
+
             $filters = $request->only([
                 'search',
                 'customer_type',
@@ -48,13 +62,30 @@ class CustomerController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $customers,
+                'meta' => [
+                    'filters_applied' => array_filter($filters),
+                    'total_results' => $customers->total(),
+                    'generated_at' => now()->toISOString()
+                ],
                 'message' => 'Customers retrieved successfully'
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid request parameters',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
+            \Log::error('Failed to retrieve customers', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve customers',
-                'error' => $e->getMessage()
+                'error' => app()->environment('production') ? 'Internal server error' : $e->getMessage()
             ], 500);
         }
     }

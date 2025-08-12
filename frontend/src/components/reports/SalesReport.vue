@@ -371,7 +371,7 @@ const getStatusClass = (status: string): string => {
 };
 
 const getChartIcon = (type: string): string => {
-  const icons = {
+  const icons: Record<string, string> = {
     bar: 'fas fa-chart-bar',
     line: 'fas fa-chart-line',
     pie: 'fas fa-chart-pie',
