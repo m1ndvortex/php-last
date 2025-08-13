@@ -166,6 +166,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import LanguageSwitcher from "../ui/LanguageSwitcher.vue";
 import ThemeToggle from "../ui/ThemeToggle.vue";
+import { useAuthStore } from "@/stores/auth";
 
 defineEmits<{
   toggleSidebar: [];
@@ -174,6 +175,7 @@ defineEmits<{
 const { locale } = useI18n();
 // const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const userMenuOpen = ref(false);
 const notificationCount = ref(3); // Mock notification count
@@ -191,8 +193,7 @@ const navigation = [
 ];
 
 const userInitials = computed(() => {
-  // Mock user data - in real app, get from auth store
-  return "JU";
+  return authStore.userInitials || "JU";
 });
 
 const toggleUserMenu = (event: Event) => {
@@ -206,11 +207,27 @@ const closeUserMenu = () => {
   console.log("User menu closed");
 };
 
-const handleLogout = () => {
+const handleLogout = async () => {
   userMenuOpen.value = false;
-  // TODO: Implement logout logic with auth store
-  console.log("Logout clicked");
-  router.push("/login");
+  console.log("Logout clicked - initiating reliable logout");
+  
+  try {
+    const result = await authStore.logout();
+    console.log("Logout result:", result);
+    
+    if (result.success) {
+      console.log("Logout successful:", result.message);
+      // The logout manager will handle the redirect
+    } else {
+      console.error("Logout failed:", result.error);
+      // Still redirect to login even if logout failed
+      router.push("/login");
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Fallback redirect
+    router.push("/login");
+  }
 };
 
 // Handle clicks outside the dropdown

@@ -2,6 +2,10 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { apiService } from "@/services/api";
 import router from "@/router";
+import { crossTabSessionManager } from "@/services/crossTabSessionManager";
+import { ReliableLogoutManagerImpl } from "@/services/reliableLogoutManager";
+import type { SessionData, ConflictResolution } from "@/services/crossTabSessionManager";
+import type { LogoutResult } from "@/types/auth";
 
 export interface User {
   id: number;
@@ -50,6 +54,17 @@ export const useAuthStore = defineStore("auth", () => {
   const activityListeners = ref<(() => void)[]>([]);
   const retryCount = ref(0);
   const maxRetries = 3;
+  
+  // Cross-tab session management state
+  const crossTabInitialized = ref(false);
+  const activeTabs = ref<string[]>([]);
+  const sessionConflicts = ref<ConflictResolution[]>([]);
+  const crossTabEventListeners = ref<(() => void)[]>([]);
+  const sessionHealthStatus = ref<'healthy' | 'warning' | 'error'>('healthy');
+  const lastCrossTabSync = ref<Date | null>(null);
+  
+  // Reliable logout manager
+  const logoutManager = new ReliableLogoutManagerImpl(crossTabSessionManager);
 
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value);
@@ -74,6 +89,12 @@ export const useAuthStore = defineStore("auth", () => {
     return sessionTimeRemaining.value > 0 && sessionTimeRemaining.value <= 5;
   });
 
+  // Cross-tab computed properties
+  const isMultiTab = computed(() => activeTabs.value.length > 1);
+  const tabCount = computed(() => activeTabs.value.length);
+  const hasSessionConflicts = computed(() => sessionConflicts.value.length > 0);
+  const currentTabId = computed(() => crossTabSessionManager.getSessionData().tabId);
+
   // Enhanced login with retry logic and better error handling
   const login = async (credentials: LoginCredentials): Promise<AuthResult> => {
     const attemptLogin = async (attempt: number): Promise<AuthResult> => {
@@ -87,7 +108,7 @@ export const useAuthStore = defineStore("auth", () => {
           throw new Error(response.data.error?.message || "Login failed");
         }
 
-        const { user: userData, token: authToken, session_expiry, server_time } = response.data.data;
+        const { user: userData, token: authToken, session_expiry } = response.data.data;
 
         // Store auth data
         user.value = userData;
@@ -106,6 +127,14 @@ export const useAuthStore = defineStore("auth", () => {
 
         // Start session management
         await startSessionManagement();
+
+        // Initialize cross-tab session management
+        if (!crossTabInitialized.value) {
+          await initializeCrossTabSession();
+        } else {
+          // Sync with existing cross-tab session
+          await syncAuthDataToCrossTab();
+        }
 
         // Reset retry count on success
         retryCount.value = 0;
@@ -149,26 +178,341 @@ export const useAuthStore = defineStore("auth", () => {
     return attemptLogin(1);
   };
 
-  // Enhanced logout with proper cleanup
-  const logout = async (): Promise<void> => {
+  // Initialize cross-tab session management
+  const initializeCrossTabSession = async (): Promise<void> => {
+    if (crossTabInitialized.value) return;
+
+    try {
+      console.log('[AuthStore] Initializing cross-tab session management');
+      
+      // Initialize the cross-tab session manager
+      await crossTabSessionManager.initialize();
+      
+      // Set up cross-tab event listeners
+      setupCrossTabEventListeners();
+      
+      // Sync current session with cross-tab manager
+      await syncWithCrossTabManager();
+      
+      crossTabInitialized.value = true;
+      console.log('[AuthStore] Cross-tab session management initialized');
+      
+    } catch (error) {
+      console.error('[AuthStore] Failed to initialize cross-tab session:', error);
+      throw error;
+    }
+  };
+
+  // Setup cross-tab event listeners
+  const setupCrossTabEventListeners = (): void => {
+    // Listen for cross-tab logout events
+    const handleCrossTabLogout = (event: CustomEvent) => {
+      console.log('[AuthStore] Received cross-tab logout event');
+      handleCrossTabLogoutEvent(event.detail.initiatingTab);
+    };
+
+    window.addEventListener('cross-tab-logout', handleCrossTabLogout as EventListener);
+    crossTabEventListeners.value.push(() => {
+      window.removeEventListener('cross-tab-logout', handleCrossTabLogout as EventListener);
+    });
+
+    // Listen for session conflicts
+    const handleSessionConflict = (event: CustomEvent) => {
+      console.log('[AuthStore] Received session conflict event');
+      handleSessionConflictEvent(event.detail);
+    };
+
+    window.addEventListener('session-conflict', handleSessionConflict as EventListener);
+    crossTabEventListeners.value.push(() => {
+      window.removeEventListener('session-conflict', handleSessionConflict as EventListener);
+    });
+  };
+
+  // Sync with cross-tab session manager
+  const syncWithCrossTabManager = async (): Promise<void> => {
+    try {
+      // First, check if we have session data from other tabs
+      const sessionData = crossTabSessionManager.getSessionData();
+      
+      if (sessionData.token && sessionData.userId && sessionData.isActive) {
+        // We have valid session data from other tabs
+        console.log('[AuthStore] Found valid session data from other tabs');
+        
+        // Update our auth state
+        token.value = sessionData.token;
+        sessionExpiry.value = sessionData.expiresAt;
+        
+        // Store token in localStorage
+        if (sessionData.token) {
+          localStorage.setItem("auth_token", sessionData.token);
+        }
+        
+        // Fetch user data if we don't have it
+        if (!user.value && sessionData.userId) {
+          await fetchUser();
+        }
+        
+        // Start session management
+        await startSessionManagement();
+        
+      } else if (isAuthenticated.value) {
+        // We have local auth data, sync it to cross-tab manager
+        console.log('[AuthStore] Syncing local auth data to cross-tab manager');
+        await syncAuthDataToCrossTab();
+      }
+      
+      // Update active tabs list
+      updateActiveTabsList();
+      
+    } catch (error) {
+      console.error('[AuthStore] Failed to sync with cross-tab manager:', error);
+    }
+  };
+
+  // Sync current auth data to cross-tab manager
+  const syncAuthDataToCrossTab = async (): Promise<void> => {
+    if (!isAuthenticated.value) return;
+
+    const sessionData: Partial<SessionData> = {
+      userId: user.value?.id || null,
+      token: token.value,
+      expiresAt: sessionExpiry.value,
+      isActive: isAuthenticated.value,
+      metadata: {
+        userAgent: navigator.userAgent,
+        loginTime: user.value ? new Date() : null,
+        refreshCount: 0
+      }
+    };
+
+    crossTabSessionManager.updateSessionData(sessionData);
+    lastCrossTabSync.value = new Date();
+    console.log('[AuthStore] Synced auth data to cross-tab manager');
+  };
+
+  // Handle cross-tab logout event
+  const handleCrossTabLogoutEvent = async (initiatingTab: string): Promise<void> => {
+    console.log(`[AuthStore] Handling logout from tab ${initiatingTab}`);
+    
+    // Clear local auth state without calling backend (already done by initiating tab)
+    cleanupAuthState();
+    
+    // Update active tabs list
+    updateActiveTabsList();
+    
+    // Redirect to login page
+    router.push('/login');
+  };
+
+  // Handle session conflict event
+  const handleSessionConflictEvent = (conflictData: ConflictResolution): void => {
+    console.log('[AuthStore] Handling session conflict:', conflictData.reason);
+    
+    // Add to conflicts list
+    sessionConflicts.value.push(conflictData);
+    
+    // Update session health status
+    sessionHealthStatus.value = 'warning';
+    
+    // Auto-resolve if possible
+    if (conflictData.action === 'use_incoming') {
+      resolveSessionConflict(conflictData);
+    }
+  };
+
+  // Resolve session conflict
+  const resolveSessionConflict = async (resolution: ConflictResolution): Promise<void> => {
+    try {
+      console.log('[AuthStore] Resolving session conflict:', resolution.reason);
+      
+      await crossTabSessionManager.recoverFromConflict(resolution);
+      
+      // Re-sync with cross-tab manager
+      await syncWithCrossTabManager();
+      
+      // Remove resolved conflict
+      sessionConflicts.value = sessionConflicts.value.filter(c => c.timestamp !== resolution.timestamp);
+      
+      // Update session health status
+      if (sessionConflicts.value.length === 0) {
+        sessionHealthStatus.value = 'healthy';
+      }
+      
+      console.log('[AuthStore] Session conflict resolved');
+      
+    } catch (error) {
+      console.error('[AuthStore] Failed to resolve session conflict:', error);
+      sessionHealthStatus.value = 'error';
+    }
+  };
+
+  // Detect and handle session conflicts
+  const detectSessionConflicts = async (): Promise<ConflictResolution | null> => {
+    try {
+      const conflict = await crossTabSessionManager.detectSessionConflicts();
+      
+      if (conflict) {
+        console.log('[AuthStore] Session conflict detected:', conflict.reason);
+        
+        // Add to conflicts list
+        sessionConflicts.value.push(conflict);
+        sessionHealthStatus.value = 'warning';
+        
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('session-conflict', {
+          detail: conflict
+        }));
+      }
+      
+      return conflict;
+      
+    } catch (error) {
+      console.error('[AuthStore] Failed to detect session conflicts:', error);
+      return null;
+    }
+  };
+
+  // Update active tabs list
+  const updateActiveTabsList = (): void => {
+    activeTabs.value = crossTabSessionManager.getActiveTabs();
+  };
+
+  // Get session health information
+  const getSessionHealth = () => {
+    return {
+      status: sessionHealthStatus.value,
+      conflicts: sessionConflicts.value,
+      activeTabs: activeTabs.value,
+      tabCount: tabCount.value,
+      isMultiTab: isMultiTab.value,
+      lastSync: lastCrossTabSync.value,
+      sessionData: crossTabSessionManager.getSessionData()
+    };
+  };
+
+  // Perform session health check
+  const performHealthCheck = async (): Promise<boolean> => {
+    try {
+      console.log('[AuthStore] Performing session health check');
+      
+      // Check for conflicts
+      const conflict = await detectSessionConflicts();
+      
+      // Validate session with backend
+      const isValid = await validateSession();
+      
+      // Update health status
+      if (!isValid) {
+        sessionHealthStatus.value = 'error';
+        return false;
+      } else if (conflict) {
+        sessionHealthStatus.value = 'warning';
+        return true;
+      } else {
+        sessionHealthStatus.value = 'healthy';
+        return true;
+      }
+      
+    } catch (error) {
+      console.error('[AuthStore] Health check failed:', error);
+      sessionHealthStatus.value = 'error';
+      return false;
+    }
+  };
+
+  // Schedule session maintenance
+  const scheduleSessionMaintenance = (): void => {
+    // Perform health check every 2 minutes
+    const healthCheckInterval = setInterval(async () => {
+      if (isAuthenticated.value) {
+        await performHealthCheck();
+      }
+    }, 2 * 60 * 1000);
+
+    // Sync with cross-tab manager every 30 seconds
+    const syncInterval = setInterval(async () => {
+      if (isAuthenticated.value && crossTabInitialized.value) {
+        await syncAuthDataToCrossTab();
+        updateActiveTabsList();
+      }
+    }, 30 * 1000);
+
+    // Store intervals for cleanup
+    crossTabEventListeners.value.push(() => {
+      clearInterval(healthCheckInterval);
+      clearInterval(syncInterval);
+    });
+  };
+
+  // Handle cross-tab logout coordination
+  const handleCrossTabLogout = async (): Promise<void> => {
+    try {
+      console.log('[AuthStore] Initiating cross-tab logout');
+      
+      // Request logout lock to prevent conflicts
+      const lockAcquired = await crossTabSessionManager.requestSessionLock('logout');
+      
+      if (lockAcquired) {
+        try {
+          // Call backend logout
+          if (token.value) {
+            await apiService.auth.logout();
+          }
+          
+          // Broadcast logout to other tabs
+          crossTabSessionManager.broadcastLogout();
+          
+          // Clean up local state
+          cleanupAuthState();
+          
+        } finally {
+          // Release logout lock
+          crossTabSessionManager.releaseSessionLock('logout');
+        }
+      } else {
+        // Another tab is handling logout, just clean up local state
+        cleanupAuthState();
+      }
+      
+    } catch (error) {
+      console.error('[AuthStore] Cross-tab logout failed:', error);
+      // Clean up local state even if logout fails
+      cleanupAuthState();
+    }
+  };
+
+  // Enhanced logout with reliable logout manager
+  const logout = async (): Promise<LogoutResult> => {
     try {
       // Stop session management first
       stopSessionManagement();
 
-      // Call backend logout if we have a token
-      if (token.value) {
-        try {
-          await apiService.auth.logout();
-        } catch (err) {
-          console.error("Backend logout error:", err);
-          // Continue with cleanup even if backend call fails
-        }
+      // Use reliable logout manager for comprehensive logout
+      const result = await logoutManager.initiateLogout();
+      
+      // Clean up local auth state
+      cleanupAuthState();
+      
+      // Redirect to login page if successful
+      if (result.success && result.redirectUrl) {
+        router.push(result.redirectUrl);
       }
+      
+      return result;
     } catch (err) {
       console.error("Logout error:", err);
-    } finally {
       // Always clear local state
       cleanupAuthState();
+      
+      return {
+        success: false,
+        message: "Logout failed, but local cleanup completed",
+        error: {
+          type: 'logout_failed',
+          message: err instanceof Error ? err.message : 'Unknown error',
+          originalError: err
+        }
+      };
     }
   };
 
@@ -181,12 +525,33 @@ export const useAuthStore = defineStore("auth", () => {
     error.value = null;
     retryCount.value = 0;
     
+    // Clear cross-tab state
+    sessionConflicts.value = [];
+    sessionHealthStatus.value = 'healthy';
+    lastCrossTabSync.value = null;
+    
     // Clear localStorage
     localStorage.removeItem("auth_token");
     localStorage.removeItem("refresh_token");
     
     // Stop session management
     stopSessionManagement();
+    
+    // Clean up cross-tab resources
+    cleanupCrossTabSession();
+  };
+
+  // Clean up cross-tab session resources
+  const cleanupCrossTabSession = (): void => {
+    // Remove cross-tab event listeners
+    crossTabEventListeners.value.forEach(cleanup => cleanup());
+    crossTabEventListeners.value = [];
+    
+    // Reset cross-tab state
+    crossTabInitialized.value = false;
+    activeTabs.value = [];
+    
+    console.log('[AuthStore] Cross-tab session resources cleaned up');
   };
 
   // Enhanced fetchUser with retry logic
@@ -436,13 +801,21 @@ export const useAuthStore = defineStore("auth", () => {
     if (initialized.value) return;
 
     try {
+      // Initialize cross-tab session management first
+      await initializeCrossTabSession();
+      
       if (token.value) {
         const userFetched = await fetchUser();
         if (userFetched && isAuthenticated.value) {
           await startSessionManagement();
+          // Schedule session maintenance
+          scheduleSessionMaintenance();
         } else {
           cleanupAuthState();
         }
+      } else {
+        // Check if we have session data from other tabs
+        await syncWithCrossTabManager();
       }
     } catch (err) {
       console.error("Auth initialization failed:", err);
@@ -492,12 +865,25 @@ export const useAuthStore = defineStore("auth", () => {
     initialized,
     sessionExpiry,
     lastActivity,
+    
+    // Cross-tab state
+    crossTabInitialized,
+    activeTabs,
+    sessionConflicts,
+    sessionHealthStatus,
+    lastCrossTabSync,
 
     // Getters
     isAuthenticated,
     userInitials,
     sessionTimeRemaining,
     isSessionExpiringSoon,
+    
+    // Cross-tab getters
+    isMultiTab,
+    tabCount,
+    hasSessionConflicts,
+    currentTabId,
 
     // Actions
     login,
@@ -514,5 +900,17 @@ export const useAuthStore = defineStore("auth", () => {
     stopSessionManagement,
     cleanupAuthState,
     handleAuthError,
+    
+    // Cross-tab actions
+    initializeCrossTabSession,
+    syncWithCrossTabManager,
+    syncAuthDataToCrossTab,
+    handleCrossTabLogout,
+    detectSessionConflicts,
+    resolveSessionConflict,
+    getSessionHealth,
+    performHealthCheck,
+    scheduleSessionMaintenance,
+    updateActiveTabsList,
   };
 });

@@ -60,3 +60,17 @@ export interface SessionData {
   last_activity: string;
   is_current: boolean;
 }
+
+export interface LogoutResult {
+  success: boolean;
+  message: string;
+  redirectUrl?: string;
+  warnings?: string[];
+  error?: LogoutError;
+}
+
+export interface LogoutError {
+  type: 'logout_failed' | 'network_error' | 'backend_error' | 'cleanup_error';
+  message: string;
+  originalError?: any;
+}
