@@ -185,17 +185,29 @@ class PerformanceEnhancedApiService {
   // Authentication methods (no caching for security)
   auth = {
     login: (credentials: { email: string; password: string; remember?: boolean }) =>
-      performanceApiService.post('/api/auth/login', credentials, { skipCache: true }),
+      performanceApiService.post('/api/auth/login', credentials, { 
+        skipCache: true 
+      } as AxiosRequestConfig & { skipCache?: boolean }),
 
-    logout: () => performanceApiService.post('/api/auth/logout', {}, { skipCache: true }),
+    logout: () => performanceApiService.post('/api/auth/logout', {}, { 
+      skipCache: true 
+    } as AxiosRequestConfig & { skipCache?: boolean }),
 
-    me: () => performanceApiService.get('/api/auth/user', { skipCache: true }),
+    me: () => performanceApiService.get('/api/auth/user', { 
+      skipCache: true 
+    } as AxiosRequestConfig & { skipCache?: boolean }),
 
-    refresh: () => performanceApiService.post('/api/auth/refresh', {}, { skipCache: true }),
+    refresh: () => performanceApiService.post('/api/auth/refresh', {}, { 
+      skipCache: true 
+    } as AxiosRequestConfig & { skipCache?: boolean }),
 
-    validateSession: () => performanceApiService.post('/api/auth/validate-session', {}, { skipCache: true }),
+    validateSession: () => performanceApiService.post('/api/auth/validate-session', {}, { 
+      skipCache: true 
+    } as AxiosRequestConfig & { skipCache?: boolean }),
 
-    extendSession: () => performanceApiService.post('/api/auth/extend-session', {}, { skipCache: true })
+    extendSession: () => performanceApiService.post('/api/auth/extend-session', {}, { 
+      skipCache: true 
+    } as AxiosRequestConfig & { skipCache?: boolean })
   };
 
   // Performance monitoring and management
