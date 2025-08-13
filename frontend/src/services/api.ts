@@ -40,7 +40,7 @@ export interface RequestMetadata {
 // Request/Response logging service
 class ApiLogger {
   private static instance: ApiLogger;
-  private debugMode: boolean = process.env.NODE_ENV === 'development';
+  private debugMode: boolean = import.meta.env.DEV;
 
   static getInstance(): ApiLogger {
     if (!ApiLogger.instance) {
@@ -306,7 +306,7 @@ class SessionManager {
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.VITE_API_BASE_URL || "",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
