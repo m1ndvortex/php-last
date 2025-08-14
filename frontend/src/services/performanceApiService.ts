@@ -321,7 +321,7 @@ class RequestDeduplicationManager {
     this.config = config;
     
     // Clean up expired requests periodically
-    setInterval(() => this.cleanup(), 30000); // Every 30 seconds
+    setInterval(() => this.cleanup(), 5 * 60 * 1000); // Every 5 minutes (reduced from 30 seconds)
   }
 
   async deduplicate<T>(

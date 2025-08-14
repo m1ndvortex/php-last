@@ -241,8 +241,8 @@ export class ResourcePrioritizer {
       }
     };
 
-    // Process queue every 100ms
-    setInterval(processQueue, 100);
+    // Process queue every 1 second (reduced from 100ms)
+    setInterval(processQueue, 1000);
 
     // Also process on idle
     if ('requestIdleCallback' in window) {

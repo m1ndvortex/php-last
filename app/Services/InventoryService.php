@@ -325,7 +325,7 @@ class InventoryService
     /**
      * Search inventory items.
      */
-    public function searchItems(array $filters): Collection
+    public function searchItems(array $filters)
     {
         $query = InventoryItem::active()->with(['category', 'location']);
         
@@ -376,6 +376,6 @@ class InventoryService
             }
         }
         
-        return $query->get();
+        return $query;
     }
 }

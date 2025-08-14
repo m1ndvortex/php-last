@@ -44,20 +44,18 @@ class InventoryController extends Controller
                 'gold_purity_min', 'gold_purity_max', 'gold_purity_range'
             ]);
 
-            $items = $this->inventoryService->searchItems($filters);
+            $query = $this->inventoryService->searchItems($filters);
             
-            // Apply pagination if requested
+            // Apply pagination
             $perPage = $request->get('per_page', 50);
-            if ($items instanceof \Illuminate\Database\Eloquent\Collection) {
-                $items = $items->paginate($perPage);
-            }
+            $items = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
-                'data' => $items->load(['category', 'location']),
+                'data' => $items,
                 'meta' => [
                     'filters_applied' => array_filter($filters),
-                    'total_items' => is_object($items) && method_exists($items, 'total') ? $items->total() : $items->count(),
+                    'total_items' => $items->total(),
                     'generated_at' => now()->toISOString()
                 ]
             ]);

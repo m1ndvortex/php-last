@@ -247,8 +247,8 @@ export const useAuthStore = defineStore("auth", () => {
           localStorage.setItem("auth_token", sessionData.token);
         }
         
-        // Fetch user data if we don't have it
-        if (!user.value && sessionData.userId) {
+        // Fetch user data if we don't have it and no auth request is in progress
+        if (!user.value && sessionData.userId && !authRequestInProgress.value) {
           await fetchUser();
         }
         
@@ -422,20 +422,20 @@ export const useAuthStore = defineStore("auth", () => {
 
   // Schedule session maintenance
   const scheduleSessionMaintenance = (): void => {
-    // Perform health check every 2 minutes
+    // Perform health check every 10 minutes (reduced from 2 minutes)
     const healthCheckInterval = setInterval(async () => {
       if (isAuthenticated.value) {
         await performHealthCheck();
       }
-    }, 2 * 60 * 1000);
+    }, 10 * 60 * 1000);
 
-    // Sync with cross-tab manager every 30 seconds
+    // Sync with cross-tab manager every 5 minutes (reduced from 30 seconds)
     const syncInterval = setInterval(async () => {
       if (isAuthenticated.value && crossTabInitialized.value) {
         await syncAuthDataToCrossTab();
         updateActiveTabsList();
       }
-    }, 30 * 1000);
+    }, 5 * 60 * 1000);
 
     // Store intervals for cleanup
     crossTabEventListeners.value.push(() => {
@@ -554,12 +554,35 @@ export const useAuthStore = defineStore("auth", () => {
     console.log('[AuthStore] Cross-tab session resources cleaned up');
   };
 
-  // Enhanced fetchUser with retry logic
+  // Circuit breaker state for preventing auth storms
+  const authRequestInProgress = ref(false);
+  const lastAuthFailure = ref<Date | null>(null);
+  const authFailureCount = ref(0);
+
+  // Enhanced fetchUser with retry logic and circuit breaker
   const fetchUser = async (): Promise<boolean> => {
     if (!token.value) return false;
 
+    // Circuit breaker: prevent multiple concurrent auth requests
+    if (authRequestInProgress.value) {
+      console.log('[AuthStore] Auth request already in progress, skipping');
+      return false;
+    }
+
+    // Circuit breaker: back off after repeated failures
+    if (lastAuthFailure.value && authFailureCount.value >= 3) {
+      const timeSinceFailure = Date.now() - lastAuthFailure.value.getTime();
+      const backoffTime = Math.min(30000, Math.pow(2, authFailureCount.value) * 1000); // Max 30 seconds
+      
+      if (timeSinceFailure < backoffTime) {
+        console.log(`[AuthStore] Circuit breaker active, waiting ${backoffTime - timeSinceFailure}ms`);
+        return false;
+      }
+    }
+
     const attemptFetch = async (attempt: number): Promise<boolean> => {
       try {
+        authRequestInProgress.value = true;
         isLoading.value = true;
         const response = await apiService.auth.me();
         
@@ -572,12 +595,20 @@ export const useAuthStore = defineStore("auth", () => {
             sessionExpiry.value = new Date(sessionData.expires_at);
           }
           
+          // Reset failure count on success
+          authFailureCount.value = 0;
+          lastAuthFailure.value = null;
+          
           return true;
         } else {
           throw new Error("Failed to fetch user data");
         }
       } catch (err: any) {
         console.error(`Fetch user attempt ${attempt} failed:`, err);
+        
+        // Track failures
+        authFailureCount.value++;
+        lastAuthFailure.value = new Date();
         
         // If unauthorized, clear auth state
         if (err.response?.status === 401) {
@@ -596,6 +627,7 @@ export const useAuthStore = defineStore("auth", () => {
         cleanupAuthState();
         return false;
       } finally {
+        authRequestInProgress.value = false;
         isLoading.value = false;
       }
     };
@@ -657,7 +689,7 @@ export const useAuthStore = defineStore("auth", () => {
     
     // Don't validate if session is not expiring soon and we validated recently
     const timeSinceLastActivity = Date.now() - lastActivity.value.getTime();
-    const recentActivity = timeSinceLastActivity < 5 * 60 * 1000; // 5 minutes
+    const recentActivity = timeSinceLastActivity < 10 * 60 * 1000; // 10 minutes (increased from 5)
     
     return !recentActivity || isSessionExpiringSoon.value;
   };
@@ -761,10 +793,10 @@ export const useAuthStore = defineStore("auth", () => {
       });
     });
 
-    // Set up periodic session validation (every 5 minutes)
+    // Set up periodic session validation (every 15 minutes - reduced frequency)
     sessionSyncInterval.value = window.setInterval(async () => {
       await syncSessionTimeout();
-    }, 5 * 60 * 1000);
+    }, 15 * 60 * 1000);
 
     // Set up session timeout warning
     const checkSessionExpiry = () => {
@@ -780,8 +812,8 @@ export const useAuthStore = defineStore("auth", () => {
       }
     };
 
-    // Check session expiry every minute
-    sessionTimeout.value = window.setInterval(checkSessionExpiry, 60 * 1000);
+    // Check session expiry every 2 minutes (reduced frequency)
+    sessionTimeout.value = window.setInterval(checkSessionExpiry, 2 * 60 * 1000);
   };
 
   // Stop session management
@@ -811,13 +843,13 @@ export const useAuthStore = defineStore("auth", () => {
 
   // Initialize auth state
   const initialize = async (): Promise<void> => {
-    if (initialized.value) return;
+    if (initialized.value || authRequestInProgress.value) return;
 
     try {
       // Initialize cross-tab session management first
       await initializeCrossTabSession();
       
-      if (token.value) {
+      if (token.value && !authRequestInProgress.value) {
         const userFetched = await fetchUser();
         if (userFetched && isAuthenticated.value) {
           await startSessionManagement();
@@ -878,6 +910,8 @@ export const useAuthStore = defineStore("auth", () => {
     initialized,
     sessionExpiry,
     lastActivity,
+    authRequestInProgress,
+    authFailureCount,
     
     // Cross-tab state
     crossTabInitialized,

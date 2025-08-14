@@ -547,7 +547,7 @@ class CrossTabSessionManager {
         sessionId: this.sessionData.sessionId
       };
       this.broadcastMessage(message);
-    }, 30000); // Every 30 seconds
+    }, 2 * 60 * 1000); // Every 2 minutes (reduced from 30 seconds)
   }
 
   // Start cleanup interval for inactive tabs
