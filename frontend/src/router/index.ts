@@ -149,10 +149,10 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
   // Start loading state for the route
-  const loadingContext = `route-${to.name}`;
+  const loadingContext = `route-${String(to.name)}`;
   loadingStateManager.startLoading(
     loadingContext,
-    `Loading ${to.meta?.title || to.name}...`,
+    `Loading ${to.meta?.title || String(to.name)}...`,
     {
       showSkeleton: true,
       skeletonType: getSkeletonTypeForRoute(to.name as string),
@@ -324,7 +324,7 @@ router.afterEach((to, from) => {
 
   // Track navigation performance for optimization
   if (from.name && to.name) {
-    console.log(`🚀 Navigation: ${from.name} → ${to.name}`);
+    console.log(`🚀 Navigation: ${String(from.name)} → ${String(to.name)}`);
   }
 });
 

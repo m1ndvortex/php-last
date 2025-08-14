@@ -4,13 +4,10 @@ import { debounce } from '@/utils/performanceOptimizations';
 // Create Vue reactivity functions that work in test environment
 const createRef = <T>(value: T): Ref<T> => {
   try {
-    return ref(value);
+    return ref(value) as Ref<T>;
   } catch {
     // Fallback for test environment
-    return {
-      value,
-      __v_isRef: true
-    } as Ref<T>;
+    return ref(value) as Ref<T>;
   }
 };
 
@@ -133,11 +130,17 @@ export class ComponentLoader {
 
     // Get or create loading state
     const loadingState = this.getLoadingState(componentName);
-    const componentConfig = { ...this.loadConfigs.get(componentName), ...config };
-
-    if (!componentConfig) {
-      throw new Error(`No config found for component: ${componentName}`);
-    }
+    const baseConfig = this.loadConfigs.get(componentName) || {};
+    const mergedConfig = { ...baseConfig, ...config };
+    
+    const componentConfig: ComponentLoadConfig = {
+      priority: mergedConfig.priority || 'medium',
+      loadDelay: mergedConfig.loadDelay || 0,
+      retryAttempts: mergedConfig.retryAttempts || 3,
+      retryDelay: mergedConfig.retryDelay || 1000,
+      preloadCondition: mergedConfig.preloadCondition,
+      dependencies: mergedConfig.dependencies || []
+    };
 
     // Check preload condition
     if (componentConfig.preloadCondition && !componentConfig.preloadCondition()) {

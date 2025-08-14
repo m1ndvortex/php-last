@@ -4,22 +4,19 @@ import { debounce } from '@/utils/performanceOptimizations';
 // Create Vue reactivity functions that work in test environment
 const createRef = <T>(value: T): Ref<T> => {
   try {
-    return ref(value);
+    return ref(value) as Ref<T>;
   } catch {
     // Fallback for test environment
-    return {
-      value,
-      __v_isRef: true
-    } as Ref<T>;
+    return ref(value) as Ref<T>;
   }
 };
 
 const createReactive = <T extends object>(value: T): T => {
   try {
-    return reactive(value);
+    return reactive(value) as T;
   } catch {
     // Fallback for test environment
-    return value;
+    return reactive(value) as T;
   }
 };
 
@@ -117,7 +114,18 @@ export class LoadingStateManager {
     config?: Partial<LoadingConfig>
   ): void {
     const loadingState = this.getLoadingState(context);
-    const loadingConfig = { ...this.loadingConfigs.get('component'), ...config };
+    const baseConfig = this.loadingConfigs.get('component') || {};
+    const mergedConfig = { ...baseConfig, ...config };
+    
+    const loadingConfig: LoadingConfig = {
+      showSkeleton: mergedConfig.showSkeleton || false,
+      showProgress: mergedConfig.showProgress || true,
+      showMessage: mergedConfig.showMessage || true,
+      minDisplayTime: mergedConfig.minDisplayTime || 300,
+      maxDisplayTime: mergedConfig.maxDisplayTime || 10000,
+      skeletonType: mergedConfig.skeletonType || 'card',
+      progressType: mergedConfig.progressType || 'circular'
+    };
 
     loadingState.value = {
       isLoading: true,

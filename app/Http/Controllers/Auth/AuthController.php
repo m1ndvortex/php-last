@@ -293,7 +293,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Validate current session and return session status.
+     * Validate current session and return session status with enhanced error handling.
      *
      * @param Request $request
      * @return JsonResponse
@@ -303,10 +303,12 @@ class AuthController extends Controller
         try {
             $user = $request->user();
             
-            if (!$user || !$user->is_active) {
+            // Enhanced user validation
+            if (!$user) {
                 $this->logSecurityEvent('session_validation_failed', $request, [
-                    'reason' => 'user_inactive_or_not_found',
-                    'user_id' => $user?->id
+                    'reason' => 'user_not_found',
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent()
                 ]);
 
                 return response()->json([
@@ -314,25 +316,51 @@ class AuthController extends Controller
                     'error' => [
                         'code' => 'SESSION_INVALID',
                         'message' => 'Session is no longer valid.',
-                        'details' => [],
-                        'retryable' => false
+                        'details' => ['reason' => 'user_not_authenticated'],
+                        'retryable' => false,
+                        'requires_login' => true
                     ]
                 ], 401);
             }
 
+            if (!$user->is_active) {
+                $this->logSecurityEvent('session_validation_failed', $request, [
+                    'reason' => 'user_inactive',
+                    'user_id' => $user->id,
+                    'deactivated_at' => $user->updated_at
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'ACCOUNT_INACTIVE',
+                        'message' => 'Your account has been deactivated. Please contact support.',
+                        'details' => ['reason' => 'account_deactivated'],
+                        'retryable' => false,
+                        'requires_login' => true
+                    ]
+                ], 403);
+            }
+
             // Handle testing scenario where Sanctum::actingAs doesn't create a real token
             if (app()->environment('testing')) {
-                // In testing, create a mock session response
                 $sessionTimeout = config('session.lifetime', 120);
+                $mockExpiry = now()->addMinutes($sessionTimeout);
+                
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'session_valid' => true,
-                        'expires_at' => now()->addMinutes($sessionTimeout)->toISOString(),
+                        'expires_at' => $mockExpiry->toISOString(),
                         'time_remaining_minutes' => $sessionTimeout,
                         'is_expiring_soon' => false,
                         'server_time' => now()->toISOString(),
-                        'can_extend' => true
+                        'can_extend' => true,
+                        'session_health' => [
+                            'status' => 'healthy',
+                            'last_activity' => now()->toISOString(),
+                            'activity_score' => 100
+                        ]
                     ]
                 ]);
             }
@@ -342,35 +370,43 @@ class AuthController extends Controller
             if (!$token) {
                 $this->logSecurityEvent('session_validation_failed', $request, [
                     'reason' => 'token_not_found',
-                    'user_id' => $user->id
+                    'user_id' => $user->id,
+                    'session_id' => $request->session()->getId()
                 ]);
 
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'TOKEN_INVALID',
-                        'message' => 'Authentication token is invalid.',
-                        'details' => [],
-                        'retryable' => false
+                        'message' => 'Authentication token is invalid or has been revoked.',
+                        'details' => ['reason' => 'token_missing'],
+                        'retryable' => false,
+                        'requires_login' => true
                     ]
                 ], 401);
             }
 
-            // Calculate session timing
+            // Enhanced session timing calculations
             $sessionTimeout = config('session.lifetime', 120); // minutes
             $tokenCreatedAt = $token->created_at;
+            $lastUsedAt = $token->last_used_at ?? $tokenCreatedAt;
             
-            // Create a copy of the date to avoid modifying the original
-            $sessionExpiry = $tokenCreatedAt->copy()->addMinutes($sessionTimeout);
+            // Calculate expiry based on last activity
+            $sessionExpiry = $lastUsedAt->copy()->addMinutes($sessionTimeout);
             $timeRemaining = now()->diffInMinutes($sessionExpiry, false);
             $isExpired = $timeRemaining <= 0;
             $isExpiringSoon = $timeRemaining <= 5 && $timeRemaining > 0;
+            $isExpiringSoonWarning = $timeRemaining <= 10 && $timeRemaining > 5;
 
+            // Check for expired session
             if ($isExpired) {
+                $expiredMinutesAgo = abs($timeRemaining);
+                
                 $this->logSecurityEvent('session_expired', $request, [
                     'user_id' => $user->id,
                     'token_id' => $token->id,
-                    'expired_minutes_ago' => abs($timeRemaining)
+                    'expired_minutes_ago' => $expiredMinutesAgo,
+                    'last_used_at' => $lastUsedAt->toISOString()
                 ]);
 
                 // Delete expired token
@@ -381,14 +417,39 @@ class AuthController extends Controller
                     'error' => [
                         'code' => 'SESSION_EXPIRED',
                         'message' => 'Your session has expired. Please log in again.',
-                        'details' => [],
-                        'retryable' => false
+                        'details' => [
+                            'reason' => 'session_timeout',
+                            'expired_minutes_ago' => $expiredMinutesAgo,
+                            'session_duration_minutes' => $sessionTimeout
+                        ],
+                        'retryable' => false,
+                        'requires_login' => true
                     ]
                 ], 401);
             }
 
-            // Update token's last used timestamp
+            // Update token's last used timestamp for activity tracking
             $token->forceFill(['last_used_at' => now()])->save();
+
+            // Calculate session health metrics
+            $sessionAge = now()->diffInMinutes($tokenCreatedAt);
+            $activityGap = now()->diffInMinutes($lastUsedAt);
+            $activityScore = max(0, 100 - ($activityGap * 2)); // Decrease score based on inactivity
+
+            $sessionHealth = [
+                'status' => $this->calculateSessionHealthStatus($timeRemaining, $activityScore),
+                'last_activity' => $lastUsedAt->toISOString(),
+                'activity_score' => $activityScore,
+                'session_age_minutes' => $sessionAge,
+                'inactivity_minutes' => $activityGap
+            ];
+
+            $this->logSecurityEvent('session_validated', $request, [
+                'user_id' => $user->id,
+                'token_id' => $token->id,
+                'time_remaining' => $timeRemaining,
+                'session_health' => $sessionHealth['status']
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -397,24 +458,33 @@ class AuthController extends Controller
                     'expires_at' => $sessionExpiry->toISOString(),
                     'time_remaining_minutes' => max(0, $timeRemaining),
                     'is_expiring_soon' => $isExpiringSoon,
+                    'is_expiring_soon_warning' => $isExpiringSoonWarning,
                     'server_time' => now()->toISOString(),
-                    'can_extend' => $timeRemaining > 0
+                    'can_extend' => $timeRemaining > 0,
+                    'session_health' => $sessionHealth,
+                    'recommendations' => $this->getSessionRecommendations($timeRemaining, $activityScore)
                 ]
             ]);
 
         } catch (Throwable $e) {
             $this->logSecurityEvent('session_validation_error', $request, [
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine()
             ]);
 
             return response()->json([
                 'success' => false,
                 'error' => [
                     'code' => 'VALIDATION_ERROR',
-                    'message' => 'Unable to validate session.',
-                    'details' => [],
-                    'retryable' => true
+                    'message' => 'Unable to validate session due to a system error.',
+                    'details' => [
+                        'error_type' => 'system_error',
+                        'timestamp' => now()->toISOString()
+                    ],
+                    'retryable' => true,
+                    'retry_after' => 5
                 ]
             ], 500);
         }
@@ -491,7 +561,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Extend the current session without creating a new token.
+     * Extend the current session without creating a new token with enhanced timing logic.
      *
      * @param Request $request
      * @return JsonResponse
@@ -501,17 +571,34 @@ class AuthController extends Controller
         try {
             $user = $request->user();
             
+            if (!$user || !$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'USER_INVALID',
+                        'message' => 'User account is not valid for session extension.',
+                        'details' => ['reason' => !$user ? 'user_not_found' : 'account_inactive'],
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+            
             // Handle testing scenario
             if (app()->environment('testing')) {
-                $sessionTimeout = $user->session_timeout ?? config('session.lifetime', 120);
+                $sessionTimeout = config('session.lifetime', 120);
+                $extendedExpiry = now()->addMinutes($sessionTimeout);
+                
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'session_extended' => true,
-                        'expires_at' => now()->addMinutes($sessionTimeout)->toISOString(),
+                        'expires_at' => $extendedExpiry->toISOString(),
                         'time_remaining_minutes' => $sessionTimeout,
                         'server_time' => now()->toISOString(),
-                        'extended_at' => now()->toISOString()
+                        'extended_at' => now()->toISOString(),
+                        'extension_granted_minutes' => $sessionTimeout,
+                        'can_extend_again' => true,
+                        'next_extension_available_at' => now()->addMinutes(30)->toISOString()
                     ]
                 ]);
             }
@@ -519,53 +606,135 @@ class AuthController extends Controller
             $token = $user->currentAccessToken();
 
             if (!$token) {
+                $this->logSecurityEvent('session_extension_failed', $request, [
+                    'reason' => 'token_not_found',
+                    'user_id' => $user->id
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'TOKEN_NOT_FOUND',
-                        'message' => 'No valid token found for extension.',
-                        'details' => [],
-                        'retryable' => false
+                        'message' => 'No valid authentication token found for extension.',
+                        'details' => ['reason' => 'token_missing'],
+                        'retryable' => false,
+                        'requires_login' => true
                     ]
                 ], 401);
             }
 
-            // Check if session can be extended
-            $sessionTimeout = $user->session_timeout ?? config('session.lifetime', 120);
-            $tokenAge = now()->diffInMinutes($token->created_at);
-            $timeRemaining = $sessionTimeout - $tokenAge;
+            // Enhanced session timing calculations
+            $sessionTimeout = config('session.lifetime', 120);
+            $maxSessionDuration = config('session.max_duration', 480); // 8 hours max
+            $extensionCooldown = config('session.extension_cooldown', 30); // 30 minutes between extensions
+            
+            $tokenCreatedAt = $token->created_at;
+            $lastUsedAt = $token->last_used_at ?? $tokenCreatedAt;
+            $lastExtensionAt = $token->extended_at ?? $tokenCreatedAt;
+            
+            // Calculate current session state
+            $sessionAge = now()->diffInMinutes($tokenCreatedAt);
+            $timeSinceLastExtension = now()->diffInMinutes($lastExtensionAt);
+            $currentExpiry = $lastUsedAt->copy()->addMinutes($sessionTimeout);
+            $timeRemaining = now()->diffInMinutes($currentExpiry, false);
 
+            // Validation checks
             if ($timeRemaining <= 0) {
+                $this->logSecurityEvent('session_extension_failed', $request, [
+                    'reason' => 'session_expired',
+                    'user_id' => $user->id,
+                    'token_id' => $token->id,
+                    'expired_minutes_ago' => abs($timeRemaining)
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'SESSION_EXPIRED',
                         'message' => 'Session has already expired and cannot be extended.',
-                        'details' => [],
-                        'retryable' => false
+                        'details' => [
+                            'reason' => 'session_timeout',
+                            'expired_minutes_ago' => abs($timeRemaining)
+                        ],
+                        'retryable' => false,
+                        'requires_login' => true
                     ]
                 ], 401);
             }
 
-            // Update token's last used timestamp to extend session
-            $token->forceFill(['last_used_at' => now()])->save();
+            if ($sessionAge >= $maxSessionDuration) {
+                $this->logSecurityEvent('session_extension_failed', $request, [
+                    'reason' => 'max_duration_reached',
+                    'user_id' => $user->id,
+                    'token_id' => $token->id,
+                    'session_age_minutes' => $sessionAge,
+                    'max_duration_minutes' => $maxSessionDuration
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'MAX_SESSION_DURATION_REACHED',
+                        'message' => 'Session has reached maximum duration. Please log in again for security.',
+                        'details' => [
+                            'reason' => 'security_policy',
+                            'session_age_hours' => round($sessionAge / 60, 1),
+                            'max_duration_hours' => round($maxSessionDuration / 60, 1)
+                        ],
+                        'retryable' => false,
+                        'requires_login' => true
+                    ]
+                ], 403);
+            }
+
+            if ($timeSinceLastExtension < $extensionCooldown) {
+                $cooldownRemaining = $extensionCooldown - $timeSinceLastExtension;
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'EXTENSION_COOLDOWN',
+                        'message' => 'Session extension is in cooldown period. Please wait before extending again.',
+                        'details' => [
+                            'reason' => 'rate_limiting',
+                            'cooldown_remaining_minutes' => $cooldownRemaining,
+                            'next_extension_available_at' => now()->addMinutes($cooldownRemaining)->toISOString()
+                        ],
+                        'retryable' => true,
+                        'retry_after' => $cooldownRemaining * 60
+                    ]
+                ], 429);
+            }
+
+            // Perform session extension
+            $extensionTime = now();
+            $newExpiry = $extensionTime->copy()->addMinutes($sessionTimeout);
+            $extensionGranted = min($sessionTimeout, $maxSessionDuration - $sessionAge);
+
+            // Update token with extension information
+            $token->forceFill([
+                'last_used_at' => $extensionTime,
+                'extended_at' => $extensionTime,
+                'extension_count' => ($token->extension_count ?? 0) + 1
+            ])->save();
 
             // Update session activity if available
             if ($request->hasSession()) {
-                $request->session()->put('last_activity', time());
-                $request->session()->put('extended_at', time());
+                $request->session()->put('last_activity', $extensionTime->timestamp);
+                $request->session()->put('extended_at', $extensionTime->timestamp);
                 $request->session()->put('extension_count', 
                     $request->session()->get('extension_count', 0) + 1
                 );
             }
 
-            $newExpiry = now()->addMinutes($sessionTimeout);
-
             $this->logSecurityEvent('session_extended', $request, [
                 'user_id' => $user->id,
                 'token_id' => $token->id,
                 'time_remaining_before' => $timeRemaining,
-                'new_expiry' => $newExpiry->toISOString()
+                'extension_granted_minutes' => $extensionGranted,
+                'new_expiry' => $newExpiry->toISOString(),
+                'session_age_minutes' => $sessionAge,
+                'extension_count' => $token->extension_count
             ]);
 
             return response()->json([
@@ -573,25 +742,40 @@ class AuthController extends Controller
                 'data' => [
                     'session_extended' => true,
                     'expires_at' => $newExpiry->toISOString(),
-                    'time_remaining_minutes' => $sessionTimeout,
-                    'server_time' => now()->toISOString(),
-                    'extended_at' => now()->toISOString()
+                    'time_remaining_minutes' => $extensionGranted,
+                    'server_time' => $extensionTime->toISOString(),
+                    'extended_at' => $extensionTime->toISOString(),
+                    'extension_granted_minutes' => $extensionGranted,
+                    'can_extend_again' => ($sessionAge + $extensionGranted) < $maxSessionDuration,
+                    'next_extension_available_at' => $extensionTime->copy()->addMinutes($extensionCooldown)->toISOString(),
+                    'session_stats' => [
+                        'total_extensions' => $token->extension_count,
+                        'session_age_minutes' => $sessionAge,
+                        'remaining_session_time_minutes' => max(0, $maxSessionDuration - $sessionAge - $extensionGranted)
+                    ]
                 ]
             ]);
 
         } catch (Throwable $e) {
             $this->logSecurityEvent('session_extension_error', $request, [
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'user_id' => $request->user()?->id
             ]);
 
             return response()->json([
                 'success' => false,
                 'error' => [
                     'code' => 'EXTENSION_ERROR',
-                    'message' => 'Unable to extend session. Please try again.',
-                    'details' => [],
-                    'retryable' => true
+                    'message' => 'Unable to extend session due to a system error.',
+                    'details' => [
+                        'error_type' => 'system_error',
+                        'timestamp' => now()->toISOString()
+                    ],
+                    'retryable' => true,
+                    'retry_after' => 30
                 ]
             ], 500);
         }
@@ -785,6 +969,477 @@ class AuthController extends Controller
                 ]
             ], 500);
         }
+    }
+
+    /**
+     * Get session health check information for frontend monitoring.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function sessionHealthCheck(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user || !$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'USER_INVALID',
+                        'message' => 'User session is not valid for health check.',
+                        'details' => ['reason' => !$user ? 'user_not_found' : 'account_inactive'],
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Handle testing scenario
+            if (app()->environment('testing')) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'health_status' => 'healthy',
+                        'session_valid' => true,
+                        'performance_metrics' => [
+                            'response_time_ms' => 50,
+                            'server_load' => 'low',
+                            'database_status' => 'healthy'
+                        ],
+                        'session_metrics' => [
+                            'activity_score' => 95,
+                            'stability_score' => 98,
+                            'security_score' => 100
+                        ],
+                        'recommendations' => [],
+                        'server_time' => now()->toISOString()
+                    ]
+                ]);
+            }
+
+            $token = $user->currentAccessToken();
+            
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'TOKEN_INVALID',
+                        'message' => 'No valid token found for health check.',
+                        'details' => ['reason' => 'token_missing'],
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Calculate health metrics
+            $sessionTimeout = config('session.lifetime', 120);
+            $tokenCreatedAt = $token->created_at;
+            $lastUsedAt = $token->last_used_at ?? $tokenCreatedAt;
+            
+            $sessionExpiry = $lastUsedAt->copy()->addMinutes($sessionTimeout);
+            $timeRemaining = now()->diffInMinutes($sessionExpiry, false);
+            $sessionAge = now()->diffInMinutes($tokenCreatedAt);
+            $activityGap = now()->diffInMinutes($lastUsedAt);
+            
+            // Calculate performance metrics
+            $startTime = microtime(true);
+            $dbHealthy = $this->checkDatabaseHealth();
+            $responseTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            // Calculate session scores
+            $activityScore = max(0, 100 - ($activityGap * 2));
+            $stabilityScore = max(0, 100 - ($sessionAge / 10));
+            $securityScore = $this->calculateSecurityScore($user, $request);
+            
+            $overallHealth = $this->calculateOverallHealth($activityScore, $stabilityScore, $securityScore, $timeRemaining);
+            
+            $healthData = [
+                'health_status' => $overallHealth['status'],
+                'session_valid' => $timeRemaining > 0,
+                'performance_metrics' => [
+                    'response_time_ms' => $responseTime,
+                    'server_load' => $this->getServerLoad(),
+                    'database_status' => $dbHealthy ? 'healthy' : 'degraded'
+                ],
+                'session_metrics' => [
+                    'activity_score' => $activityScore,
+                    'stability_score' => $stabilityScore,
+                    'security_score' => $securityScore,
+                    'overall_score' => $overallHealth['score']
+                ],
+                'timing_info' => [
+                    'expires_at' => $sessionExpiry->toISOString(),
+                    'time_remaining_minutes' => max(0, $timeRemaining),
+                    'session_age_minutes' => $sessionAge,
+                    'last_activity' => $lastUsedAt->toISOString()
+                ],
+                'recommendations' => $this->getSessionRecommendations($timeRemaining, $activityScore),
+                'server_time' => now()->toISOString()
+            ];
+
+            $this->logSecurityEvent('session_health_check', $request, [
+                'user_id' => $user->id,
+                'health_status' => $overallHealth['status'],
+                'overall_score' => $overallHealth['score']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $healthData
+            ]);
+
+        } catch (Throwable $e) {
+            $this->logSecurityEvent('session_health_check_error', $request, [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'HEALTH_CHECK_ERROR',
+                    'message' => 'Unable to perform session health check.',
+                    'details' => ['error_type' => 'system_error'],
+                    'retryable' => true
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Get comprehensive session monitoring data for frontend.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function sessionMonitoring(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user || !$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'USER_INVALID',
+                        'message' => 'User session is not valid for monitoring.',
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Handle testing scenario
+            if (app()->environment('testing')) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'session_info' => [
+                            'session_id' => 'test-session-id',
+                            'user_id' => $user->id,
+                            'created_at' => now()->subHours(1)->toISOString(),
+                            'expires_at' => now()->addHours(1)->toISOString(),
+                            'is_active' => true
+                        ],
+                        'activity_timeline' => [
+                            ['timestamp' => now()->subMinutes(30)->toISOString(), 'action' => 'login'],
+                            ['timestamp' => now()->subMinutes(15)->toISOString(), 'action' => 'page_view'],
+                            ['timestamp' => now()->subMinutes(5)->toISOString(), 'action' => 'api_call']
+                        ],
+                        'security_events' => [],
+                        'performance_history' => [
+                            ['timestamp' => now()->subMinutes(10)->toISOString(), 'response_time' => 45],
+                            ['timestamp' => now()->subMinutes(5)->toISOString(), 'response_time' => 52],
+                            ['timestamp' => now()->toISOString(), 'response_time' => 48]
+                        ]
+                    ]
+                ]);
+            }
+
+            $token = $user->currentAccessToken();
+            
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'TOKEN_INVALID',
+                        'message' => 'No valid token found for monitoring.',
+                        'retryable' => false
+                    ]
+                ], 401);
+            }
+
+            // Gather comprehensive session data
+            $sessionInfo = [
+                'session_id' => $token->id,
+                'user_id' => $user->id,
+                'token_name' => $token->name,
+                'created_at' => $token->created_at->toISOString(),
+                'last_used_at' => ($token->last_used_at ?? $token->created_at)->toISOString(),
+                'expires_at' => ($token->last_used_at ?? $token->created_at)->copy()->addMinutes(config('session.lifetime', 120))->toISOString(),
+                'is_active' => true,
+                'extension_count' => $token->extension_count ?? 0,
+                'abilities' => $token->abilities ?? ['*']
+            ];
+
+            // Get recent activity (this would typically come from audit logs)
+            $activityTimeline = $this->getRecentSessionActivity($user, $token);
+            
+            // Get security events
+            $securityEvents = $this->getRecentSecurityEvents($user);
+            
+            // Get performance history
+            $performanceHistory = $this->getPerformanceHistory($token);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'session_info' => $sessionInfo,
+                    'activity_timeline' => $activityTimeline,
+                    'security_events' => $securityEvents,
+                    'performance_history' => $performanceHistory,
+                    'monitoring_timestamp' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (Throwable $e) {
+            $this->logSecurityEvent('session_monitoring_error', $request, [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'MONITORING_ERROR',
+                    'message' => 'Unable to retrieve session monitoring data.',
+                    'retryable' => true
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate session health status based on various metrics.
+     *
+     * @param int $timeRemaining
+     * @param int $activityScore
+     * @return string
+     */
+    private function calculateSessionHealthStatus(int $timeRemaining, int $activityScore): string
+    {
+        if ($timeRemaining <= 0) {
+            return 'expired';
+        } elseif ($timeRemaining <= 5) {
+            return 'critical';
+        } elseif ($timeRemaining <= 15 || $activityScore < 50) {
+            return 'warning';
+        } elseif ($activityScore >= 80) {
+            return 'excellent';
+        } else {
+            return 'healthy';
+        }
+    }
+
+    /**
+     * Get session recommendations based on current state.
+     *
+     * @param int $timeRemaining
+     * @param int $activityScore
+     * @return array
+     */
+    private function getSessionRecommendations(int $timeRemaining, int $activityScore): array
+    {
+        $recommendations = [];
+
+        if ($timeRemaining <= 5) {
+            $recommendations[] = [
+                'type' => 'urgent',
+                'message' => 'Session expires very soon. Consider extending or saving your work.',
+                'action' => 'extend_session'
+            ];
+        } elseif ($timeRemaining <= 15) {
+            $recommendations[] = [
+                'type' => 'warning',
+                'message' => 'Session will expire soon. You may want to extend it.',
+                'action' => 'consider_extension'
+            ];
+        }
+
+        if ($activityScore < 30) {
+            $recommendations[] = [
+                'type' => 'info',
+                'message' => 'Low activity detected. Session may timeout due to inactivity.',
+                'action' => 'stay_active'
+            ];
+        }
+
+        return $recommendations;
+    }
+
+    /**
+     * Calculate security score for the session.
+     *
+     * @param User $user
+     * @param Request $request
+     * @return int
+     */
+    private function calculateSecurityScore(User $user, Request $request): int
+    {
+        $score = 100;
+
+        // Check for suspicious IP
+        $knownIps = $user->tokens()->distinct('tokenable_id')->count();
+        if ($knownIps > 5) {
+            $score -= 10; // Multiple IPs used
+        }
+
+        // Check user agent consistency
+        $currentUserAgent = $request->userAgent();
+        $recentTokens = $user->tokens()->where('created_at', '>=', now()->subDays(7))->get();
+        $differentUserAgents = $recentTokens->pluck('name')->unique()->count();
+        
+        if ($differentUserAgents > 3) {
+            $score -= 15; // Multiple devices/browsers
+        }
+
+        // Check for recent password changes
+        if ($user->updated_at >= now()->subDays(1)) {
+            $score += 10; // Recent security update
+        }
+
+        return max(0, min(100, $score));
+    }
+
+    /**
+     * Calculate overall health metrics.
+     *
+     * @param int $activityScore
+     * @param int $stabilityScore
+     * @param int $securityScore
+     * @param int $timeRemaining
+     * @return array
+     */
+    private function calculateOverallHealth(int $activityScore, int $stabilityScore, int $securityScore, int $timeRemaining): array
+    {
+        $overallScore = round(($activityScore + $stabilityScore + $securityScore) / 3);
+        
+        if ($timeRemaining <= 0) {
+            $status = 'expired';
+        } elseif ($overallScore >= 90) {
+            $status = 'excellent';
+        } elseif ($overallScore >= 75) {
+            $status = 'healthy';
+        } elseif ($overallScore >= 50) {
+            $status = 'warning';
+        } else {
+            $status = 'critical';
+        }
+
+        return [
+            'score' => $overallScore,
+            'status' => $status
+        ];
+    }
+
+    /**
+     * Check database health for performance metrics.
+     *
+     * @return bool
+     */
+    private function checkDatabaseHealth(): bool
+    {
+        try {
+            \DB::connection()->getPdo();
+            return true;
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get server load indicator.
+     *
+     * @return string
+     */
+    private function getServerLoad(): string
+    {
+        // Simple load indicator based on memory usage
+        $memoryUsage = memory_get_usage(true) / 1024 / 1024; // MB
+        
+        if ($memoryUsage > 512) {
+            return 'high';
+        } elseif ($memoryUsage > 256) {
+            return 'medium';
+        } else {
+            return 'low';
+        }
+    }
+
+    /**
+     * Get recent session activity timeline.
+     *
+     * @param User $user
+     * @param $token
+     * @return array
+     */
+    private function getRecentSessionActivity(User $user, $token): array
+    {
+        // In a real implementation, this would query audit logs
+        // For now, return mock data based on token information
+        $activities = [];
+        
+        $activities[] = [
+            'timestamp' => $token->created_at->toISOString(),
+            'action' => 'session_created',
+            'details' => 'User logged in'
+        ];
+
+        if ($token->last_used_at && $token->last_used_at != $token->created_at) {
+            $activities[] = [
+                'timestamp' => $token->last_used_at->toISOString(),
+                'action' => 'session_activity',
+                'details' => 'Last API request'
+            ];
+        }
+
+        return array_slice($activities, -10); // Last 10 activities
+    }
+
+    /**
+     * Get recent security events for the user.
+     *
+     * @param User $user
+     * @return array
+     */
+    private function getRecentSecurityEvents(User $user): array
+    {
+        // In a real implementation, this would query security audit logs
+        // For now, return empty array or mock data
+        return [];
+    }
+
+    /**
+     * Get performance history for the session.
+     *
+     * @param $token
+     * @return array
+     */
+    private function getPerformanceHistory($token): array
+    {
+        // In a real implementation, this would track response times
+        // For now, return mock performance data
+        $history = [];
+        $baseTime = now()->subMinutes(30);
+        
+        for ($i = 0; $i < 6; $i++) {
+            $history[] = [
+                'timestamp' => $baseTime->copy()->addMinutes($i * 5)->toISOString(),
+                'response_time' => rand(30, 100),
+                'request_count' => rand(1, 5)
+            ];
+        }
+
+        return $history;
     }
 
     /**

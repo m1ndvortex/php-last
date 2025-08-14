@@ -34,7 +34,8 @@ class SessionManagementService
             'platform' => $this->agent->platform(),
             'location' => $this->getLocation($request->ip()),
             'last_activity' => now(),
-            'expires_at' => now()->addMinutes(config('session.lifetime', 120))
+            'expires_at' => now()->addMinutes(config('session.lifetime', 120)),
+            'is_active' => true
         ]);
     }
 

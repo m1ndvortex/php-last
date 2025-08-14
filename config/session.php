@@ -213,31 +213,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Security Configuration
+    | Enhanced Session Management Configuration
     |--------------------------------------------------------------------------
     |
     | These options control enhanced session security features including
-    | automatic session extension, timeout warnings, and regeneration intervals.
+    | session extension, health monitoring, and Docker environment compatibility.
     |
     */
 
-    // Session ID regeneration interval in seconds (default: 30 minutes)
-    'regeneration_interval' => env('SESSION_REGENERATION_INTERVAL', 1800),
+    // Maximum session duration in minutes (default: 8 hours)
+    'max_duration' => env('SESSION_MAX_DURATION', 480),
 
-    // Warning threshold in seconds before session expires (default: 5 minutes)
-    'warning_threshold' => env('SESSION_WARNING_THRESHOLD', 300),
+    // Extension cooldown period in minutes (default: 30 minutes)
+    'extension_cooldown' => env('SESSION_EXTENSION_COOLDOWN', 30),
 
-    // Threshold for automatic session extension in seconds (default: 5 minutes)
-    'extend_threshold' => env('SESSION_EXTEND_THRESHOLD', 300),
+    // Session timeout warning time in minutes (default: 5 minutes)
+    'timeout_warning' => env('SESSION_TIMEOUT_WARNING', 5),
 
-    // Minimum activity count required for automatic session extension
-    'min_activity_for_extension' => env('SESSION_MIN_ACTIVITY_FOR_EXTENSION', 3),
+    // Health check interval in minutes (default: 10 minutes)
+    'health_check_interval' => env('SESSION_HEALTH_CHECK_INTERVAL', 10),
 
-    // Maximum number of session extensions allowed per session
-    'max_extensions_per_session' => env('SESSION_MAX_EXTENSIONS', 5),
+    // Enable session health monitoring
+    'health_monitoring_enabled' => env('SESSION_HEALTH_MONITORING_ENABLED', true),
 
-    // Enable automatic session extension for active users
-    'auto_extend_enabled' => env('SESSION_AUTO_EXTEND_ENABLED', true),
+    // Docker environment compatibility mode
+    'docker_mode' => env('SESSION_DOCKER_MODE', false),
+
+    // Session performance tracking
+    'performance_tracking_enabled' => env('SESSION_PERFORMANCE_TRACKING_ENABLED', true),
+
+    // Maximum number of concurrent sessions per user
+    'max_concurrent_sessions' => env('SESSION_MAX_CONCURRENT_SESSIONS', 5),
 
     // Session cleanup on logout - remove all related data
     'cleanup_on_logout' => env('SESSION_CLEANUP_ON_LOGOUT', true),

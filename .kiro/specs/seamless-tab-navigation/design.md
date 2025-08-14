@@ -326,7 +326,7 @@ interface CacheStrategy {
    - Test session recovery after browser restart
 
 2. **Performance Testing**:
-   - Measure tab switching times (target: <500ms)
+   - Measure tab switching times (target: <100ms)
    - Test loading performance under various conditions
    - Verify cache effectiveness
    - Test performance under high load
@@ -361,8 +361,8 @@ interface CacheStrategy {
    - Concurrent session management
 
 2. **Performance Test Scenarios**:
-   - Fast network conditions (target: <200ms tab switch)
-   - Slow network conditions (target: <500ms tab switch)
+   - Fast network conditions (target: <80ms tab switch)
+   - Slow network conditions (target: <100ms tab switch)
    - Offline/online transitions
    - High concurrent user load
    - Large dataset handling

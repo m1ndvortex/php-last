@@ -209,24 +209,52 @@ const closeUserMenu = () => {
 
 const handleLogout = async () => {
   userMenuOpen.value = false;
-  console.log("Logout clicked - initiating reliable logout");
+  console.log("Logout clicked - initiating immediate logout");
   
   try {
-    const result = await authStore.logout();
-    console.log("Logout result:", result);
+    // Immediate local cleanup
+    localStorage.clear();
+    sessionStorage.clear();
     
-    if (result.success) {
-      console.log("Logout successful:", result.message);
-      // The logout manager will handle the redirect
-    } else {
-      console.error("Logout failed:", result.error);
-      // Still redirect to login even if logout failed
-      router.push("/login");
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Call backend logout (don't wait for it)
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }).catch(err => console.warn('Backend logout failed:', err));
     }
+    
+    // Broadcast logout to other tabs
+    window.dispatchEvent(new CustomEvent('cross-tab-logout', {
+      detail: { 
+        initiatingTab: 'current',
+        reason: 'user_initiated',
+        timestamp: new Date().toISOString()
+      }
+    }));
+    
+    // Clear auth store
+    authStore.cleanupAuthState();
+    
+    console.log("Immediate logout completed - redirecting to login");
+    
+    // Force redirect to login
+    window.location.href = '/login';
+    
   } catch (error) {
     console.error("Logout error:", error);
-    // Fallback redirect
-    router.push("/login");
+    // Force redirect even on error
+    window.location.href = '/login';
   }
 };
 

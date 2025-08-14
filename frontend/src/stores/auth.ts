@@ -301,7 +301,8 @@ export const useAuthStore = defineStore("auth", () => {
     updateActiveTabsList();
     
     // Redirect to login page
-    router.push('/login');
+    console.log('[AuthStore] Cross-tab logout - redirecting to login page');
+    await router.push('/login');
   };
 
   // Handle session conflict event
@@ -483,6 +484,8 @@ export const useAuthStore = defineStore("auth", () => {
 
   // Enhanced logout with reliable logout manager
   const logout = async (): Promise<LogoutResult> => {
+    console.log('[AuthStore] Starting logout process')
+    
     try {
       // Stop session management first
       stopSessionManagement();
@@ -493,16 +496,20 @@ export const useAuthStore = defineStore("auth", () => {
       // Clean up local auth state
       cleanupAuthState();
       
-      // Redirect to login page if successful
-      if (result.success && result.redirectUrl) {
-        router.push(result.redirectUrl);
-      }
+      console.log('[AuthStore] Logout result:', result)
+      
+      // Always redirect to login page, regardless of backend success
+      console.log('[AuthStore] Redirecting to login page')
+      await router.push('/login');
       
       return result;
     } catch (err) {
-      console.error("Logout error:", err);
+      console.error("[AuthStore] Logout error:", err);
       // Always clear local state
       cleanupAuthState();
+      
+      // Still redirect to login page
+      await router.push('/login');
       
       return {
         success: false,

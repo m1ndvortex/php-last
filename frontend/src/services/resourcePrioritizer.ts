@@ -219,7 +219,7 @@ export class ResourcePrioritizer {
    */
   private isResourceInQueue(resourceId: string): boolean {
     return Object.values(this.loadingQueue).some(queue =>
-      queue.some(item => item.id === resourceId)
+      queue.some((item: any) => item.id === resourceId)
     );
   }
 

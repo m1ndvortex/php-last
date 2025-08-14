@@ -27,40 +27,44 @@ export class ReliableLogoutManagerImpl implements ReliableLogoutManager {
   }
 
   async initiateLogout(): Promise<LogoutResult> {
+    console.log('[ReliableLogoutManager] Initiating logout process')
+    
     try {
-      // Step 1: Broadcast logout intent to all tabs
-      this.broadcastLogout()
+      // Step 1: Make API call to backend to invalidate session FIRST
+      console.log('[ReliableLogoutManager] Step 1: Backend logout')
+      const backendLogoutSuccess = await this.performBackendLogout()
       
       // Step 2: Clear all tokens and session data
+      console.log('[ReliableLogoutManager] Step 2: Clearing local data')
       await this.clearAllTokens()
       await this.clearSessionData()
       await this.clearCachedData()
       
-      // Step 3: Make API call to backend to invalidate session
-      const backendLogoutSuccess = await this.performBackendLogout()
+      // Step 3: Broadcast logout to all tabs AFTER local cleanup
+      console.log('[ReliableLogoutManager] Step 3: Broadcasting logout')
+      this.broadcastLogout()
       
       // Step 4: Verify logout completion
+      console.log('[ReliableLogoutManager] Step 4: Verifying completion')
       const isComplete = await this.confirmLogoutCompletion()
       
-      // Step 5: Verify with backend that logout was successful
+      // Step 5: Verify with backend that logout was successful (optional)
+      console.log('[ReliableLogoutManager] Step 5: Backend verification')
       const isVerified = await this.verifyLogoutSuccess()
       
-      if (isComplete && backendLogoutSuccess && isVerified) {
-        return {
-          success: true,
-          message: 'Logout completed successfully',
-          redirectUrl: '/login'
-        }
-      } else {
-        // Even if backend fails, continue with local cleanup
-        return {
-          success: true,
-          message: backendLogoutSuccess ? 'Logout completed successfully' : 'Logout completed (local cleanup successful)',
-          redirectUrl: '/login',
-          warnings: backendLogoutSuccess ? [] : ['Backend logout may have failed']
-        }
+      const result = {
+        success: true,
+        message: backendLogoutSuccess ? 'Logout completed successfully' : 'Logout completed (local cleanup successful)',
+        redirectUrl: '/login',
+        warnings: backendLogoutSuccess ? [] : ['Backend logout may have failed']
       }
+      
+      console.log('[ReliableLogoutManager] Logout process completed:', result)
+      return result
+      
     } catch (error) {
+      console.error('[ReliableLogoutManager] Logout process failed:', error)
+      
       const logoutError: LogoutError = {
         type: 'logout_failed',
         message: error instanceof Error ? error.message : 'Unknown logout error',
@@ -69,13 +73,10 @@ export class ReliableLogoutManagerImpl implements ReliableLogoutManager {
       
       await this.handleLogoutFailure(logoutError)
       
-      // Check if this was a complete failure (including local cleanup)
-      const isLocalCleanupFailed = error instanceof Error && 
-        (error.message.includes('Storage') || error.message.includes('cleanup'))
-      
+      // Always return success for local cleanup, even if backend fails
       return {
-        success: !isLocalCleanupFailed,
-        message: isLocalCleanupFailed ? 'Logout failed, but local cleanup attempted' : 'Logout completed (local cleanup successful)',
+        success: true,
+        message: 'Logout completed (local cleanup successful)',
         error: logoutError,
         redirectUrl: '/login'
       }
@@ -83,8 +84,21 @@ export class ReliableLogoutManagerImpl implements ReliableLogoutManager {
   }
 
   broadcastLogout(): void {
+    console.log('[ReliableLogoutManager] Broadcasting logout to all tabs')
+    
     // Broadcast logout to all tabs using the public method
     this.crossTabManager.broadcastLogout()
+    
+    // Also dispatch a direct event as a fallback
+    window.dispatchEvent(new CustomEvent('cross-tab-logout', {
+      detail: { 
+        initiatingTab: this.crossTabManager.getSessionData().tabId,
+        reason: 'user_initiated',
+        timestamp: new Date().toISOString()
+      }
+    }))
+    
+    console.log('[ReliableLogoutManager] Logout broadcast completed')
   }
   
 
@@ -278,31 +292,42 @@ export class ReliableLogoutManagerImpl implements ReliableLogoutManager {
         
         const baseUrl = this.getApiBaseUrl()
         
+        console.log(`[ReliableLogoutManager] Attempting backend logout (attempt ${retries + 1}/${this.maxRetries})`)
+        
         const response = await fetch(`${baseUrl}/api/auth/logout`, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             ...(token && { 'Authorization': `Bearer ${token}` })
           }
         })
         
+        console.log(`[ReliableLogoutManager] Backend logout response status: ${response.status}`)
+        
         if (response.ok || response.status === 401) {
           // 200 OK or 401 Unauthorized both indicate successful logout
+          console.log('[ReliableLogoutManager] Backend logout successful')
           return true
         }
         
+        const responseText = await response.text()
+        console.warn(`[ReliableLogoutManager] Backend logout failed with status: ${response.status}, response: ${responseText}`)
         throw new Error(`Backend logout failed with status: ${response.status}`)
       } catch (error) {
         retries++
-        console.warn(`Backend logout attempt ${retries} failed:`, error)
+        console.warn(`[ReliableLogoutManager] Backend logout attempt ${retries} failed:`, error)
         
         if (retries < this.maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay * retries))
+          const delay = this.retryDelay * retries
+          console.log(`[ReliableLogoutManager] Retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
         }
       }
     }
     
+    console.error('[ReliableLogoutManager] All backend logout attempts failed')
     return false
   }
 

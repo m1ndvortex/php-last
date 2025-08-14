@@ -34,6 +34,8 @@ Route::prefix('auth')->group(function () {
         Route::post('/validate-session', [App\Http\Controllers\Auth\AuthController::class, 'validateSession']);
         Route::post('/refresh', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
         Route::post('/extend-session', [App\Http\Controllers\Auth\AuthController::class, 'extendSession']);
+        Route::get('/session-health', [App\Http\Controllers\Auth\AuthController::class, 'sessionHealthCheck']);
+        Route::get('/session-monitoring', [App\Http\Controllers\Auth\AuthController::class, 'sessionMonitoring']);
         Route::put('/profile', [App\Http\Controllers\Auth\AuthController::class, 'updateProfile']);
         Route::put('/password', [App\Http\Controllers\Auth\AuthController::class, 'changePassword']);
     });

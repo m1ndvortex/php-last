@@ -24,7 +24,7 @@ This feature addresses critical user experience issues with the current authenti
 
 #### Acceptance Criteria
 
-1. WHEN a user switches to a previously loaded tab THEN the tab SHALL load within 500ms
+1. WHEN a user switches to a previously loaded tab THEN the tab SHALL load within 100ms
 2. WHEN a user switches tabs THEN the system SHALL use cached data where appropriate to improve loading speed
 3. WHEN a tab is loading THEN the system SHALL display appropriate loading indicators
 4. IF network connectivity is slow THEN the system SHALL prioritize critical UI elements for faster perceived loading
@@ -65,5 +65,5 @@ This feature addresses critical user experience issues with the current authenti
 3. WHEN Playwright MCP tests are implemented THEN they SHALL validate complete user authentication workflows
 4. IF tests fail THEN the implementation SHALL be corrected to ensure test success
 5. WHEN authentication tests run THEN they SHALL cover tab switching, session persistence, and logout functionality
-6. WHEN performance tests execute THEN they SHALL validate tab loading times meet the 500ms requirement
+6. WHEN performance tests execute THEN they SHALL validate tab loading times meet the 100ms requirement
 7. WHEN integration tests run THEN they SHALL use the test credentials: test@example.com with password "password"

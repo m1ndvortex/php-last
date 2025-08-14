@@ -131,12 +131,12 @@ export function useTabLoadingOptimization(config: Partial<TabLoadingConfig> = {}
     // Track route navigation performance
     router.beforeEach((to, from) => {
       navigationStartTime.value = performance.now();
-      currentLoadingContext.value = `route-${to.name}`;
+      currentLoadingContext.value = `route-${String(to.name)}`;
       
       if (loadingConfig.value.enableSkeletons) {
         loadingStateManager.startLoading(
           currentLoadingContext.value,
-          `Loading ${to.meta?.title || to.name}...`,
+          `Loading ${to.meta?.title || String(to.name)}...`,
           {
             showSkeleton: true,
             skeletonType: getSkeletonTypeForRoute(to.name as string),
@@ -194,7 +194,7 @@ export function useTabLoadingOptimization(config: Partial<TabLoadingConfig> = {}
         entries.forEach((entry) => {
           if (entry.entryType === 'navigation') {
             const navEntry = entry as PerformanceNavigationTiming;
-            loadingMetrics.value.totalLoadTime = navEntry.loadEventEnd - navEntry.navigationStart;
+            loadingMetrics.value.totalLoadTime = navEntry.loadEventEnd - (navEntry as any).navigationStart;
           }
         });
       });
