@@ -651,6 +651,17 @@ export const useAuthStore = defineStore("auth", () => {
     return attemptRefresh(1);
   };
 
+  // Check if session validation is needed (for performance optimization)
+  const needsSessionValidation = (): boolean => {
+    if (!token.value || !isAuthenticated.value) return true;
+    
+    // Don't validate if session is not expiring soon and we validated recently
+    const timeSinceLastActivity = Date.now() - lastActivity.value.getTime();
+    const recentActivity = timeSinceLastActivity < 5 * 60 * 1000; // 5 minutes
+    
+    return !recentActivity || isSessionExpiringSoon.value;
+  };
+
   // Validate current session with backend
   const validateSession = async (): Promise<boolean> => {
     if (!token.value) return false;
@@ -661,6 +672,8 @@ export const useAuthStore = defineStore("auth", () => {
       if (response.data.success) {
         const sessionData = response.data.data;
         sessionExpiry.value = new Date(sessionData.expires_at);
+        // Update last activity to avoid frequent validations
+        lastActivity.value = new Date();
         return sessionData.session_valid;
       } else {
         return false;
@@ -891,6 +904,7 @@ export const useAuthStore = defineStore("auth", () => {
     fetchUser,
     refreshAuthToken,
     validateSession,
+    needsSessionValidation,
     extendSession,
     syncSessionTimeout,
     updateUser,

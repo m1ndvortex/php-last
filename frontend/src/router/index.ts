@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { routePreloader } from "@/services/routePreloader";
+import { loadingStateManager } from "@/services/loadingStateManager";
 
 // Lazy load the main layout
 const AppLayout = () => import("@/components/layout/AppLayout.vue");
@@ -141,61 +143,69 @@ const router = createRouter({
   ],
 });
 
-// Enhanced navigation guard for authentication with comprehensive session validation
+// Optimized navigation guard with minimal authentication checks for seamless tab navigation
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-  // Set loading state for authentication checks
-  authStore.isLoading = true;
+  // Start loading state for the route
+  const loadingContext = `route-${to.name}`;
+  loadingStateManager.startLoading(
+    loadingContext,
+    `Loading ${to.meta?.title || to.name}...`,
+    {
+      showSkeleton: true,
+      skeletonType: getSkeletonTypeForRoute(to.name as string),
+      showProgress: false, // Don't show progress for fast tab switches
+      minDisplayTime: 0 // Allow instant loading for cached routes
+    }
+  );
 
   try {
-    // Initialize auth store if not already done
+    // Initialize auth store if not already done (only on first load)
     if (!authStore.initialized) {
       await authStore.initialize();
     }
 
-    // Pre-route session validation for all protected routes
+    // Optimized authentication check for protected routes
     if (requiresAuth) {
-      // If user appears authenticated, validate session first
-      if (authStore.isAuthenticated) {
-        try {
-          const sessionValid = await authStore.validateSession();
-          if (!sessionValid) {
-            // Session expired, clear auth state and redirect to login
+      // Fast path: If user is authenticated and session is not expired, skip validation
+      if (authStore.isAuthenticated && !authStore.isSessionExpiringSoon) {
+        // Skip expensive session validation for fast tab switching
+        // Only validate if session is expiring soon or if it's been a while since last validation
+        const lastValidation = authStore.lastActivity;
+        const timeSinceLastValidation = Date.now() - lastValidation.getTime();
+        const shouldValidate = timeSinceLastValidation > 5 * 60 * 1000; // 5 minutes
+        
+        if (shouldValidate) {
+          try {
+            const sessionValid = await authStore.validateSession();
+            if (!sessionValid) {
+              await authStore.cleanupAuthState();
+              const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+              loadingStateManager.finishLoading(loadingContext);
+              next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+              return;
+            }
+          } catch (error) {
+            console.error("Session validation failed:", error);
             await authStore.cleanupAuthState();
             const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+            loadingStateManager.finishLoading(loadingContext);
             next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
             return;
           }
-        } catch (error) {
-          console.error("Pre-route session validation failed:", error);
-          // Clear auth state on validation error
-          await authStore.cleanupAuthState();
-          const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
-          next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-          return;
         }
-      }
+      } else if (!authStore.isAuthenticated) {
 
-      // If not authenticated after session validation
-      if (!authStore.isAuthenticated) {
         // If we have a token but no user data, try to fetch user
         if (authStore.token && !authStore.user) {
           try {
             const userFetched = await authStore.fetchUser();
-            if (userFetched && authStore.isAuthenticated) {
-              // Validate the newly fetched session
-              const sessionValid = await authStore.validateSession();
-              if (!sessionValid) {
-                await authStore.cleanupAuthState();
-                const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
-                next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-                return;
-              }
-            } else {
+            if (!userFetched || !authStore.isAuthenticated) {
               // Failed to fetch user, redirect to login
               const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+              loadingStateManager.finishLoading(loadingContext);
               next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
               return;
             }
@@ -204,12 +214,14 @@ router.beforeEach(async (to, from, next) => {
             // Clear invalid token and redirect
             await authStore.cleanupAuthState();
             const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+            loadingStateManager.finishLoading(loadingContext);
             next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
             return;
           }
         } else {
           // No token or user, redirect to login with return URL
           const returnUrl = to.fullPath !== "/login" ? to.fullPath : "/dashboard";
+          loadingStateManager.finishLoading(loadingContext);
           next(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
           return;
         }
@@ -243,6 +255,7 @@ router.beforeEach(async (to, from, next) => {
     if ((to.name === "login" || to.name === "forgot-password") && authStore.isAuthenticated) {
       // Check if there's a return URL to redirect to
       const returnUrl = (to.query.returnUrl as string) || "/dashboard";
+      loadingStateManager.finishLoading(loadingContext);
       next(returnUrl);
       return;
     }
@@ -252,19 +265,29 @@ router.beforeEach(async (to, from, next) => {
       const returnUrl = decodeURIComponent(to.query.returnUrl as string);
       // Validate the return URL to prevent open redirects
       if (returnUrl.startsWith("/") && !returnUrl.startsWith("//")) {
+        loadingStateManager.finishLoading(loadingContext);
         next(returnUrl);
         return;
       } else {
+        loadingStateManager.finishLoading(loadingContext);
         next("/dashboard");
         return;
       }
     }
 
+    // Preload next likely routes for faster navigation
+    if (from.name && to.name) {
+      routePreloader.preloadBasedOnNavigation(to.name as string, [from.name as string]);
+    }
+
     // All checks passed, proceed to route
+    loadingStateManager.finishLoading(loadingContext);
     next();
 
   } catch (error) {
     console.error("Router guard error:", error);
+    loadingStateManager.finishLoading(loadingContext, error as Error);
+    
     // On any unexpected error, redirect to login for protected routes
     if (requiresAuth) {
       await authStore.cleanupAuthState();
@@ -273,19 +296,35 @@ router.beforeEach(async (to, from, next) => {
     } else {
       next();
     }
-  } finally {
-    // Clear loading state
-    authStore.isLoading = false;
   }
 });
 
-// Set page title
-router.afterEach((to) => {
+// Helper function to determine skeleton type for routes
+function getSkeletonTypeForRoute(routeName: string): 'card' | 'table' | 'list' | 'chart' {
+  const skeletonMap: Record<string, 'card' | 'table' | 'list' | 'chart'> = {
+    'dashboard': 'card',
+    'invoices': 'table',
+    'inventory': 'table',
+    'customers': 'table',
+    'reports': 'chart',
+    'accounting': 'table',
+    'settings': 'list'
+  };
+  return skeletonMap[routeName] || 'card';
+}
+
+// Set page title and track navigation performance
+router.afterEach((to, from) => {
   const title = to.meta.title as string;
   if (title) {
     document.title = `${title} - Jewelry Platform`;
   } else {
     document.title = "Jewelry Platform";
+  }
+
+  // Track navigation performance for optimization
+  if (from.name && to.name) {
+    console.log(`🚀 Navigation: ${from.name} → ${to.name}`);
   }
 });
 
