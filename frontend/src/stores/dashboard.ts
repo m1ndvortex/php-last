@@ -50,12 +50,94 @@ export const useDashboardStore = defineStore("dashboard", () => {
     () => (id: string) => widgets.value.find((widget) => widget.id === id),
   );
 
+  // Helper functions
+  const calculateChange = (current: number, previous?: number): number => {
+    if (!previous || previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const getChangeType = (current: number, previous?: number, inverse = false): "increase" | "decrease" => {
+    if (!previous) return "increase";
+    const isIncrease = current > previous;
+    return inverse ? (isIncrease ? "decrease" : "increase") : (isIncrease ? "increase" : "decrease");
+  };
+
   // Actions
   const fetchKPIs = async () => {
     try {
       isLoading.value = true;
       const response = await apiService.dashboard.getKPIs();
-      kpis.value = response.data.kpis || [];
+      
+      if (response.data.success && response.data.data) {
+        // Transform backend data to frontend format
+        const backendData = response.data.data;
+        kpis.value = [
+          {
+            key: "gold_sold",
+            label: "Gold Sold",
+            value: backendData.gold_sold || 0,
+            formattedValue: `${(backendData.gold_sold || 0).toFixed(1)} kg`,
+            change: calculateChange(backendData.gold_sold, backendData.gold_sold_previous),
+            changeType: getChangeType(backendData.gold_sold, backendData.gold_sold_previous),
+            format: "weight",
+            color: "yellow",
+          },
+          {
+            key: "total_profit",
+            label: "Total Profit",
+            value: backendData.total_profits || 0,
+            formattedValue: `$${(backendData.total_profits || 0).toLocaleString()}`,
+            change: calculateChange(backendData.total_profits, backendData.total_profits_previous),
+            changeType: getChangeType(backendData.total_profits, backendData.total_profits_previous),
+            format: "currency",
+            color: "green",
+          },
+          {
+            key: "average_price",
+            label: "Average Price",
+            value: backendData.average_price || 0,
+            formattedValue: `$${(backendData.average_price || 0).toLocaleString()}`,
+            change: calculateChange(backendData.average_price, backendData.average_price_previous),
+            changeType: getChangeType(backendData.average_price, backendData.average_price_previous),
+            format: "currency",
+            color: "blue",
+          },
+          {
+            key: "returns",
+            label: "Returns",
+            value: backendData.returns || 0,
+            formattedValue: `$${(backendData.returns || 0).toLocaleString()}`,
+            change: calculateChange(backendData.returns, backendData.returns_previous),
+            changeType: getChangeType(backendData.returns, backendData.returns_previous, true), // Inverse for returns
+            format: "currency",
+            color: "red",
+          },
+          {
+            key: "gross_margin",
+            label: "Gross Margin",
+            value: backendData.gross_margin || 0,
+            formattedValue: `${(backendData.gross_margin || 0).toFixed(1)}%`,
+            change: calculateChange(backendData.gross_margin, backendData.gross_margin_previous),
+            changeType: getChangeType(backendData.gross_margin, backendData.gross_margin_previous),
+            format: "percentage",
+            color: "purple",
+          },
+          {
+            key: "net_margin",
+            label: "Net Margin",
+            value: backendData.net_margin || 0,
+            formattedValue: `${(backendData.net_margin || 0).toFixed(1)}%`,
+            change: calculateChange(backendData.net_margin, backendData.net_margin_previous),
+            changeType: getChangeType(backendData.net_margin, backendData.net_margin_previous),
+            format: "percentage",
+            color: "indigo",
+          },
+        ];
+      } else {
+        // Fallback to default data if API response is not in expected format
+        kpis.value = getDefaultKPIs();
+      }
+      
       lastUpdated.value = new Date().toISOString();
     } catch (error) {
       console.warn("Failed to fetch KPIs from API, using default data:", error);
@@ -67,14 +149,79 @@ export const useDashboardStore = defineStore("dashboard", () => {
     }
   };
 
+  const fetchSalesChartData = async (period: string = 'month') => {
+    try {
+      const response = await apiService.dashboard.getSalesChart(period);
+      
+      if (response.data.success && response.data.data) {
+        const salesData = response.data.data;
+        
+        // Transform backend data to Chart.js format
+        return {
+          labels: salesData.map((item: any) => item.label),
+          datasets: [
+            {
+              label: 'Sales',
+              data: salesData.map((item: any) => item.sales),
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+            }
+          ]
+        };
+      }
+    } catch (error) {
+      console.warn("Failed to fetch sales chart data:", error);
+    }
+    
+    // Return default chart data
+    return generateSalesChartData(period as "daily" | "weekly" | "monthly" | "yearly");
+  };
+
   const fetchWidgets = async () => {
     try {
       isLoading.value = true;
-      const response = await apiService.dashboard.getWidgets();
-      widgets.value = response.data.widgets || [];
-      if (response.data.layout) {
-        currentLayout.value = response.data.layout;
-      }
+      
+      // Fetch sales chart data
+      const salesChartData = await fetchSalesChartData('month');
+      
+      // Create widgets with real data
+      widgets.value = [
+        {
+          id: "sales-chart",
+          type: "chart",
+          title: "Sales Overview",
+          position: { x: 0, y: 0, w: 8, h: 4 },
+          data: {
+            chartType: "line",
+            chartData: salesChartData,
+          },
+        },
+        {
+          id: "alerts",
+          type: "alert",
+          title: "Business Alerts",
+          position: { x: 8, y: 0, w: 4, h: 4 },
+        },
+        {
+          id: "category-distribution",
+          type: "chart",
+          title: "Category Distribution",
+          position: { x: 0, y: 4, w: 6, h: 3 },
+          data: {
+            chartType: "doughnut",
+            chartData: generateCategoryDistributionData(),
+          },
+        },
+        {
+          id: "recent-activities",
+          type: "table",
+          title: "Recent Activities",
+          position: { x: 6, y: 4, w: 6, h: 3 },
+        },
+      ];
+      
+      currentLayout.value.widgets = widgets.value;
     } catch (error) {
       console.warn(
         "Failed to fetch widgets from API, using default data:",
@@ -88,17 +235,65 @@ export const useDashboardStore = defineStore("dashboard", () => {
     }
   };
 
-  const fetchAlerts = async () => {
+  const alertsMetadata = ref({
+    total: 0,
+    hasMore: false,
+    currentOffset: 0,
+  });
+
+  const fetchAlerts = async (loadMore = false) => {
     try {
-      const response = await apiService.get("/api/dashboard/alerts");
-      alerts.value = response.data.alerts || [];
+      const offset = loadMore ? alerts.value.length : 0;
+      const response = await apiService.dashboard.getAlerts({ 
+        limit: 10, 
+        offset 
+      });
+      
+      if (response.data.success && response.data.data?.alerts) {
+        // Transform backend alerts to frontend format
+        const newAlerts = response.data.data.alerts.map((alert: any) => ({
+          id: alert.id.toString(),
+          type: alert.type || 'general',
+          title: alert.title,
+          message: alert.message,
+          severity: alert.severity || 'medium',
+          timestamp: alert.timestamp || new Date().toISOString(),
+          read: alert.read || false,
+          actionUrl: alert.action_url,
+          actionLabel: alert.action_label,
+        }));
+
+        if (loadMore) {
+          alerts.value = [...alerts.value, ...newAlerts];
+        } else {
+          alerts.value = newAlerts;
+        }
+
+        alertsMetadata.value = {
+          total: response.data.data.total || 0,
+          hasMore: response.data.data.has_more || false,
+          currentOffset: offset + newAlerts.length,
+        };
+      } else {
+        if (!loadMore) {
+          alerts.value = getDefaultAlerts();
+        }
+      }
     } catch (error) {
       console.warn(
         "Failed to fetch alerts from API, using default data:",
         error,
       );
       // Set default alerts for demo - this ensures the dashboard works even if backend is not ready
-      alerts.value = getDefaultAlerts();
+      if (!loadMore) {
+        alerts.value = getDefaultAlerts();
+      }
+    }
+  };
+
+  const loadMoreAlerts = async () => {
+    if (alertsMetadata.value.hasMore) {
+      await fetchAlerts(true);
     }
   };
 
@@ -148,21 +343,53 @@ export const useDashboardStore = defineStore("dashboard", () => {
     }
   };
 
-  const markAlertAsRead = (alertId: string) => {
-    const alert = alerts.value.find((a) => a.id === alertId);
-    if (alert) {
-      alert.read = true;
+  const markAlertAsRead = async (alertId: string) => {
+    try {
+      await apiService.dashboard.markAlertAsRead(alertId);
+      const alert = alerts.value.find((a) => a.id === alertId);
+      if (alert) {
+        alert.read = true;
+      }
+    } catch (error) {
+      console.error('Failed to mark alert as read:', error);
+      // Still update locally for better UX
+      const alert = alerts.value.find((a) => a.id === alertId);
+      if (alert) {
+        alert.read = true;
+      }
     }
   };
 
-  const markAllAlertsAsRead = () => {
-    alerts.value.forEach((alert) => (alert.read = true));
+  const markAllAlertsAsRead = async () => {
+    try {
+      // Mark all alerts as read via API calls
+      const unreadAlerts = alerts.value.filter(alert => !alert.read);
+      await Promise.all(
+        unreadAlerts.map(alert => apiService.dashboard.markAlertAsRead(alert.id))
+      );
+      alerts.value.forEach((alert) => (alert.read = true));
+    } catch (error) {
+      console.error('Failed to mark all alerts as read:', error);
+      // Still update locally for better UX
+      alerts.value.forEach((alert) => (alert.read = true));
+    }
   };
 
-  const dismissAlert = (alertId: string) => {
-    const index = alerts.value.findIndex((a) => a.id === alertId);
-    if (index > -1) {
-      alerts.value.splice(index, 1);
+  const dismissAlert = async (alertId: string) => {
+    try {
+      // For now, just mark as read since we don't have a dismiss endpoint
+      await markAlertAsRead(alertId);
+      const index = alerts.value.findIndex((a) => a.id === alertId);
+      if (index > -1) {
+        alerts.value.splice(index, 1);
+      }
+    } catch (error) {
+      console.error('Failed to dismiss alert:', error);
+      // Still remove locally for better UX
+      const index = alerts.value.findIndex((a) => a.id === alertId);
+      if (index > -1) {
+        alerts.value.splice(index, 1);
+      }
     }
   };
 
@@ -426,6 +653,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     availablePresets,
     activePreset,
     alerts,
+    alertsMetadata,
     isLoading,
     lastUpdated,
 
@@ -441,6 +669,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     fetchKPIs,
     fetchWidgets,
     fetchAlerts,
+    loadMoreAlerts,
     saveWidgetLayout,
     updateWidgetPosition,
     addWidget,

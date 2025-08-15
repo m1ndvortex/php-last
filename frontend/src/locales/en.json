@@ -386,11 +386,6 @@
     "sales_chart": "Sales Chart",
     "chart_integration": "Chart.js integration",
     "refresh_dashboard": "Refresh Dashboard",
-    "no_alerts": "No alerts at this time",
-    "just_now": "Just now",
-    "minutes_ago": "minutes ago",
-    "hours_ago": "hours ago",
-    "days_ago": "days ago",
     "kpis": {
       "gold_sold": "Gold Sold",
       "total_profit": "Total Profit",
@@ -419,6 +414,15 @@
       "settings": "Settings"
     },
     "alerts": {
+      "no_alerts": "No alerts at this time",
+      "mark_all_read": "Mark all as read",
+      "mark_read": "Mark as read",
+      "dismiss": "Dismiss",
+      "show_more": "Show more",
+      "just_now": "Just now",
+      "minutes_ago": "{count} minutes ago",
+      "hours_ago": "{count} hours ago",
+      "days_ago": "{count} days ago",
       "pending_cheque": "Pending Cheque",
       "cheque_due": "Cheque #{number} due tomorrow",
       "low_stock": "Low Stock Alert",

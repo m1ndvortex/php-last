@@ -4,6 +4,7 @@ export interface DashboardKPI {
   key: string;
   label: string;
   value: string | number;
+  formattedValue?: string;
   change?: number;
   changeType?: "increase" | "decrease" | "neutral";
   icon?: string;

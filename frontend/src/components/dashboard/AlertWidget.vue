@@ -28,7 +28,7 @@
       </div>
 
       <div
-        v-for="alert in alerts"
+        v-for="alert in visibleAlerts"
         :key="alert.id"
         class="flex items-start space-x-3 rtl:space-x-reverse p-3 rounded-lg border transition-colors"
         :class="[
@@ -102,14 +102,18 @@
       </div>
     </div>
 
-    <div v-if="alerts.length > visibleCount" class="mt-4 text-center">
+    <div v-if="alerts.length > visibleCount || dashboardStore.alertsMetadata.hasMore" class="mt-4 text-center">
       <button
         @click="showMore"
         class="text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors"
       >
-        {{ $t("dashboard.alerts.show_more") }} ({{
-          alerts.length - visibleCount
-        }})
+        {{ $t("dashboard.alerts.show_more") }}
+        <span v-if="alerts.length > visibleCount">
+          ({{ alerts.length - visibleCount }})
+        </span>
+        <span v-else-if="dashboardStore.alertsMetadata.hasMore">
+          ({{ dashboardStore.alertsMetadata.total - alerts.length }} more)
+        </span>
       </button>
     </div>
   </div>
@@ -149,6 +153,10 @@ const router = useRouter();
 const dashboardStore = useDashboardStore();
 
 const visibleCount = ref(props.maxVisible);
+
+const visibleAlerts = computed(() => 
+  props.alerts.slice(0, visibleCount.value)
+);
 
 const unreadCount = computed(
   () => props.alerts.filter((alert) => !alert.read).length,
@@ -207,16 +215,28 @@ const formatTimestamp = (timestamp: string) => {
   }
 };
 
-const markAsRead = (alertId: string) => {
-  dashboardStore.markAlertAsRead(alertId);
+const markAsRead = async (alertId: string) => {
+  try {
+    await dashboardStore.markAlertAsRead(alertId);
+  } catch (error) {
+    console.error('Failed to mark alert as read:', error);
+  }
 };
 
-const markAllAsRead = () => {
-  dashboardStore.markAllAlertsAsRead();
+const markAllAsRead = async () => {
+  try {
+    await dashboardStore.markAllAlertsAsRead();
+  } catch (error) {
+    console.error('Failed to mark all alerts as read:', error);
+  }
 };
 
-const dismissAlert = (alertId: string) => {
-  dashboardStore.dismissAlert(alertId);
+const dismissAlert = async (alertId: string) => {
+  try {
+    await dashboardStore.dismissAlert(alertId);
+  } catch (error) {
+    console.error('Failed to dismiss alert:', error);
+  }
 };
 
 const handleAction = (alert: BusinessAlert) => {
@@ -226,8 +246,13 @@ const handleAction = (alert: BusinessAlert) => {
   markAsRead(alert.id);
 };
 
-const showMore = () => {
-  visibleCount.value = props.alerts.length;
+const showMore = async () => {
+  // First try to load more from the server
+  if (dashboardStore.alertsMetadata.hasMore) {
+    await dashboardStore.loadMoreAlerts();
+  }
+  // Then show more locally
+  visibleCount.value = Math.min(visibleCount.value + props.maxVisible, props.alerts.length);
 };
 </script>
 

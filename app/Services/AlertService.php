@@ -254,4 +254,124 @@ class AlertService
             }
         }
     }
+
+    /**
+     * Get alerts for dashboard
+     */
+    public function getAlerts(int $limit = 10, int $offset = 0): array
+    {
+        $alerts = Alert::active()
+            ->orderBy('priority', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->skip($offset)
+            ->limit($limit)
+            ->get()
+            ->map(function ($alert) {
+                return [
+                    'id' => $alert->id,
+                    'type' => $alert->type,
+                    'title' => $alert->title,
+                    'message' => $alert->message,
+                    'severity' => $this->mapPriorityToSeverity($alert->priority),
+                    'timestamp' => $alert->created_at->toISOString(),
+                    'read' => false, // Dashboard alerts are always unread initially
+                    'action_url' => $this->getActionUrl($alert),
+                    'action_label' => $this->getActionLabel($alert),
+                ];
+            })
+            ->toArray();
+
+        return $alerts;
+    }
+
+    /**
+     * Get total count of active alerts
+     */
+    public function getTotalAlertsCount(): int
+    {
+        return Alert::active()->count();
+    }
+
+    /**
+     * Get alert counts by priority
+     */
+    public function getAlertCounts(): array
+    {
+        $counts = Alert::active()
+            ->selectRaw('priority, COUNT(*) as count')
+            ->groupBy('priority')
+            ->pluck('count', 'priority')
+            ->toArray();
+
+        return [
+            'total' => array_sum($counts),
+            'high' => $counts['high'] ?? 0,
+            'medium' => $counts['medium'] ?? 0,
+            'low' => $counts['low'] ?? 0,
+        ];
+    }
+
+    /**
+     * Mark alert as read (for dashboard)
+     */
+    public function markAsRead(string $alertId): bool
+    {
+        $alert = Alert::find($alertId);
+        
+        if (!$alert) {
+            return false;
+        }
+
+        // For now, we'll resolve the alert when marked as read
+        // In a more complex system, you might have a separate 'read' status
+        return $this->resolveAlert($alert->id, 'Marked as read from dashboard');
+    }
+
+    /**
+     * Clear cache for alerts
+     */
+    public function clearCache(): void
+    {
+        // If you're using cache for alerts, clear it here
+        // For now, this is a placeholder
+    }
+
+    /**
+     * Map priority to severity for frontend
+     */
+    private function mapPriorityToSeverity(string $priority): string
+    {
+        return match ($priority) {
+            'high' => 'critical',
+            'medium' => 'high',
+            'low' => 'medium',
+            default => 'low',
+        };
+    }
+
+    /**
+     * Get action URL for alert
+     */
+    private function getActionUrl(Alert $alert): ?string
+    {
+        return match ($alert->type) {
+            'low_stock', 'critical_stock' => '/inventory',
+            'overdue_payment' => '/invoices?status=overdue',
+            'birthday_reminder' => '/customers',
+            default => null,
+        };
+    }
+
+    /**
+     * Get action label for alert
+     */
+    private function getActionLabel(Alert $alert): ?string
+    {
+        return match ($alert->type) {
+            'low_stock', 'critical_stock' => 'View Inventory',
+            'overdue_payment' => 'View Invoices',
+            'birthday_reminder' => 'View Customers',
+            default => null,
+        };
+    }
 }

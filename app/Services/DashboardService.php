@@ -23,7 +23,12 @@ class DashboardService
             $startDate = $dateRange['start'] ?? Carbon::now()->startOfMonth();
             $endDate = $dateRange['end'] ?? Carbon::now()->endOfMonth();
 
-            return [
+            // Calculate previous period for comparison
+            $periodLength = $startDate->diffInDays($endDate);
+            $previousStartDate = $startDate->copy()->subDays($periodLength + 1);
+            $previousEndDate = $startDate->copy()->subDay();
+
+            $currentData = [
                 'gold_sold' => $this->calculateGoldSold($startDate, $endDate),
                 'total_profits' => $this->calculateTotalProfits($startDate, $endDate),
                 'average_price' => $this->calculateAveragePrice($startDate, $endDate),
@@ -35,6 +40,17 @@ class DashboardService
                 'inventory_value' => $this->getInventoryValue(),
                 'pending_invoices' => $this->getPendingInvoicesCount()
             ];
+
+            $previousData = [
+                'gold_sold_previous' => $this->calculateGoldSold($previousStartDate, $previousEndDate),
+                'total_profits_previous' => $this->calculateTotalProfits($previousStartDate, $previousEndDate),
+                'average_price_previous' => $this->calculateAveragePrice($previousStartDate, $previousEndDate),
+                'returns_previous' => $this->calculateReturns($previousStartDate, $previousEndDate),
+                'gross_margin_previous' => $this->calculateGrossMargin($previousStartDate, $previousEndDate),
+                'net_margin_previous' => $this->calculateNetMargin($previousStartDate, $previousEndDate),
+            ];
+
+            return array_merge($currentData, $previousData);
         });
     }
 

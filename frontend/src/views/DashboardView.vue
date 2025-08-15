@@ -113,77 +113,30 @@
               {{ $t("dashboard.sales_overview") }}
             </h3>
             <select
+              v-model="selectedPeriod"
+              @change="handlePeriodChange(selectedPeriod)"
               class="text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md"
             >
-              <option>{{ $t("dashboard.periods.monthly") }}</option>
-              <option>{{ $t("dashboard.periods.weekly") }}</option>
-              <option>{{ $t("dashboard.periods.daily") }}</option>
+              <option value="monthly">{{ $t("dashboard.periods.monthly") }}</option>
+              <option value="weekly">{{ $t("dashboard.periods.weekly") }}</option>
+              <option value="yearly">{{ $t("dashboard.periods.yearly") }}</option>
             </select>
           </div>
-          <div
-            class="h-64 flex items-center justify-center bg-gray-50 rounded-lg"
-          >
-            <div class="text-center">
-              <ChartBarIcon class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p class="text-gray-500 dark:text-gray-400">
-                {{ $t("dashboard.sales_chart") }}
-              </p>
-              <p class="text-sm text-gray-400 dark:text-gray-500">
-                {{ $t("dashboard.chart_integration") }}
-              </p>
-            </div>
+          <div class="h-64">
+            <SalesChart 
+              :period="selectedPeriod" 
+              @period-change="handlePeriodChange"
+              @refresh="refreshSalesChart"
+            />
           </div>
         </div>
 
         <!-- Alerts Widget -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-        >
-          <div
-            class="flex items-center justify-between mb-4"
-            :class="{ 'flex-row-reverse': isRTL }"
-          >
-            <h3
-              class="text-lg font-semibold text-gray-900 dark:text-gray-100"
-              :class="{ 'text-right': isRTL }"
-            >
-              {{ $t("dashboard.business_alerts") }}
-            </h3>
-            <span
-              class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-            >
-              {{ alertCount }}
-            </span>
-          </div>
-          <div class="space-y-3">
-            <div
-              v-for="alert in alerts.slice(0, 3)"
-              :key="alert.id"
-              class="flex items-start space-x-3 rtl:space-x-reverse p-3 rounded-lg border border-gray-200 dark:border-gray-600"
-            >
-              <div class="flex-shrink-0 mt-0.5">
-                <ExclamationTriangleIcon class="w-5 h-5 text-yellow-500" />
-              </div>
-              <div class="flex-1 min-w-0" :class="{ 'text-right': isRTL }">
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {{ alert.title }}
-                </p>
-                <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                  {{ alert.message }}
-                </p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  {{ formatTime(alert.timestamp) }}
-                </p>
-              </div>
-            </div>
-            <div v-if="alerts.length === 0" class="text-center py-4">
-              <CheckCircleIcon class="w-8 h-8 text-green-500 mx-auto mb-2" />
-              <p class="text-gray-500 dark:text-gray-400">
-                {{ $t("dashboard.no_alerts") }}
-              </p>
-            </div>
-          </div>
-        </div>
+        <AlertWidget
+          :title="$t('dashboard.business_alerts')"
+          :alerts="alerts"
+          :max-visible="3"
+        />
       </div>
     </div>
 
@@ -357,6 +310,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Icons
 import {
@@ -377,122 +331,102 @@ import {
   ScaleIcon,
 } from "@heroicons/vue/24/outline";
 
+// Import the sales chart component
+import SalesChart from "@/components/dashboard/SalesChart.vue";
+import AlertWidget from "@/components/dashboard/AlertWidget.vue";
+
 const router = useRouter();
 const { t, locale } = useI18n();
+const dashboardStore = useDashboardStore();
 
 const showAlertsModal = ref(false);
 const isRTL = computed(() => locale.value === "fa");
-const isLoading = ref(false);
-const lastUpdated = ref(new Date());
+const isLoading = computed(() => dashboardStore.isLoading);
+const lastUpdated = computed(() => new Date(dashboardStore.lastUpdated || Date.now()));
 
 const formatLastUpdated = computed(() => {
   return lastUpdated.value.toLocaleTimeString("en-US");
 });
 
-// Sample KPI data
-const kpis = computed(() => [
-  {
-    key: "gold_sold",
-    label: t("dashboard.kpis.gold_sold"),
-    value: 12.5,
-    formattedValue: "12.5 kg",
-    change: 8.2,
-    changeClass: "text-green-600",
-    changeIcon: ArrowTrendingUpIcon,
-    icon: ScaleIcon,
-    iconBg: "bg-yellow-100",
-    iconColor: "text-yellow-600",
-  },
-  {
-    key: "total_profit",
-    label: t("dashboard.kpis.total_profit"),
-    value: 45230,
-    formattedValue: "$45,230",
-    change: 12.5,
-    changeClass: "text-green-600",
-    changeIcon: ArrowTrendingUpIcon,
-    icon: CurrencyDollarIcon,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-  },
-  {
-    key: "average_price",
-    label: t("dashboard.kpis.average_price"),
-    value: 1850,
-    formattedValue: "$1,850",
-    change: -2.1,
-    changeClass: "text-red-600",
-    changeIcon: ArrowTrendingDownIcon,
-    icon: CurrencyDollarIcon,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-  },
-  {
-    key: "returns",
-    label: t("dashboard.kpis.returns"),
-    value: 2.3,
-    formattedValue: "2.3%",
-    change: -0.5,
-    changeClass: "text-green-600",
-    changeIcon: ArrowTrendingDownIcon,
-    icon: ExclamationTriangleIcon,
-    iconBg: "bg-red-100",
-    iconColor: "text-red-600",
-  },
-  {
-    key: "gross_margin",
-    label: t("dashboard.kpis.gross_margin"),
-    value: 35.2,
-    formattedValue: "35.2%",
-    change: 1.8,
-    changeClass: "text-green-600",
-    changeIcon: ArrowTrendingUpIcon,
-    icon: ChartBarIcon,
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-  },
-  {
-    key: "net_margin",
-    label: t("dashboard.kpis.net_margin"),
-    value: 28.7,
-    formattedValue: "28.7%",
-    change: 2.3,
-    changeClass: "text-green-600",
-    changeIcon: ArrowTrendingUpIcon,
-    icon: ChartBarIcon,
-    iconBg: "bg-indigo-100",
-    iconColor: "text-indigo-600",
-  },
-]);
-
-// Sample alerts data
-const alerts = computed(() => [
-  {
-    id: "1",
-    title: t("dashboard.alerts.pending_cheque"),
-    message: t("dashboard.alerts.cheque_due", { number: "CH-2024-001" }),
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-  {
-    id: "2",
-    title: t("dashboard.alerts.low_stock"),
-    message: t("dashboard.alerts.low_stock_message", { count: 5 }),
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-  {
-    id: "3",
-    title: t("dashboard.alerts.items_expiring"),
-    message: t("dashboard.alerts.items_expiring_message", { count: 3 }),
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-]);
-
-const alertCount = computed(
-  () => alerts.value.filter((alert) => !alert.read).length,
+// Dynamic KPI data from store
+const kpis = computed(() => 
+  dashboardStore.kpis.map(kpi => ({
+    key: kpi.key,
+    label: t(`dashboard.kpis.${kpi.key}`),
+    value: kpi.value,
+    formattedValue: kpi.formattedValue || formatKPIValue(kpi.value, kpi.format || 'number'),
+    change: kpi.change || 0,
+    changeClass: getChangeClass(kpi.changeType || 'neutral'),
+    changeIcon: getChangeIcon(kpi.changeType || 'neutral'),
+    icon: getKPIIcon(kpi.key),
+    iconBg: getIconBg(kpi.color || 'gray'),
+    iconColor: getIconColor(kpi.color || 'gray'),
+  }))
 );
+
+// Helper functions for KPI display
+const formatKPIValue = (value: any, format: string) => {
+  if (typeof value === 'string') return value;
+  
+  switch (format) {
+    case 'currency':
+      return `$${value.toLocaleString()}`;
+    case 'percentage':
+      return `${value.toFixed(1)}%`;
+    case 'weight':
+      return `${value.toFixed(1)} kg`;
+    default:
+      return value.toString();
+  }
+};
+
+const getChangeClass = (changeType: string) => {
+  return changeType === 'increase' ? 'text-green-600' : 'text-red-600';
+};
+
+const getChangeIcon = (changeType: string) => {
+  return changeType === 'increase' ? ArrowTrendingUpIcon : ArrowTrendingDownIcon;
+};
+
+const getKPIIcon = (key: string) => {
+  const iconMap: Record<string, any> = {
+    gold_sold: ScaleIcon,
+    total_profit: CurrencyDollarIcon,
+    average_price: CurrencyDollarIcon,
+    returns: ExclamationTriangleIcon,
+    gross_margin: ChartBarIcon,
+    net_margin: ChartBarIcon,
+  };
+  return iconMap[key] || ChartBarIcon;
+};
+
+const getIconBg = (color: string) => {
+  const bgMap: Record<string, string> = {
+    yellow: 'bg-yellow-100',
+    green: 'bg-green-100',
+    blue: 'bg-blue-100',
+    red: 'bg-red-100',
+    purple: 'bg-purple-100',
+    indigo: 'bg-indigo-100',
+  };
+  return bgMap[color] || 'bg-gray-100';
+};
+
+const getIconColor = (color: string) => {
+  const colorMap: Record<string, string> = {
+    yellow: 'text-yellow-600',
+    green: 'text-green-600',
+    blue: 'text-blue-600',
+    red: 'text-red-600',
+    purple: 'text-purple-600',
+    indigo: 'text-indigo-600',
+  };
+  return colorMap[color] || 'text-gray-600';
+};
+
+// Dynamic alerts data from store
+const alerts = computed(() => dashboardStore.alerts);
+const alertCount = computed(() => dashboardStore.alertCount);
 
 // Sample activities data
 const activities = computed(() => [
@@ -580,13 +514,19 @@ const quickActions = computed(() => [
   },
 ]);
 
+const selectedPeriod = ref('monthly');
+
 const refreshDashboard = async () => {
-  isLoading.value = true;
-  // Simulate API call
-  setTimeout(() => {
-    isLoading.value = false;
-    lastUpdated.value = new Date(); // Update the timestamp
-  }, 1000);
+  await dashboardStore.refreshData();
+};
+
+const handlePeriodChange = (period: string) => {
+  selectedPeriod.value = period;
+};
+
+const refreshSalesChart = async () => {
+  // This will be handled by the SalesChart component
+  console.log('Refreshing sales chart...');
 };
 
 const handleQuickAction = (action: any) => {
@@ -628,10 +568,10 @@ const getStatusClass = (status: string) => {
   }
 };
 
-onMounted(() => {
-  // Initialize dashboard data
-  lastUpdated.value = new Date();
-  console.log("Dashboard mounted");
+onMounted(async () => {
+  // Initialize dashboard data from API
+  await dashboardStore.initialize();
+  console.log("Dashboard mounted with real data");
 });
 </script>
 

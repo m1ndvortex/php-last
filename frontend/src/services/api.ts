@@ -676,12 +676,37 @@ export const apiService = {
 
   // Dashboard
   dashboard: {
-    getKPIs: () => api.get("api/dashboard/kpis"),
+    getKPIs: (dateRange?: { start: string; end: string }) => 
+      api.get("api/dashboard/kpis", { params: dateRange }),
+
+    getSalesChart: (period: string = 'month') => 
+      api.get("api/dashboard/sales-chart", { params: { period } }),
+
+    getAlerts: (params?: { limit?: number; offset?: number }) => 
+      api.get("api/dashboard/alerts", { params }),
+
+    getCategoryPerformance: () => api.get("api/dashboard/category-performance"),
+
+    getGoldPurityPerformance: () => api.get("api/dashboard/gold-purity-performance"),
+
+    getCategoryStockAlerts: () => api.get("api/dashboard/category-stock-alerts"),
+
+    markAlertAsRead: (alertId: string) => 
+      api.post("api/dashboard/alerts/mark-read", { alert_id: alertId }),
 
     getWidgets: () => api.get("api/dashboard/widgets"),
 
     saveWidgetLayout: (layout: any) =>
-      api.post("api/dashboard/widgets/layout", { layout }),
+      api.post("api/dashboard/layout", { layout }),
+
+    getDashboardLayout: () => api.get("api/dashboard/layout"),
+
+    getPresets: () => api.get("api/dashboard/presets"),
+
+    applyPreset: (preset: string) => 
+      api.post("api/dashboard/presets/apply", { preset }),
+
+    clearCache: () => api.post("api/dashboard/clear-cache"),
   },
 
   // Localization

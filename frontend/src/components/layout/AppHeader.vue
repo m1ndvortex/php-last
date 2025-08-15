@@ -209,32 +209,26 @@ const closeUserMenu = () => {
 
 const handleLogout = async () => {
   userMenuOpen.value = false;
-  console.log("Logout clicked - initiating immediate logout");
+  console.log("🚀 LOGOUT CLICKED - Starting logout process");
   
   try {
-    // Immediate local cleanup
+    // Immediate local cleanup for instant logout
+    console.log("🧹 Clearing local storage and session storage");
     localStorage.clear();
     sessionStorage.clear();
     
     // Clear cookies
+    console.log("🍪 Clearing cookies");
     document.cookie.split(";").forEach(function(c) { 
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     });
     
-    // Call backend logout (don't wait for it)
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      }).catch(err => console.warn('Backend logout failed:', err));
-    }
+    // Clear auth store state
+    console.log("🔐 Clearing auth store state");
+    authStore.cleanupAuthState();
     
     // Broadcast logout to other tabs
+    console.log("📡 Broadcasting logout to other tabs");
     window.dispatchEvent(new CustomEvent('cross-tab-logout', {
       detail: { 
         initiatingTab: 'current',
@@ -243,16 +237,13 @@ const handleLogout = async () => {
       }
     }));
     
-    // Clear auth store
-    authStore.cleanupAuthState();
-    
-    console.log("Immediate logout completed - redirecting to login");
+    console.log("✅ Logout completed - redirecting to login");
     
     // Force redirect to login
     window.location.href = '/login';
     
   } catch (error) {
-    console.error("Logout error:", error);
+    console.error("❌ Logout error:", error);
     // Force redirect even on error
     window.location.href = '/login';
   }

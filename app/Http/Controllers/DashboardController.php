@@ -157,16 +157,22 @@ class DashboardController extends Controller
     /**
      * Get dashboard alerts
      */
-    public function getAlerts(): JsonResponse
+    public function getAlerts(Request $request): JsonResponse
     {
-        $alerts = $this->alertService->getAlerts();
+        $limit = $request->get('limit', 10);
+        $offset = $request->get('offset', 0);
+        
+        $alerts = $this->alertService->getAlerts($limit, $offset);
         $alertCounts = $this->alertService->getAlertCounts();
+        $totalCount = $this->alertService->getTotalAlertsCount();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'alerts' => $alerts,
-                'counts' => $alertCounts
+                'counts' => $alertCounts,
+                'total' => $totalCount,
+                'has_more' => ($offset + count($alerts)) < $totalCount
             ]
         ]);
     }
