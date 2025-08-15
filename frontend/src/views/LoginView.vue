@@ -17,10 +17,10 @@
       <div class="card">
         <!-- Error Message -->
         <div
-          v-if="authStore.error"
+          v-if="authError"
           class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
         >
-          <p class="text-sm text-red-600">{{ authStore.error }}</p>
+          <p class="text-sm text-red-600">{{ authError }}</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-6">
@@ -33,14 +33,15 @@
               v-model="form.email"
               type="email"
               required
-              :disabled="authStore.isLoading"
+              :disabled="isLoading"
               class="form-input"
               :class="{
-                'opacity-50': authStore.isLoading,
+                'opacity-50': isLoading,
                 'border-red-300 focus:border-red-500 focus:ring-red-500':
                   validationErrors.email,
               }"
-              @blur="validateField('email')"
+              @blur="handleFieldBlur('email')"
+              @focus="handleFormFocus"
             />
             <p v-if="validationErrors.email" class="mt-1 text-sm text-red-600">
               {{ validationErrors.email }}
@@ -57,19 +58,21 @@
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                :disabled="authStore.isLoading"
+                :disabled="isLoading"
                 class="form-input pr-10"
                 :class="{
-                  'opacity-50': authStore.isLoading,
+                  'opacity-50': isLoading,
                   'border-red-300 focus:border-red-500 focus:ring-red-500':
                     validationErrors.password,
                 }"
-                @blur="validateField('password')"
+                @blur="handleFieldBlur('password')"
+                @focus="handleFormFocus"
               />
               <button
                 type="button"
-                @click="showPassword = !showPassword"
+                @click="togglePasswordVisibility"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                :disabled="isLoading"
               >
                 <svg
                   v-if="showPassword"
@@ -121,7 +124,7 @@
                 id="remember-me"
                 v-model="form.remember"
                 type="checkbox"
-                :disabled="authStore.isLoading"
+                :disabled="isLoading"
                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
               <label for="remember-me" class="ml-2 block text-sm text-gray-900">
@@ -142,15 +145,15 @@
           <div>
             <button
               type="submit"
-              :disabled="authStore.isLoading || !isFormValid"
+              :disabled="isLoading || !isFormValid"
               class="w-full btn btn-primary"
               :class="{
                 'opacity-50 cursor-not-allowed':
-                  authStore.isLoading || !isFormValid,
+                  isLoading || !isFormValid,
               }"
             >
               <span
-                v-if="authStore.isLoading"
+                v-if="isLoading"
                 class="flex items-center justify-center"
               >
                 <svg
@@ -186,84 +189,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Performance Monitor (Development Only) -->
+    <LoginPerformanceMonitor :auto-show="false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
+import { useOptimizedLogin } from "@/composables/useOptimizedLogin";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher.vue";
+import LoginPerformanceMonitor from "@/components/performance/LoginPerformanceMonitor.vue";
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
-
-const form = ref({
-  email: "",
-  password: "",
-  remember: false,
-});
-
-const showPassword = ref(false);
-const validationErrors = ref<Record<string, string>>({});
-
-const isFormValid = computed(() => {
-  return (
-    form.value.email.trim() !== "" &&
-    form.value.password.trim() !== "" &&
-    Object.keys(validationErrors.value).length === 0
-  );
-});
-
-const validateField = (field: string) => {
-  switch (field) {
-    case "email":
-      if (!form.value.email.trim()) {
-        validationErrors.value.email = "Email is required";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-        validationErrors.value.email = "Please enter a valid email address";
-      } else {
-        delete validationErrors.value.email;
-      }
-      break;
-    case "password":
-      if (!form.value.password.trim()) {
-        validationErrors.value.password = "Password is required";
-      } else if (form.value.password.length < 6) {
-        validationErrors.value.password =
-          "Password must be at least 6 characters";
-      } else {
-        delete validationErrors.value.password;
-      }
-      break;
-  }
-};
-
-const validateForm = () => {
-  validateField("email");
-  validateField("password");
-  return Object.keys(validationErrors.value).length === 0;
-};
-
-const handleLogin = async () => {
-  if (!validateForm()) return;
-
-  const result = await authStore.login({
-    email: form.value.email,
-    password: form.value.password,
-  });
-
-  if (result.success) {
-    // Redirect to intended route or dashboard
-    const redirectTo = (route.query.redirect as string) || "/dashboard";
-    router.push(redirectTo);
-  }
-};
-
-// Clear any existing errors when component mounts
-onMounted(() => {
-  authStore.error = null;
-  validationErrors.value = {};
-});
+// Use the optimized login composable with performance monitoring
+const {
+  form,
+  showPassword,
+  validationErrors,
+  isFormValid,
+  isLoading,
+  handleLogin,
+  handleFieldBlur,
+  handleFormFocus,
+  togglePasswordVisibility,
+  authError,
+} = useOptimizedLogin();
 </script>

@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "path";
+import { visualizer } from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,6 +16,29 @@ export default defineConfig({
           cacheHandlers: true,
         },
       },
+    }),
+    // Gzip compression for better asset delivery
+    viteCompression({
+      verbose: true,
+      disable: false,
+      threshold: 1024,
+      algorithm: 'gzip',
+      ext: '.gz',
+    }),
+    // Brotli compression for even better compression
+    viteCompression({
+      verbose: true,
+      disable: false,
+      threshold: 1024,
+      algorithm: 'brotliCompress',
+      ext: '.br',
+    }),
+    // Bundle analyzer for optimization insights
+    visualizer({
+      filename: 'dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
     }),
     VitePWA({
       registerType: "autoUpdate",
@@ -99,17 +124,29 @@ export default defineConfig({
       compress: {
         drop_console: true, // Remove console.log in production
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console methods
+      },
+      mangle: {
+        safari10: true, // Fix Safari 10 issues
       },
     },
+    // Optimize CSS
+    cssCodeSplit: true,
+    cssMinify: true,
+    // Optimize asset inlining
+    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
     rollupOptions: {
       output: {
         // Manual chunk splitting for better caching
         manualChunks: {
-          // Vendor chunks
-          "vue-vendor": ["vue", "vue-router", "pinia"],
+          // Critical vendor chunks (loaded first)
+          "vue-core": ["vue", "vue-router", "pinia"],
+          "auth-vendor": ["axios"], // Critical for login
+          
+          // Secondary vendor chunks (can be lazy loaded)
           "ui-vendor": ["@headlessui/vue", "@heroicons/vue"],
           "chart-vendor": ["chart.js", "vue-chartjs"],
-          "utils-vendor": ["axios", "lodash-es", "date-fns"],
+          "utils-vendor": ["lodash-es", "date-fns"],
           "i18n-vendor": ["vue-i18n", "date-fns-jalali"],
           "form-vendor": ["vee-validate", "@vee-validate/yup", "yup"],
 
