@@ -236,12 +236,21 @@
             v-for="action in quickActions"
             :key="action.key"
             @click="handleQuickAction(action)"
-            class="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors min-h-[100px]"
+            :disabled="!action.enabled"
+            class="relative flex flex-col items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors min-h-[100px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <component
-              :is="action.icon"
-              class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2 flex-shrink-0"
-            />
+            <div class="relative">
+              <component
+                :is="action.icon"
+                class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2 flex-shrink-0"
+              />
+              <span
+                v-if="action.badge && action.badge > 0"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+              >
+                {{ action.badge }}
+              </span>
+            </div>
             <span
               class="text-sm font-medium text-gray-900 dark:text-gray-100 text-center break-words"
               >{{ action.label }}</span
@@ -329,6 +338,7 @@ import {
   ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   ScaleIcon,
+  ClockIcon,
 } from "@heroicons/vue/24/outline";
 
 // Import the sales chart component
@@ -424,95 +434,29 @@ const getIconColor = (color: string) => {
   return colorMap[color] || 'text-gray-600';
 };
 
-// Dynamic alerts data from store
+const getIconComponent = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    UserGroupIcon,
+    ArchiveBoxIcon,
+    DocumentTextIcon,
+    ChartBarIcon,
+    CalculatorIcon,
+    CogIcon,
+    ExclamationTriangleIcon,
+    ClockIcon,
+    CheckCircleIcon,
+  };
+  return iconMap[iconName] || ChartBarIcon;
+};
+
+// Dynamic data from store
 const alerts = computed(() => dashboardStore.alerts);
 const alertCount = computed(() => dashboardStore.alertCount);
-
-// Sample activities data
-const activities = computed(() => [
-  {
-    id: 1,
-    description: t("dashboard.activities.invoice_created", {
-      number: "INV-001",
-    }),
-    user: "Admin",
-    time: "2 " + t("dashboard.minutes_ago"),
-    status: t("status.completed"),
-  },
-  {
-    id: 2,
-    description: t("dashboard.activities.customer_added", { name: "John Doe" }),
-    user: "Admin",
-    time: "5 " + t("dashboard.minutes_ago"),
-    status: t("status.completed"),
-  },
-  {
-    id: 3,
-    description: t("dashboard.activities.inventory_updated", {
-      item: "Gold Ring",
-    }),
-    user: "Admin",
-    time: "10 " + t("dashboard.minutes_ago"),
-    status: t("status.completed"),
-  },
-  {
-    id: 4,
-    description: t("dashboard.activities.payment_received", {
-      number: "INV-002",
-    }),
-    user: "System",
-    time: "15 " + t("dashboard.minutes_ago"),
-    status: t("status.completed"),
-  },
-  {
-    id: 5,
-    description: t("dashboard.activities.stock_alert", {
-      item: "Silver Necklace",
-    }),
-    user: "System",
-    time: "20 " + t("dashboard.minutes_ago"),
-    status: t("status.pending"),
-  },
-]);
-
-const quickActions = computed(() => [
-  {
-    key: "add_customer",
-    label: t("dashboard.actions.add_customer"),
-    icon: UserGroupIcon,
-    route: "/customers/new",
-  },
-  {
-    key: "add_inventory",
-    label: t("dashboard.actions.add_item"),
-    icon: ArchiveBoxIcon,
-    route: "/inventory/new",
-  },
-  {
-    key: "create_invoice",
-    label: t("dashboard.actions.create_invoice"),
-    icon: DocumentTextIcon,
-    route: "/invoices/new",
-  },
-  {
-    key: "view_reports",
-    label: t("dashboard.actions.view_reports"),
-    icon: ChartBarIcon,
-    route: "/reports",
-  },
-  {
-    key: "accounting",
-    label: t("dashboard.actions.accounting"),
-    icon: CalculatorIcon,
-    route: "/accounting",
-  },
-  {
-    key: "settings",
-    label: t("dashboard.actions.settings"),
-    icon: CogIcon,
-    route: "/settings",
-  },
-]);
+const activities = computed(() => dashboardStore.recentActivities);
+const quickActions = computed(() => dashboardStore.quickActions.map(action => ({
+  ...action,
+  icon: getIconComponent(action.icon),
+})));
 
 const selectedPeriod = ref('monthly');
 

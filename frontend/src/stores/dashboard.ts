@@ -241,6 +241,11 @@ export const useDashboardStore = defineStore("dashboard", () => {
     currentOffset: 0,
   });
 
+  const recentActivities = ref<any[]>([]);
+  const quickActions = ref<any[]>([]);
+  const activityStats = ref<any>({});
+  const quickActionStats = ref<any>({});
+
   const fetchAlerts = async (loadMore = false) => {
     try {
       const offset = loadMore ? alerts.value.length : 0;
@@ -294,6 +299,44 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const loadMoreAlerts = async () => {
     if (alertsMetadata.value.hasMore) {
       await fetchAlerts(true);
+    }
+  };
+
+  const fetchRecentActivities = async (limit = 10) => {
+    try {
+      const response = await apiService.dashboard.getRecentActivities({ limit });
+      
+      if (response.data.success && response.data.data?.activities) {
+        recentActivities.value = response.data.data.activities;
+        activityStats.value = response.data.data.stats || {};
+      } else {
+        recentActivities.value = getDefaultActivities();
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to fetch recent activities from API, using default data:",
+        error,
+      );
+      recentActivities.value = getDefaultActivities();
+    }
+  };
+
+  const fetchQuickActions = async () => {
+    try {
+      const response = await apiService.dashboard.getQuickActions();
+      
+      if (response.data.success && response.data.data?.actions) {
+        quickActions.value = response.data.data.actions;
+        quickActionStats.value = response.data.data.stats || {};
+      } else {
+        quickActions.value = getDefaultQuickActions();
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to fetch quick actions from API, using default data:",
+        error,
+      );
+      quickActions.value = getDefaultQuickActions();
     }
   };
 
@@ -394,7 +437,13 @@ export const useDashboardStore = defineStore("dashboard", () => {
   };
 
   const refreshData = async () => {
-    await Promise.all([fetchKPIs(), fetchWidgets(), fetchAlerts()]);
+    await Promise.all([
+      fetchKPIs(), 
+      fetchWidgets(), 
+      fetchAlerts(), 
+      fetchRecentActivities(), 
+      fetchQuickActions()
+    ]);
   };
 
   const initializePresets = () => {
@@ -639,6 +688,111 @@ export const useDashboardStore = defineStore("dashboard", () => {
     },
   ];
 
+  const getDefaultActivities = () => [
+    {
+      id: "1",
+      type: "invoice_created",
+      description: "Invoice #INV-001 created",
+      user: "Admin",
+      time: "2 minutes ago",
+      timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+      status: "completed",
+    },
+    {
+      id: "2",
+      type: "customer_added",
+      description: "Customer John Doe added",
+      user: "Admin",
+      time: "5 minutes ago",
+      timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      status: "completed",
+    },
+    {
+      id: "3",
+      type: "inventory_updated",
+      description: "Gold Ring inventory updated",
+      user: "Admin",
+      time: "10 minutes ago",
+      timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+      status: "completed",
+    },
+    {
+      id: "4",
+      type: "payment_received",
+      description: "Payment received for INV-002",
+      user: "System",
+      time: "15 minutes ago",
+      timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      status: "completed",
+    },
+    {
+      id: "5",
+      type: "stock_alert",
+      description: "Stock alert for Silver Necklace",
+      user: "System",
+      time: "20 minutes ago",
+      timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+      status: "pending",
+    },
+  ];
+
+  const getDefaultQuickActions = () => [
+    {
+      key: "add_customer",
+      label: "Add Customer",
+      icon: "UserGroupIcon",
+      route: "/customers/new",
+      description: "Create a new customer record",
+      enabled: true,
+      badge: null,
+    },
+    {
+      key: "add_inventory",
+      label: "Add Item",
+      icon: "ArchiveBoxIcon",
+      route: "/inventory/new",
+      description: "Add new inventory item",
+      enabled: true,
+      badge: null,
+    },
+    {
+      key: "create_invoice",
+      label: "Create Invoice",
+      icon: "DocumentTextIcon",
+      route: "/invoices/new",
+      description: "Generate a new invoice",
+      enabled: true,
+      badge: null,
+    },
+    {
+      key: "view_reports",
+      label: "View Reports",
+      icon: "ChartBarIcon",
+      route: "/reports",
+      description: "Access business reports",
+      enabled: true,
+      badge: null,
+    },
+    {
+      key: "accounting",
+      label: "Accounting",
+      icon: "CalculatorIcon",
+      route: "/accounting",
+      description: "Manage financial records",
+      enabled: true,
+      badge: null,
+    },
+    {
+      key: "settings",
+      label: "Settings",
+      icon: "CogIcon",
+      route: "/settings",
+      description: "Configure system settings",
+      enabled: true,
+      badge: null,
+    },
+  ];
+
   // Initialize
   const initialize = async () => {
     initializePresets();
@@ -654,6 +808,10 @@ export const useDashboardStore = defineStore("dashboard", () => {
     activePreset,
     alerts,
     alertsMetadata,
+    recentActivities,
+    quickActions,
+    activityStats,
+    quickActionStats,
     isLoading,
     lastUpdated,
 
@@ -670,6 +828,8 @@ export const useDashboardStore = defineStore("dashboard", () => {
     fetchWidgets,
     fetchAlerts,
     loadMoreAlerts,
+    fetchRecentActivities,
+    fetchQuickActions,
     saveWidgetLayout,
     updateWidgetPosition,
     addWidget,

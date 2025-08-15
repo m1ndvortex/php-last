@@ -694,6 +694,11 @@ export const apiService = {
     markAlertAsRead: (alertId: string) => 
       api.post("api/dashboard/alerts/mark-read", { alert_id: alertId }),
 
+    getRecentActivities: (params?: { limit?: number }) => 
+      api.get("api/dashboard/recent-activities", { params }),
+
+    getQuickActions: () => api.get("api/dashboard/quick-actions"),
+
     getWidgets: () => api.get("api/dashboard/widgets"),
 
     saveWidgetLayout: (layout: any) =>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\DashboardService;
 use App\Services\AlertService;
 use App\Services\WidgetService;
+use App\Services\ActivityService;
+use App\Services\QuickActionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -16,15 +18,21 @@ class DashboardController extends Controller
     private DashboardService $dashboardService;
     private AlertService $alertService;
     private WidgetService $widgetService;
+    private ActivityService $activityService;
+    private QuickActionService $quickActionService;
 
     public function __construct(
         DashboardService $dashboardService,
         AlertService $alertService,
-        WidgetService $widgetService
+        WidgetService $widgetService,
+        ActivityService $activityService,
+        QuickActionService $quickActionService
     ) {
         $this->dashboardService = $dashboardService;
         $this->alertService = $alertService;
         $this->widgetService = $widgetService;
+        $this->activityService = $activityService;
+        $this->quickActionService = $quickActionService;
     }
 
     /**
@@ -367,6 +375,41 @@ class DashboardController extends Controller
         return response()->json([
             'success' => $success,
             'message' => $success ? 'Dashboard reset to default successfully' : 'Failed to reset dashboard'
+        ]);
+    }
+
+    /**
+     * Get recent activities
+     */
+    public function getRecentActivities(Request $request): JsonResponse
+    {
+        $limit = $request->get('limit', 10);
+        $activities = $this->activityService->getRecentActivities($limit);
+        $stats = $this->activityService->getActivityStats();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'activities' => $activities,
+                'stats' => $stats
+            ]
+        ]);
+    }
+
+    /**
+     * Get quick actions
+     */
+    public function getQuickActions(): JsonResponse
+    {
+        $actions = $this->quickActionService->getQuickActions();
+        $stats = $this->quickActionService->getQuickActionStats();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'actions' => $actions,
+                'stats' => $stats
+            ]
         ]);
     }
 

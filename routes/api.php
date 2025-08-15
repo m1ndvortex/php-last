@@ -64,6 +64,8 @@ Route::middleware(['auth:sanctum', 'auth.api', 'api.errors'])->group(function ()
         Route::get('/category-stock-alerts', [\App\Http\Controllers\DashboardController::class, 'getCategoryStockAlerts']);
         Route::get('/alerts', [\App\Http\Controllers\DashboardController::class, 'getAlerts']);
         Route::post('/alerts/mark-read', [\App\Http\Controllers\DashboardController::class, 'markAlertAsRead']);
+        Route::get('/recent-activities', [\App\Http\Controllers\DashboardController::class, 'getRecentActivities']);
+        Route::get('/quick-actions', [\App\Http\Controllers\DashboardController::class, 'getQuickActions']);
         Route::get('/layout', [\App\Http\Controllers\DashboardController::class, 'getDashboardLayout']);
         Route::post('/layout', [\App\Http\Controllers\DashboardController::class, 'saveDashboardLayout']);
         Route::get('/presets', [\App\Http\Controllers\DashboardController::class, 'getDashboardPresets']);
@@ -421,4 +423,13 @@ Route::middleware(['auth:sanctum', 'auth.api', 'api.errors'])->group(function ()
         Route::get('/validate-consistency', [App\Http\Controllers\IntegrationController::class, 'validateDataConsistency']);
         Route::post('/fix-consistency', [App\Http\Controllers\IntegrationController::class, 'fixDataConsistency']);
     });
-});
+});  
+  // Activity routes
+    Route::prefix('activities')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ActivityController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\ActivityController::class, 'store']);
+        Route::get('/stats', [\App\Http\Controllers\ActivityController::class, 'stats']);
+        Route::get('/pending', [\App\Http\Controllers\ActivityController::class, 'pending']);
+        Route::get('/type/{type}', [\App\Http\Controllers\ActivityController::class, 'byType']);
+        Route::get('/reference/{referenceType}/{referenceId}', [\App\Http\Controllers\ActivityController::class, 'forReference']);
+    });
