@@ -162,7 +162,7 @@ class LoginPerformanceService {
     // Track First Input Delay (FID)
     const fidObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        const fid = entry.processingStart - entry.startTime;
+        const fid = (entry as any).processingStart - entry.startTime;
         console.log(`[LoginPerformance] FID: ${fid.toFixed(2)}ms`);
         
         performanceMonitoringService.recordLoadingMetrics({
@@ -436,6 +436,21 @@ class LoginPerformanceService {
       cacheHits: 0,
       cacheMisses: 0,
     };
+  }
+
+  // Record loading metrics (compatibility method)
+  recordLoadingMetrics(metrics: {
+    component: string;
+    loadTime: number;
+    timestamp: Date;
+    isInitialLoad: boolean;
+  }): void {
+    console.log(`[LoginPerformance] ${metrics.component}: ${metrics.loadTime.toFixed(2)}ms`);
+    
+    // Forward to performance monitoring service if available
+    if (performanceMonitoringService && typeof performanceMonitoringService.recordLoadingMetrics === 'function') {
+      performanceMonitoringService.recordLoadingMetrics(metrics);
+    }
   }
 
   // Export metrics for analysis

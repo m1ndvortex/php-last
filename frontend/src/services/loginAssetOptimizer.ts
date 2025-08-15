@@ -50,7 +50,7 @@ class LoginAssetOptimizer {
   private criticalCSS: string = '';
 
   // Initialize all optimizations
-  async initializeOptimizations(): Promise<void> {
+  async initialize(): Promise<void> {
     console.log('[LoginAssetOptimizer] Initializing optimizations...');
     
     const startTime = performance.now();
@@ -69,12 +69,7 @@ class LoginAssetOptimizer {
       console.log(`[LoginAssetOptimizer] Optimizations completed in ${optimizationTime.toFixed(2)}ms`);
       
       // Track optimization performance
-      loginPerformanceService.recordLoadingMetrics({
-        component: 'asset-optimization',
-        loadTime: optimizationTime,
-        timestamp: new Date(),
-        isInitialLoad: true,
-      });
+      console.log(`[LoginAssetOptimizer] Optimization metrics: ${optimizationTime.toFixed(2)}ms`);
     } catch (error) {
       console.error('[LoginAssetOptimizer] Optimization failed:', error);
     }
@@ -281,7 +276,7 @@ class LoginAssetOptimizer {
   }
 
   // Optimize font loading
-  private async optimizeFonts(): Promise<void> {
+  async optimizeFonts(): Promise<void> {
     if (!this.config.enableFontOptimization) return;
 
     try {
@@ -321,7 +316,7 @@ class LoginAssetOptimizer {
   }
 
   // Optimize images for faster loading
-  private async optimizeImages(): Promise<void> {
+  async optimizeImages(): Promise<void> {
     if (!this.config.enableImageOptimization) return;
 
     try {
@@ -468,7 +463,7 @@ class LoginAssetOptimizer {
   async reoptimize(): Promise<void> {
     this.optimizedAssets.clear();
     this.criticalCSS = '';
-    await this.initializeOptimizations();
+    await this.initialize();
   }
 
   // Clean up optimizations
