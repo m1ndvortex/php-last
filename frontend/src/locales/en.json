@@ -26,6 +26,23 @@
     "settings": "Settings",
     "logout": "Logout"
   },
+  "notifications": {
+    "bell_title": "Notifications",
+    "title": "Notifications",
+    "unread": "unread",
+    "mark_all_read": "Mark all read",
+    "marking_read": "Marking...",
+    "mark_read": "Mark as read",
+    "dismiss": "Dismiss",
+    "no_notifications": "No notifications",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "view_all": "View all",
+    "just_now": "Just now",
+    "minutes_ago": "{count} minutes ago",
+    "hours_ago": "{count} hours ago",
+    "days_ago": "{count} days ago"
+  },
   "sidebar": {
     "expand": "Expand",
     "collapse": "Collapse"

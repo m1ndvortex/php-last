@@ -21,6 +21,7 @@ export function useSessionSync(options: SessionSyncOptions = {}) {
   const isActive = ref(false);
   const lastSyncTime = ref<Date | null>(null);
   const syncInterval_id = ref<number | null>(null);
+  const warningInterval_id = ref<number | null>(null);
   const warningShown = ref(false);
 
   // Computed properties
@@ -54,12 +55,9 @@ export function useSessionSync(options: SessionSyncOptions = {}) {
     }, syncInterval * 60 * 1000);
 
     // Set up warning check (every minute)
-    const warningCheck = setInterval(() => {
+    warningInterval_id.value = window.setInterval(() => {
       checkForWarnings();
     }, 60 * 1000);
-
-    // Store warning interval for cleanup
-    (syncInterval_id.value as any).warningCheck = warningCheck;
   };
 
   // Stop session synchronization
@@ -71,13 +69,12 @@ export function useSessionSync(options: SessionSyncOptions = {}) {
 
     if (syncInterval_id.value) {
       clearInterval(syncInterval_id.value);
-      
-      // Clear warning check if it exists
-      if ((syncInterval_id.value as any).warningCheck) {
-        clearInterval((syncInterval_id.value as any).warningCheck);
-      }
-      
       syncInterval_id.value = null;
+    }
+
+    if (warningInterval_id.value) {
+      clearInterval(warningInterval_id.value);
+      warningInterval_id.value = null;
     }
 
     warningShown.value = false;

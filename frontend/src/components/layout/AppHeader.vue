@@ -33,17 +33,7 @@
             <ThemeToggle />
 
             <!-- Notifications -->
-            <button
-              class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative"
-            >
-              <BellIcon class="h-5 w-5" />
-              <span
-                v-if="notificationCount > 0"
-                class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
-              >
-                {{ notificationCount > 9 ? "9+" : notificationCount }}
-              </span>
-            </button>
+            <NotificationBell />
 
             <!-- User menu -->
             <div class="relative">
@@ -166,6 +156,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import LanguageSwitcher from "../ui/LanguageSwitcher.vue";
 import ThemeToggle from "../ui/ThemeToggle.vue";
+import NotificationBell from "../notifications/NotificationBell.vue";
 import { useAuthStore } from "@/stores/auth";
 
 defineEmits<{
@@ -178,7 +169,6 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const userMenuOpen = ref(false);
-const notificationCount = ref(3); // Mock notification count
 
 const isRTL = computed(() => locale.value === "fa");
 

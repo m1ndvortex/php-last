@@ -203,6 +203,36 @@ class DashboardController extends Controller
     }
 
     /**
+     * Dismiss alert
+     */
+    public function dismissAlert(Request $request): JsonResponse
+    {
+        $request->validate([
+            'alert_id' => 'required|string'
+        ]);
+
+        $success = $this->alertService->dismissAlert($request->alert_id);
+
+        return response()->json([
+            'success' => $success,
+            'message' => $success ? 'Alert dismissed' : 'Failed to dismiss alert'
+        ]);
+    }
+
+    /**
+     * Mark all alerts as read
+     */
+    public function markAllAlertsAsRead(): JsonResponse
+    {
+        $success = $this->alertService->markAllAsRead();
+
+        return response()->json([
+            'success' => $success,
+            'message' => $success ? 'All alerts marked as read' : 'Failed to mark all alerts as read'
+        ]);
+    }
+
+    /**
      * Get user dashboard layout
      */
     public function getDashboardLayout(): JsonResponse

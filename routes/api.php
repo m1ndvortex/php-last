@@ -64,6 +64,8 @@ Route::middleware(['auth:sanctum', 'auth.api', 'api.errors'])->group(function ()
         Route::get('/category-stock-alerts', [\App\Http\Controllers\DashboardController::class, 'getCategoryStockAlerts']);
         Route::get('/alerts', [\App\Http\Controllers\DashboardController::class, 'getAlerts']);
         Route::post('/alerts/mark-read', [\App\Http\Controllers\DashboardController::class, 'markAlertAsRead']);
+        Route::post('/alerts/dismiss', [\App\Http\Controllers\DashboardController::class, 'dismissAlert']);
+        Route::post('/alerts/mark-all-read', [\App\Http\Controllers\DashboardController::class, 'markAllAlertsAsRead']);
         Route::get('/recent-activities', [\App\Http\Controllers\DashboardController::class, 'getRecentActivities']);
         Route::get('/quick-actions', [\App\Http\Controllers\DashboardController::class, 'getQuickActions']);
         Route::get('/layout', [\App\Http\Controllers\DashboardController::class, 'getDashboardLayout']);

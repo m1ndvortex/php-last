@@ -694,6 +694,12 @@ export const apiService = {
     markAlertAsRead: (alertId: string) => 
       api.post("api/dashboard/alerts/mark-read", { alert_id: alertId }),
 
+    dismissAlert: (alertId: string) => 
+      api.post("api/dashboard/alerts/dismiss", { alert_id: alertId }),
+
+    markAllAlertsAsRead: () => 
+      api.post("api/dashboard/alerts/mark-all-read"),
+
     getRecentActivities: (params?: { limit?: number }) => 
       api.get("api/dashboard/recent-activities", { params }),
 

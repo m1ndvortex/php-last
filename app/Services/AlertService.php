@@ -328,6 +328,65 @@ class AlertService
     }
 
     /**
+     * Dismiss alert
+     */
+    public function dismissAlert(string $alertId): bool
+    {
+        $alert = Alert::find($alertId);
+        
+        if (!$alert) {
+            return false;
+        }
+
+        $alert->update([
+            'status' => 'dismissed',
+            'resolved_at' => now(),
+            'resolved_by' => auth()->id(),
+            'resolution' => 'Dismissed from dashboard',
+        ]);
+
+        Log::info('Alert dismissed', [
+            'alert_id' => $alertId,
+            'type' => $alert->type,
+            'dismissed_by' => auth()->id(),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Mark all alerts as read
+     */
+    public function markAllAsRead(): bool
+    {
+        try {
+            $activeAlerts = Alert::where('status', 'active')->get();
+            
+            foreach ($activeAlerts as $alert) {
+                $alert->update([
+                    'status' => 'resolved',
+                    'resolved_at' => now(),
+                    'resolved_by' => auth()->id(),
+                    'resolution' => 'Marked as read from dashboard (bulk action)',
+                ]);
+            }
+
+            Log::info('All alerts marked as read', [
+                'count' => $activeAlerts->count(),
+                'marked_by' => auth()->id(),
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to mark all alerts as read', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Clear cache for alerts
      */
     public function clearCache(): void
