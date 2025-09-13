@@ -16,7 +16,7 @@
     "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.0.18",
     "@vee-validate/yup": "^4.11.8",
-    "axios": "^1.5.0",
+    "axios": "^1.12.0",
     "chart.js": "^4.5.0",
     "date-fns": "^2.30.0",
     "date-fns-jalali": "^2.30.0-0",
